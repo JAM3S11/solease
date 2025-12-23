@@ -1,0 +1,38 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependency directories
+node_modules/
+
+# Build output
+/frontend/dist/
+/frontend/dist-ssr/
+
+# Env files
+.env
+/backend/.env
+/frontend/.env
+*.local
+
+# Encrypted files will be released after review
+OBJECTIVE_1_ASSESSMENT.md
+OBJECTIVE_2_ASSESSMENT.md
+Client_ServiceDesk_Implementation_Guide.txt
+Results_and_Conclusion_Guide.txt

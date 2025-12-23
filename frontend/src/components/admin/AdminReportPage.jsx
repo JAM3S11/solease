@@ -1,18 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import DashboardLayout from '../ui/DashboardLayout';
 import useTicketStore from "../../store/ticketStore";
-import { PieChart } from "@mui/x-charts/PieChart";
-import { BarChart } from "@mui/x-charts/BarChart";
+import { PieChart, LineChart } from "@mui/x-charts";
 import { 
   CheckCircle, Clock, BarChart3, AlertCircle, 
-  Calendar, ArrowUpRight, Inbox
+  Calendar, ArrowUpRight, Inbox, ClipboardX
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Transition } from '@headlessui/react';
 import { ChevronDown, Filter, FileDown } from 'lucide-react';
 
-const departments = ["All Departments", "Network Connectivity", "Hardware issue", "Software issue"];
-const reportTypes = ["Monthly Resolution", "Issue Distribution", "SLA Status"];
+const departments = ["All Departments", "Hardware issue", "Software issue",  "Network Connectivity", "Account Access"];
+const reportTypes = ["All Types", "Open", "In Progress", "Resolved", "Closed"];
 
 const AdminReportPage = () => {
   const { tickets } = useTicketStore();
@@ -21,28 +20,34 @@ const AdminReportPage = () => {
 
   // Comprehensive Data Memoization for real-time filtering
   const stats = useMemo(() => {
-    const filtered = selectedDept === "All Departments" 
-      ? tickets 
-      : tickets.filter(t => t.issueType === selectedDept);
+    let currentFilteredTickets = tickets;
+
+    if (selectedDept !== "All Departments") {
+      currentFilteredTickets = currentFilteredTickets.filter(t => t.issueType === selectedDept);
+    }
+
+    if (selectedType !== "All Types") {
+      currentFilteredTickets = currentFilteredTickets.filter(t => t.status === selectedType);
+    }
 
     return {
-      total: filtered.length,
-      resolved: filtered.filter(t => t.status === 'Resolved').length,
-      pending: filtered.filter(t => t.status === 'Open').length,
-      critical: filtered.filter(t => t.urgency === 'Critical').length,
+      total: currentFilteredTickets.length,
+      resolved: currentFilteredTickets.filter(t => t.status === 'Resolved').length,
+      pending: currentFilteredTickets.filter(t => t.status === 'Open').length,
+      critical: currentFilteredTickets.filter(t => t.urgency === 'Critical').length,
       // Mapping for MUI Pie Chart
       pieData: [
-        { id: 0, value: filtered.filter(t => t.status === 'Resolved').length, label: 'Resolved', color: '#1173d4' },
-        { id: 1, value: filtered.filter(t => t.status === 'Open').length, label: 'Pending', color: '#fbbf24' },
+        { id: 0, value: currentFilteredTickets.filter(t => t.status === 'Resolved').length, label: 'Resolved', color: '#1173d4' },
+        { id: 1, value: currentFilteredTickets.filter(t => t.status === 'Open').length, label: 'Pending', color: '#fbbf24' },
       ],
       // Mapping for MUI Bar Chart (Resolution per month mockup based on real data)
       barData: [
-        { month: 'Oct', count: filtered.filter(t => t.oldest?.includes('/10/')).length },
-        { month: 'Nov', count: filtered.filter(t => t.oldest?.includes('/11/')).length },
-        { month: 'Dec', count: filtered.filter(t => t.oldest?.includes('/12/')).length },
+        { month: 'Oct', count: currentFilteredTickets.filter(t => t.oldest?.includes('/10/')).length },
+        { month: 'Nov', count: currentFilteredTickets.filter(t => t.oldest?.includes('/11/')).length },
+        { month: 'Dec', count: currentFilteredTickets.filter(t => t.oldest?.includes('/12/')).length },
       ]
     };
-  }, [tickets, selectedDept]);
+  }, [tickets, selectedDept, selectedType]);
 
   return (
     <DashboardLayout>
@@ -100,42 +105,49 @@ const AdminReportPage = () => {
 
         {/* Visual Analytics with MUI X-Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
-          <motion.div 
-            whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-          >
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              Resolution Distribution <ArrowUpRight size={16} className="text-gray-400" />
-            </h3>
-            <div className="h-72 flex justify-center">
-              <PieChart
-                series={[{ data: stats.pieData, innerRadius: 80, paddingAngle: 5, cornerRadius: 5 }]}
-                width={400}
-                height={250}
-              />
+          {stats.total === 0 ? (
+            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center h-72 text-gray-500">
+              <ClipboardX size={48} className="text-gray-400 mb-4" />
+              <p className="text-lg font-semibold">No data available for the selected filters.</p>
+              <p className="text-sm">Please adjust your department or report category selections.</p>
             </div>
-          </motion.div>
+          ) : (
+            <>
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+              >
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  Resolution Distribution <ArrowUpRight size={16} className="text-gray-400" />
+                </h3>
+                <div className="h-72 flex justify-center">
+                  <PieChart
+                    series={[{ data: stats.pieData, innerRadius: 80, paddingAngle: 5, cornerRadius: 5 }]}
+                    width={400}
+                    height={250}
+                  />
+                </div>
+              </motion.div>
 
-          <motion.div 
-            whileHover={{ y: -5 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-          >
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              Monthly Growth <ArrowUpRight size={16} className="text-gray-400" />
-            </h3>
-            <div className="h-72">
-              <BarChart
-                dataset={stats.barData}
-                xAxis={[{ scaleType: 'band', dataKey: 'month' }]}
-                series={[{ dataKey: 'count', label: 'Tickets', color: '#1173d4' }]}
-                width={500}
-                height={300}
-                borderRadius={8}
-              />
-            </div>
-          </motion.div>
-
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+              >
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  Monthly Growth <ArrowUpRight size={16} className="text-gray-400" />
+                </h3>
+                <div className="h-72">
+                  <LineChart
+                    dataset={stats.barData}
+                    xAxis={[{ scaleType: 'band', dataKey: 'month' }]}
+                    series={[{ dataKey: 'count', label: 'Tickets', color: '#1173d4' }]}
+                    width={500}
+                    height={300}
+                  />
+                </div>
+              </motion.div>
+            </>
+          )}
         </div>
       </div>
     </DashboardLayout>

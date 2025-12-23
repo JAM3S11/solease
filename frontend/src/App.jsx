@@ -20,6 +20,7 @@ import AdminUserDetailPage from "./components/admin/AdminUserDetailPage";
 import AdminTicketsView from "./components/admin/AdminTicketsView";
 import AdminPendingTickets from "./components/admin/AdminPendingTickets";
 import AdminNewTicketPage from "./components/admin/AdminNewTicketPage";
+import AdminReportPage from "./components/admin/AdminReportPage";
 import AdminSettingPage from "./components/admin/AdminSettingPage";
 
 // SERVICE DESK DASHBOARD
@@ -286,6 +287,12 @@ const App = () => {
             </ProtectedRoute>
           }
          />
+        <Route path="/admin-dashboard/admin-reports"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AdminReportPage />
+            </ProtectedRoute>
+          } />
         <Route path="/admin-dashboard/admin-settings"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>

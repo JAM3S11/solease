@@ -144,29 +144,33 @@ const Sidebar = ({ userRole }) => {
   };
 
   const renderItem = (item) => {
+    const itemClasses =
+      "flex items-center gap-3 p-3 rounded-lg hover:bg-slate-700 transition-colors duration-200 w-full text-left";
+    const activeClasses = "bg-blue-600 text-white shadow-lg";
+
     if (item.submenu) {
       return (
         <div key={item.name}>
           <button
             onClick={() => toggleMenu(item.name)}
-            className="flex justify-between items-center w-full p-2 hover:bg-gray-700 rounded"
+            className={`${itemClasses} justify-between`}
           >
-            <div className="flex items-center gap-2">
-              {item.icon}
-              {!isCollapsed && <span>{item.name}</span>}
+            <div className="flex items-center gap-3">
+              {React.cloneElement(item.icon, { size: 20 })}
+              {!isCollapsed && <span className="font-medium">{item.name}</span>}
             </div>
             {!isCollapsed &&
-              (openMenus[item.name] ? <ChevronUp /> : <ChevronDown />)}
+              (openMenus[item.name] ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
           </button>
           {openMenus[item.name] && !isCollapsed && (
-            <div className="flex flex-col ml-6 mt-1 gap-1">
+            <div className="flex flex-col ml-8 mt-2 space-y-1 pl-3 border-l border-slate-700">
               {item.submenu.map((sub) => (
                 <NavLink
                   key={sub.name}
                   to={sub.path}
                   className={({ isActive }) =>
-                    `p-2 rounded hover:bg-gray-700 ${
-                      isActive ? "bg-gray-700 font-bold" : ""
+                    `block p-2 rounded-md text-sm hover:bg-slate-700/50 transition-colors ${
+                      isActive ? "text-blue-400 font-semibold" : "text-gray-400"
                     }`
                   }
                 >
@@ -184,10 +188,10 @@ const Sidebar = ({ userRole }) => {
         <button
           key={item.name}
           onClick={item.action}
-          className="flex items-center gap-2 p-2 rounded hover:bg-gray-700 w-full text-left hover:accent-red-500 hover:text-red-500"
+          className={`${itemClasses} text-red-400 hover:bg-red-900/50 hover:text-red-300`}
         >
-          {item.icon}
-          {!isCollapsed && <span>{item.name}</span>}
+          {React.cloneElement(item.icon, { size: 20 })}
+          {!isCollapsed && <span className="font-medium">{item.name}</span>}
         </button>
       );
     }
@@ -197,32 +201,35 @@ const Sidebar = ({ userRole }) => {
         key={item.name}
         to={item.path}
         className={({ isActive }) =>
-          `flex items-center gap-2 p-2 rounded hover:bg-gray-700 ${
-            isActive ? "bg-gray-700 font-bold" : ""
-          }`
+          `${itemClasses} ${isActive ? activeClasses : ""}`
         }
       >
-        {item.icon}
-        {!isCollapsed && <span>{item.name}</span>}
+        {React.cloneElement(item.icon, { size: 20 })}
+        {!isCollapsed && <span className="font-medium">{item.name}</span>}
       </NavLink>
     );
   };
 
   return (
-    <div
-      className={`bg-gray-800 text-white min-h-screen p-4 flex flex-col justify-between transition-all duration-300 ${
+    <aside
+      className={`bg-slate-900 text-gray-200 min-h-screen p-4 flex flex-col justify-between transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Top section */}
       <div>
-        <div className="flex justify-between items-center mb-6">
-          {!isCollapsed && <h2 className="text-2xl font-bold tracking-wide">SOLEASE</h2>}
+        <div className="flex items-center justify-between mb-6 h-10">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2">
+              <img src="/solease.svg" alt="Solease" className="h-8 w-8" />
+              <h2 className="text-2xl font-bold tracking-wide text-white">SOLEASE</h2>
+            </div>
+          )}
           <button
-            className="p-1 rounded hover:bg-gray-700"
+            className="p-2 rounded-lg hover:bg-slate-700 transition-colors"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            <Menu />
+            <Menu size={20} />
           </button>
         </div>
 
@@ -232,10 +239,10 @@ const Sidebar = ({ userRole }) => {
       </div>
 
       {/* Bottom section */}
-      <div className="flex flex-col gap-2 border-t border-gray-700 pt-2">
+      <div className="flex flex-col gap-2 border-t border-slate-700 pt-4">
         {menuItems[userRole]?.bottom.map((item) => renderItem(item))}
       </div>
-    </div>
+    </aside>
   );
 };
 

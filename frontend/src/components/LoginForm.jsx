@@ -30,28 +30,29 @@ const LoginForm = () => {
         duration: 2000,
         style: {
           background: "#0093FF3D",
+          backdropFilter: "blur(10px)",
         },
         icon: "✔️" 
       });
 
       switch (user.role) {
-        case "Client":
-          navigate("/client-dashboard");
+        case "Client": 
+          navigate("/client-dashboard"); 
           break;
-        case "IT Support":
-          navigate("/itsupport-dashboard");
+        case "IT Support": 
+          navigate("/itsupport-dashboard"); 
           break;
-        case "Service Desk":
-          navigate("/servicedesk-dashboard");
+        case "Service Desk": 
+          navigate("/servicedesk-dashboard"); 
           break;
-        case "Manager":
-          navigate("/admin-dashboard");
-          break;
-        default:
-          navigate("/");
+        case "Manager": navigate("/admin-dashboard"); break;
+        default: navigate("/");
       }
 
-      setFormData({ username: "", password: "" });
+      setFormData({ 
+        username: "", 
+        password: "" 
+      });
     } catch (err) {
       const message = err.message;
       if (message.toLowerCase().includes("awaiting admin approval")) {
@@ -65,107 +66,131 @@ const LoginForm = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 px-4">
-      <div className="w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-sky-500 to-emerald-500 px-4">
+      <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px]"></div>
+      
+      <div className="relative w-full max-w-5xl bg-white shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, x: -60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-indigo-600 via-sky-600 to-emerald-600 text-white p-10"
+          className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-indigo-600 via-blue-600 to-emerald-600 text-white p-12 relative overflow-hidden"
         >
-          <h1 className="text-4xl font-bold mb-4">Welcome to SOLEASE</h1>
-          <p className="text-lg text-center leading-relaxed max-w-sm">
+          <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+          
+          <h1 className="text-4xl font-bold mb-4 tracking-tight">Welcome to SOLEASE</h1>
+          <p className="text-lg text-center leading-relaxed max-w-sm opacity-90">
             Streamline your IT support operations, manage tickets efficiently, 
             and empower your team with smart solutions.
           </p>
-          <div className="mt-6 border-t border-white/40 pt-4 text-sm opacity-90">
-            <p>Smart. Reliable. Efficient.</p>
+          <div className="mt-10 border-t border-white/20 pt-6 text-sm font-medium tracking-widest uppercase opacity-70">
+            <p>Smart • Reliable • Efficient</p>
           </div>
         </motion.div>
+
+        {/* Form section */}
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex flex-col justify-center p-8 sm:p-10 md:p-12"
+          className="flex flex-col justify-center p-10 md:p-14 bg-white"
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-blue-600">
-              Login
-            </h2>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 tracking-tight">
+                Login
+              </h2>
+              <div className="h-1 w-17 bg-blue-600 rounded-full mt-1"></div>
+            </div>
             <button
               onClick={() => navigate("/")}
-              className="text-gray-500 hover:text-blue-600 transition"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-500 transition-colors"
             >
-              <X size={22} />
+              <X size={24} />
             </button>
           </div>
 
-          <p className="text-xs md:text-sm -mt-4 mb-2 text-gray-500">
-            Enter your credentials to access your account
+          <p className="text-base mb-8 text-gray-500 font-medium">
+            Enter your credentials to access the SolEase platform.
           </p>
 
-          <form className="space-y-5" onSubmit={handleLogin}>
-            <div className="form-control">
-              <label className="input input-bordered flex items-center gap-2 rounded-lg">
-                <User size={18} />
+          <form className="space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-1">
+              <label className="text-[14px] font-bold text-gray-400 uppercase ml-1">Username</label>
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-50 transition-all">
+                <User size={20} className="text-gray-400" />
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  className="grow outline-none"
-                  placeholder="Enter your username"
+                  className="grow bg-transparent outline-none text-gray-700 placeholder:text-gray-300"
+                  placeholder="e.g. JDoe"
                   required
                 />
-              </label>
+              </div>
             </div>
 
-            <div className="form-control">
-              <label className="input input-bordered flex items-center gap-2 rounded-lg">
-                <KeyRound size={18} />
+            <div className="space-y-1">
+              <label className="text-[14px] font-bold text-gray-400 uppercase ml-1">Password</label>
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-50 transition-all">
+                <KeyRound size={20} className="text-gray-400" />
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="grow outline-none"
-                  placeholder="Enter your password"
+                  className="grow bg-transparent outline-none text-gray-700 placeholder:text-gray-300"
+                  placeholder="••••••••"
                   required
                 />
-              </label>
+              </div>
             </div>
 
-            <Link
-              to={"/forgot-password"}
-              className="text-sm md:text-base hover:underline hover:text-blue-700"
-            >
-              Forgot Password?
-            </Link>
+            <div className="flex justify-end">
+              <Link
+                to={"/forgot-password"}
+                className="text-[15px] font-medium text-blue-600 hover:text-blue-800 transition"
+              >
+                Forgot Password?
+              </Link>
+            </div>
 
             {error?.toLowerCase().includes("invalid credentials") && (
-              <p className="text-red-600 mt-2 font-semibold">{error}</p>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-[14px] font-medium text-center">
+                {error}
+              </motion.p>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn btn-primary text-white rounded-lg shadow-md uppercase tracking-wide hover:scale-[1.02] transition transform"
+              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold 
+              shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-blue-300 
+              active:scale-95 transition-all transform uppercase tracking-widest text-base"
             >
-              {isLoading ? "Authenticating..." : "Login"}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Authenticating
+                </span>
+              ) : "Sign In"}
             </button>
           </form>
 
           {/* Footer */}
-          <p className="text-sm md:text-base text-center text-gray-600 mt-6">
-            Don’t have an account?{" "}
-            <a
-              href="/signup"
-              className="text-blue-500 font-medium hover:underline"
-            >
-              Signup here
-            </a>
-          </p>
+          <div className="mt-10 text-center">
+            <p className="text-gray-500 text-base">
+              New to the platform?{" "}
+              <Link
+                to="/signup"
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Create an account
+              </Link>
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

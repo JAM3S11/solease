@@ -185,10 +185,10 @@ const App = () => {
               <motion.section 
                 id="about" 
                 className="min-h-screen"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeInOut" }}
+                transition={{ duration: 0.6, delay: 0.3, ease: "easeInOut" }}
                 // viewport={{ once: false, amount: 0.3 }}
               >
                 <Aboutpage />

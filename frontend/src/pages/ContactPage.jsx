@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import api from "../lib/utils.js";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion"; // Added for motion
-import { MapPin, Phone, Mail, Clock, ShieldCheck, Activity } from "lucide-react"; // Refined icons
+import { motion } from "framer-motion"; 
+import { MapPin, Phone, Mail, Clock, ShieldCheck, Activity } from "lucide-react"; 
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({

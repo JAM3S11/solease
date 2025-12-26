@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react'; 
 
 const services = [
   {
@@ -33,13 +33,27 @@ const services = [
     image: "https://images.pexels.com/photos/8867474/pexels-photo-8867474.jpeg",
     task: { 1: "System Monitoring", 2: "Regular Updates" }
   },
+  {
+    title: "AI-Powered Ticket Management",
+    description: "Experience smart triaging. Our system uses NLP to understand ticket urgency and sentiment, routing issues to the right expert instantly.",
+    image: "https://imgs.search.brave.com/LAXCy4o90wyQaaV3aMEXMQXXBmhkAikJJ01llM1ZobA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdG9y/YWdlLmdvb2dsZWFw/aXMuY29tL2Nkbi13/ZWJzaXRlLWJvbGRk/ZXNrLzIwMjUvMTAv/YjNjMDY0NWYtZS1j/b21tZXJjZS1yZXRh/aWwtYnVzaW5lc3Nl/c18xMXpvbi0zLndl/YnA",
+    task: { 1: "AI Smart Routing", 2: "Sentiment Analysis" },
+    isAI: true 
+  },
+  {
+    title: "Predictive Analytics",
+    description: "Move beyond history. Gain foresight into IT bottlenecks and system health before issues arise using machine learning models.",
+    image: "https://images.pexels.com/photos/5816299/pexels-photo-5816299.jpeg",
+    task: { 1: "Anomaly Detection", 2: "Proactive Forecasts" },
+    isAI: true
+  }
 ];
 
 const faqs = [
   { q: "How do I create a support ticket?", a: "Log in, click 'Create Ticket', enter your issue details, and submit. You’ll get a confirmation and can monitor progress in your dashboard." },
   { q: "Who can access and manage tickets?", a: "Access is based on user roles. Staff can view their own tickets, while IT teams and managers oversee tickets relevant to their responsibilities." },
-  { q: "How are tickets assigned and prioritized?", a: "Tickets are sorted and assigned automatically by issue type, urgency, and available IT staff to ensure prompt handling." },
-  { q: "Can I monitor my ticket status?", a: "Yes, you’ll receive real-time updates and notifications as your ticket moves through each stage until it’s resolved." }
+  { q: "How does the AI improve ticket resolution?", a: "The AI instantly routes tickets to the correct department by analyzing keywords and urgency, reducing manual wait times by 40%." },
+  { q: "Can the system predict system failures?", a: "Yes, our Predictive Analytics service uses machine learning to alert IT staff about potential hardware or network issues before they occur." }
 ];
 
 const ServicePage = () => {
@@ -98,8 +112,16 @@ const ServicePage = () => {
                 whileHover={{ y: -5 }}
                 className="group bg-white shadow-sm hover:shadow-xl 
                 transition-all duration-300 flex flex-col rounded-2xl 
-                overflow-hidden border border-gray-100"
+                overflow-hidden border border-gray-100 relative"
               >
+                {service.isAI && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-[9px] font-black uppercase rounded-lg shadow-md">
+                      <Sparkles size={10} /> AI Enhanced Coming Soon
+                    </span>
+                  </div>
+                )}
+
                 <div className="overflow-hidden h-48">
                   <motion.img
                     src={service.image}

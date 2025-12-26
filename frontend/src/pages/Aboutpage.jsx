@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, ChartColumn, Medal, Users2, TicketCheck, Zap, BarChart3 } from 'lucide-react';
+import { Users, ChartColumn, Medal, Users2, TicketCheck, Zap, BarChart3, Bot, Sparkles, BrainCircuit } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Aboutpage = () => {
@@ -41,6 +41,38 @@ const Aboutpage = () => {
             desc="SolEase empowers clubs to simplify their support process, digitize ticket submissions, and improve accountability." 
           />
         </div>
+
+        {/* AI Capabilities Section - NEW SECTION */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-16 p-8 md:p-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] text-white shadow-2xl overflow-hidden relative"
+        >
+          {/* Decorative Sparkle Icons */}
+          <Sparkles className="absolute top-10 right-10 text-white/20 size-20 rotate-12" />
+          <BrainCircuit className="absolute bottom-[-20px] left-[-20px] text-white/10 size-40" />
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full mb-4 border border-white/30">
+                <Bot size={16} />
+                <span className="text-xs font-bold uppercase tracking-widest">Next-Gen AI Integration</span>
+              </div>
+              <h4 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tighter italic">
+                Smarter Support with AI
+              </h4>
+              <p className="text-blue-50 text-sm md:text-lg font-medium leading-relaxed mb-6">
+                SOLEASE is integrating cutting-edge AI to provide **Intelligent Ticket Triage**, **Predictive Maintenance**, and **Automated Response Drafting**. By leveraging Natural Language Processing, we ensure that every support request is understood and routed instantly.
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                <span className="px-4 py-2 bg-white/10 rounded-lg text-xs font-bold border border-white/20">Smart Routing</span>
+                <span className="px-4 py-2 bg-white/10 rounded-lg text-xs font-bold border border-white/20">Anomaly Detection</span>
+                <span className="px-4 py-2 bg-white/10 rounded-lg text-xs font-bold border border-white/20">24/7 AI-Self Service</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Main Agenda Section - Glassmorphism Style */}
         <div className="relative group p-8 md:p-12 bg-white/40 backdrop-blur-md border border-white/60 rounded-[2rem] flex flex-col gap-6 items-center shadow-2xl shadow-blue-900/5 ring-1 ring-black/5">
@@ -90,7 +122,7 @@ const Aboutpage = () => {
 const FeatureCard = ({ Icon, title, desc }) => (
   <motion.div 
     whileHover={{ y: -10 }}
-    className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300"
+    className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 group"
   >
     <div className="flex items-center justify-center mb-5">
       <div className="p-4 bg-blue-50 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">

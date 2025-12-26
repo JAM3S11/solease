@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Mail, X, ArrowBigRight } from "lucide-react";
+import { Lock, KeyRound, CheckCircle } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
-const ResetPassword= () => {
-  const [ formData, setFormData ] = useState({
+const ResetPassword = () => {
+  const [formData, setFormData] = useState({
     password: "",
-  })
-  const [ confirmPassword, setConfirmPassword ] = useState("");
+  });
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { resetPassword, error, isLoading, message } = useAuthenticationStore();
 
   const { token } = useParams();
@@ -18,15 +19,15 @@ const ResetPassword= () => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Check if both password match
+    // Logic preserved as per your original code
     if(formData.password !== confirmPassword){
-        alert("Password don't match! Try again..");
+        toast.error("Passwords don't match! Try again..");
         return;
     }
 
@@ -34,13 +35,9 @@ const ResetPassword= () => {
         await resetPassword(token, formData.password);
         toast.success("Password reset successfully! Redirecting to login page...");
 
-        // Clear the fields
-        setFormData({
-            password: "",
-        });
+        setFormData({ password: "" });
         setConfirmPassword("");
 
-        // Go to Login Page
         setTimeout(() => {
             navigate("/login");
         }, 2000);
@@ -54,62 +51,98 @@ const ResetPassword= () => {
     <section
       className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
       style={{
-        background:
-          "linear-gradient(120deg, rgba(173, 194, 230, 0.57) 0%, rgba(133, 175, 242, 0.43) 100%)",
+        background: "linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)", // Softer, modern gradient
       }}
     >
-      <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 relative">
-        {/* Header */}
-        <div className="flex items-center mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-blue-600">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md bg-white shadow-[0_20px_60px_-15px_rgba(37,99,235,0.15)] rounded-2xl p-8 relative border border-gray-100"
+      >
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="text-blue-600 size-8" />
+          </div>
+          <h2 className="text-3xl font-bold text-blue-600 tracking-tight">
             Reset Password
           </h2>
+          {!message && !error && (
+            <p className="text-sm text-gray-500 mt-2">
+              Create a strong new password for your account
+            </p>
+          )}
         </div>
-        {!message && !error && <p className="text-xs md:text-sm -mt-4 mb-2 text-gray-500">Enter your email address and we'll send a link to reset your password</p>}
 
-        {error && <p className="text-xs md:text-sm mt-1 mb-2 text-red-600">{error}</p>}
-        {message && <p className="text-xs md:text-sm mt-1 mb-2 text-green-600">{message}</p>}
+        {/* Status Messages */}
+        {error && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-medium mb-4 text-center border border-red-100">
+            {error}
+          </motion.div>
+        )}
+        {message && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-green-50 text-green-600 rounded-lg text-xs font-medium mb-4 text-center border border-green-100">
+            {message}
+          </motion.div>
+        )}
+
         {/* Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="form-control">
-              <label className="input input-bordered flex items-center gap-2 rounded-lg">
-                <Mail size={18} />
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="grow outline-none"
-                  placeholder="Password"
-                  required
-                />
-              </label>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 ml-1">New Password</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                <KeyRound size={18} />
+              </div>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-gray-800"
+                placeholder="Enter new password"
+                required
+              />
             </div>
+          </div>
 
-            <div className="form-control">
-              <label className="input input-bordered flex items-center gap-2 rounded-lg">
-                <Mail size={18} />
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="grow outline-none"
-                  placeholder="Confirm Password"
-                  required
-                />
-              </label>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 ml-1">Confirm Password</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                <KeyRound size={18} />
+              </div>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-gray-800"
+                placeholder="Confirm new password"
+                required
+              />
             </div>
+          </div>
 
-            {/* Button */}
-            <button
-              disabled={isLoading}
-              type="submit"
-              className="w-full btn btn-primary text-white rounded-lg shadow-md uppercase tracking-wide hover:scale-[1.02] transition transform"
-            >
-              {isLoading ? "Resetting..." : "Set New Password"}
-            </button>
+          {/* Button with Framer Motion */}
+          <motion.button
+            whileHover={{ scale: 1.01, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={isLoading}
+            type="submit"
+            className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                Resetting...
+              </span>
+            ) : (
+              <>Set New Password <CheckCircle size={18} /></>
+            )}
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
     </section>
   );
 };

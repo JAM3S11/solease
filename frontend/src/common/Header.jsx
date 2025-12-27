@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react"; // icons
+import { Menu, X } from "lucide-react";
 import { Link } from "react-router";
 
 const Header = () => {

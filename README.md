@@ -1,6 +1,6 @@
 # SOLEASE - IT Service Management Platform
 
-![SolEase Showcase](https://media.licdn.com/dms/image/v2/D4E22AQHa-NtXqa40IQ/feedshare-shrink_2048_1536/B4EZsJLod_IIA4-/0/1765385609325?e=1767830400&v=beta&t=y-bPvaIqyxEb2cC6YURfsCmwjBC6ll7yoT_dvTllz_s) <!-- Placeholder image -->
+![SolEase Showcase](file:///C:/Users/ADMIN/Pictures/Screenshots/Screenshot%202025-12-29%20173633.png) <!-- Placeholder image -->
 
 **SolEase** is a comprehensive, role-based IT service management platform designed to help organizations streamline their support operations. It enables teams to log issues, triage requests, collaborate effectively, and monitor performance through dedicated dashboards for Managers, Service Desk agents, IT Support engineers, and Clients.
 

@@ -2,15 +2,15 @@
 
 ![SolEase Showcase](https://bizarre-violet-ywc8dytnr1-y3wwcfkvkj.edgeone.app/Screenshot%202025-12-29%20173633.png) <!-- Placeholder image -->
 
-**SolEase** is a comprehensive, role-based IT service management platform designed to be a reliable ticket service solution for organizations of all types and sizes. Whether you're a private enterprise, public institution, non-profit, or any organization requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The system features IT Support and Service Desk capabilities mounted directly into the platform, enabling teams to log issues, triage requests, collaborate effectively, and monitor performance through dedicated dashboards for Managers, Service Desk agents, IT Support engineers, and Clients.
+**SolEase** is a comprehensive, role-based IT service management platform designed to be a reliable ticket service solution for organizations of all types and sizes. Whether you're a private enterprise, public institution, non-profit, or any organization requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The system is currently under advancement of ticket automation with AI, where Managers can either perform all the tasks traditionally handled by IT Support and Service Desk, or leverage AI-powered automation to handle these processes seamlessly. **Note**: IT Support and Service Desk roles shall be removed from the system in future updates, enabling teams to log issues, triage requests, collaborate effectively, and monitor performance through dedicated dashboards for Managers and Clients.
 
 ---
 
 ## ✨ Features
 
 -   **Universal Applicability**: Designed for any organization—from private enterprises to public services, educational institutions, healthcare facilities, and beyond. SolEase adapts to your organization's unique support needs.
--   **Integrated IT Support & Service Desk**: IT Support and Service Desk functionalities are fully mounted and integrated into the system, providing seamless ticket management, assignment, and resolution workflows.
--   **Role-Based Dashboards**: Tailored interfaces for Managers, Service Desk, IT Support, and Clients.
+-   **AI-Powered Ticket Automation** (Under Advancement): The system is actively developing AI automation capabilities that can handle all tasks traditionally performed by IT Support and Service Desk, or Managers can choose to handle these tasks manually.
+-   **Role-Based Dashboards**: Tailored interfaces for Managers and Clients. **Note**: IT Support and Service Desk roles shall be removed from the system.
 -   **Full Ticket Lifecycle**: Create, assign, update, and track tickets from submission to resolution.
 -   **Secure Authentication**: JWT-based authentication with email verification and password recovery.
 -   **User Management**: Admins can manage user roles, statuses, and permissions.
@@ -148,22 +148,22 @@ The frontend is structured by feature and role:
 
 ## 🎭 Roles & Features
 
-SolEase's architecture includes IT Support and Service Desk as core, mounted components of the system, ensuring reliable ticket management across diverse organizational contexts.
+**Important**: IT Support and Service Desk roles shall be removed from the system in upcoming updates. The platform is under advancement of ticket automation with AI, where Managers can either perform all tasks traditionally handled by IT Support and Service Desk, or these processes can be fully automated through AI.
 
--   **Manager**: Full administrative access. Can view analytics, manage all users and tickets, assign tasks, and configure system settings.
--   **Service Desk**: First line of support, fully integrated into the platform. Can view all tickets, create new ones, assign tickets to IT Support, and update statuses.
--   **IT Support**: Technical team capabilities mounted directly in the system. Can view and update tickets assigned to them, plus any unassigned tickets.
+-   **Manager**: Full administrative access. Can view analytics, manage all users and tickets, assign tasks, and configure system settings. Managers can perform all tasks that were previously handled by IT Support and Service Desk, or leverage AI automation to handle these processes automatically.
 -   **Client**: End-users. Can create new tickets, view their own tickets, and track their status.
 
 ---
 
 ## 🎫 Ticket Lifecycle
 
-1.  **Creation**: A user (Client, Service Desk, or Manager) creates a ticket.
+1.  **Creation**: A user (Client or Manager) creates a ticket.
 2.  **Listing**: Tickets are displayed based on role-specific permissions.
-3.  **Assignment**: A Manager or Service Desk agent assigns an unassigned ticket to an IT Support engineer.
-4.  **Updates**: The assigned IT engineer works on the ticket and updates its status (e.g., "In Progress").
-5.  **Resolution**: The ticket is marked as "Resolved" or "Closed" once the issue is fixed.
+3.  **Management**: Managers can either handle ticket assignment, updates, and resolution directly, or leverage AI automation to process these tasks automatically.
+4.  **Updates**: Managers work on tickets and update their status (e.g., "In Progress"), or AI automation handles updates based on predefined rules and intelligent analysis.
+5.  **Resolution**: The ticket is marked as "Resolved" or "Closed" once the issue is fixed, either manually by Managers or automatically through AI automation.
+
+**Note**: With the removal of IT Support and Service Desk roles, ticket management is streamlined to direct Manager-Client interactions, with the option for AI-powered automation handling all tasks traditionally performed by IT Support and Service Desk. The system is currently under advancement of ticket automation with AI.
 
 ---
 
@@ -204,8 +204,9 @@ SolEase's architecture includes IT Support and Service Desk as core, mounted com
 
 ## 🔮 Future Updates
 
-This project is actively under development. Stay tuned for more features and enhancements, including:
+This project is actively under development. The system is currently under advancement of ticket automation with AI, where Managers can either perform all tasks of IT Support and Service Desk, or these processes can be fully automated. Stay tuned for more features and enhancements, including:
 
+-   Advanced AI-powered ticket automation to handle all IT Support and Service Desk tasks automatically.
 -   Real-time notifications for ticket assignments and status changes via sms.
 -   Comprehensive reporting dashboards for all user roles.
 -   AI-powered chatbot for automated support and ticket triaging.

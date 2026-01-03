@@ -2,12 +2,14 @@
 
 ![SolEase Showcase](https://bizarre-violet-ywc8dytnr1-y3wwcfkvkj.edgeone.app/Screenshot%202025-12-29%20173633.png) <!-- Placeholder image -->
 
-**SolEase** is a comprehensive, role-based IT service management platform designed to help organizations streamline their support operations. It enables teams to log issues, triage requests, collaborate effectively, and monitor performance through dedicated dashboards for Managers, Service Desk agents, IT Support engineers, and Clients.
+**SolEase** is a comprehensive, role-based IT service management platform designed to be a reliable ticket service solution for organizations of all types and sizes. Whether you're a private enterprise, public institution, non-profit, or any organization requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The system features IT Support and Service Desk capabilities mounted directly into the platform, enabling teams to log issues, triage requests, collaborate effectively, and monitor performance through dedicated dashboards for Managers, Service Desk agents, IT Support engineers, and Clients.
 
 ---
 
 ## ✨ Features
 
+-   **Universal Applicability**: Designed for any organization—from private enterprises to public services, educational institutions, healthcare facilities, and beyond. SolEase adapts to your organization's unique support needs.
+-   **Integrated IT Support & Service Desk**: IT Support and Service Desk functionalities are fully mounted and integrated into the system, providing seamless ticket management, assignment, and resolution workflows.
 -   **Role-Based Dashboards**: Tailored interfaces for Managers, Service Desk, IT Support, and Clients.
 -   **Full Ticket Lifecycle**: Create, assign, update, and track tickets from submission to resolution.
 -   **Secure Authentication**: JWT-based authentication with email verification and password recovery.
@@ -146,9 +148,11 @@ The frontend is structured by feature and role:
 
 ## 🎭 Roles & Features
 
+SolEase's architecture includes IT Support and Service Desk as core, mounted components of the system, ensuring reliable ticket management across diverse organizational contexts.
+
 -   **Manager**: Full administrative access. Can view analytics, manage all users and tickets, assign tasks, and configure system settings.
--   **Service Desk**: First line of support. Can view all tickets, create new ones, assign tickets to IT Support, and update statuses.
--   **IT Support**: Technical team. Can view and update tickets assigned to them, plus any unassigned tickets.
+-   **Service Desk**: First line of support, fully integrated into the platform. Can view all tickets, create new ones, assign tickets to IT Support, and update statuses.
+-   **IT Support**: Technical team capabilities mounted directly in the system. Can view and update tickets assigned to them, plus any unassigned tickets.
 -   **Client**: End-users. Can create new tickets, view their own tickets, and track their status.
 
 ---

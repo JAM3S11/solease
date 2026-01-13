@@ -1,6 +1,6 @@
 # SOLEASE - IT Service Management Platform
 
-![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202025-12-29%20173633.png) <!-- Placeholder image -->
+![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-01-13%20183119.png) <!-- Placeholder image -->
 
 **SolEase** is a comprehensive, role-based IT service management platform designed to be a reliable ticket service solution for organizations of all types and sizes. Whether you're a private enterprise, public institution, non-profit or any organization requiring structured support operations, SolEase will provide a robust and scalable platform to streamline your support workflows. **Note**: IT Support and Service Desk roles shall be removed from the system in future updates, enabling teams to log issues, triage requests, collaborate effectively and monitor performance through dedicated dashboards for Managers and Clients.
 

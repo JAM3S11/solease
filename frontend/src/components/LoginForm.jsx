@@ -104,15 +104,19 @@ const LoginForm = () => {
           </button>
 
           {/* Header */}
-          <div className="mb-9">
-            <span className="text-[#3b82f6] text-[12px] font-bold uppercase tracking-[0.08em] mb-3 block">System Login</span>
-            <h2 className="text-5xl font-extrabold text-slate-900 tracking-tighter">Sign In</h2>
+          <div className="mb-5 group">
+            <span className="text-[#3b82f6] text-[12px] font-bold uppercase tracking-[0.08em] mb-3 block antialiased">System Login</span>
+            <h2 className="text-5xl font-extrabold text-slate-900 tracking-tighter mb-3">Sign In</h2>
+            <div className="relative h-[2px] w-24 overflow-hidden rounded-full bg-slate-100">
+              <div className="absolute inset-0 bg-blue-500 animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            </div>
           </div>
 
-          <form className="space-y-5" onSubmit={handleLogin}>
+          <form className="space-y-2" onSubmit={handleLogin}>
             {/* Username Field */}
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-400 uppercase ml-1 tracking-widest">Username</label>
+              <label className="text-[14px] font-bold text-slate-400 uppercase ml-1 tracking-wide">Username</label>
               <div className="flex items-center gap-4 px-6 py-5 bg-[#f0f7ff] border border-transparent rounded-[1.5rem] focus-within:border-blue-400/30 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 group">
                 <User size={18} className="text-slate-300 group-focus-within:text-blue-500 transition-colors" />
                 <input
@@ -129,7 +133,7 @@ const LoginForm = () => {
 
             {/* Password Field */}
             <div className="space-y-3">
-              <label className="text-[11px] font-black text-slate-400 uppercase ml-1 tracking-widest">Password</label>
+              <label className="text-[14px] font-bold text-slate-400 uppercase ml-1 tracking-wide">Password</label>
               <div className="flex items-center gap-4 px-6 py-5 bg-[#f0f7ff] border border-transparent rounded-[1.5rem] focus-within:border-blue-400/30 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 group">
                 <KeyRound size={18} className="text-slate-300 group-focus-within:text-blue-500 transition-colors" />
                 <input
@@ -173,10 +177,10 @@ const LoginForm = () => {
           </form>
 
           {/* Create Account Link */}
-          <div className="mt-14 text-center">
+          <div className="mt-9 text-center">
             <p className="text-slate-400 text-sm font-medium">
               New to the platform?{" "}
-              <Link to="/signup" className="text-[#3b82f6] font-black ml-1">
+              <Link to="/signup" className="text-[#3b82f6] font-bold ml-1">
                 Create Account
               </Link>
             </p>

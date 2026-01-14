@@ -30,6 +30,7 @@ node_modules/
 /backend/.env
 /frontend/.env
 *.local
+/frontend/README.md
 
 # Encrypted files will be released after review
 OBJECTIVE_1_ASSESSMENT.md

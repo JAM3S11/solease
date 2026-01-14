@@ -53,7 +53,7 @@ const LoginForm = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-[#fafbfc] px-4 overflow-hidden font-sans">
+    <section className="relative min-h-screen flex items-center justify-center bg-[#e3e6e9] px-2 overflow-hidden font-sans">
       {/* Background Decorative Accents */}
       <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-500/5 rounded-full blur-[120px] -z-10" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-blue-500/5 rounded-full blur-[120px] -z-10" />
@@ -64,7 +64,7 @@ const LoginForm = () => {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="hidden md:flex flex-col justify-center items-center bg-[#050a18] text-white p-16 relative overflow-hidden"
+          className="hidden md:flex flex-col justify-center items-center bg-[#050a18] text-white p-14 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full" />
           
@@ -73,7 +73,7 @@ const LoginForm = () => {
                 <LogIn className="text-blue-400" size={28} />
              </div>
              
-             <h1 className="text-5xl font-black mb-6 tracking-tighter text-center leading-[1.1]">
+             <h1 className="text-5xl font-bold mb-6 tracking-tighter text-center leading-[1.1]">
                Welcome to<br />
                <span className="text-[#3b82f6]">SOLEASE.</span>
              </h1>
@@ -104,12 +104,12 @@ const LoginForm = () => {
           </button>
 
           {/* Header */}
-          <div className="mb-12">
-            <span className="text-[#3b82f6] text-[10px] font-black uppercase tracking-[0.3em] mb-3 block">System Login</span>
-            <h2 className="text-5xl font-black text-slate-900 tracking-tighter">Sign In</h2>
+          <div className="mb-9">
+            <span className="text-[#3b82f6] text-[12px] font-bold uppercase tracking-[0.08em] mb-3 block">System Login</span>
+            <h2 className="text-5xl font-extrabold text-slate-900 tracking-tighter">Sign In</h2>
           </div>
 
-          <form className="space-y-7" onSubmit={handleLogin}>
+          <form className="space-y-5" onSubmit={handleLogin}>
             {/* Username Field */}
             <div className="space-y-3">
               <label className="text-[11px] font-black text-slate-400 uppercase ml-1 tracking-widest">Username</label>

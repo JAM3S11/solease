@@ -97,7 +97,7 @@ const PerformanceCard = ({ title, value, change, isPositiveBetter, icon: Icon, g
                         {change}
                     </span>
                 </div>
-                <h3 className="text-white/70 text-sm font-bold uppercase tracking-widest mb-1">{title}</h3>
+                <h3 className="text-white/70 text-sm font-bold uppercase tracking-wider mb-1">{title}</h3>
                 <p className="text-4xl font-black tracking-tight">{value}</p>
             </div>
         </motion.div>
@@ -139,7 +139,7 @@ const ClientReportPage = () => {
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                             {user?.name ? `${user.name.split(' ')[0]}'s Analytics` : "Report Overview"}
                         </h1>
-                        <p className="text-gray-500 font-medium mt-2">Personal IT performance and ticket lifecycle tracking.</p>
+                        <p className="text-gray-500 font-normal mt-2 text-sm">Personal IT performance and ticket lifecycle tracking.</p>
                     </div>
                     <div className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-2xl">
                         <Activity size={16} /> Live Data Tracking

@@ -64,10 +64,14 @@ const SignUpForm = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex flex-col justify-center p-10 md:p-16 bg-white"
         >
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.3em] mb-2 block">Join the network</span>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Register</h2>
+              <span className="text-blue-600 text-[12px] font-bold uppercase tracking-[0.08em] mb-2 block antialiased">Join the network</span>
+              <h2 className="text-4xl font-extrabold text-slate-900 tracking-tighter mb-3">Register</h2>
+              <div className="relative h-[2px] w-32 overflow-hidden rounded-full bg-slate-100">
+                <div className="absolute inset-0 bg-blue-500 animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+              </div>
             </div>
             <button
               onClick={() => navigate("/")}
@@ -77,7 +81,7 @@ const SignUpForm = () => {
             </button>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-2" onSubmit={handleSubmit}>
             {[
               { name: "username", icon: <User size={18}/>, label: "Username", placeholder: "e.g. JDoe" },
               { name: "name", icon: <CircleUser size={18}/>, label: "Full Name", placeholder: "e.g. John Doe" },
@@ -85,7 +89,7 @@ const SignUpForm = () => {
               { name: "password", icon: <KeyRound size={18}/>, label: "Password", placeholder: "••••••••", type: "password" }
             ].map((field) => (
               <div key={field.name} className="space-y-2">
-                <label className="text-[11px] font-black text-slate-400 uppercase ml-1 tracking-widest">{field.label}</label>
+                <label className="text-[12px] font-bold text-slate-400 uppercase ml-1 tracking-wide">{field.label}</label>
                 <div className="flex items-center gap-3 px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 group">
                   <span className="text-slate-400 group-focus-within:text-blue-600 transition-colors">{field.icon}</span>
                   <input

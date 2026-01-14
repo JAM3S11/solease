@@ -1,9 +1,11 @@
 import React from 'react'
 import { Users, LayoutDashboard, ShieldCheck, Users2, TicketCheck, Zap, BarChart3, Bot, Sparkles, BrainCircuit, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 const Aboutpage = () => {
+  const navigate = useNavigate();
+  
   return (
     <div
       id="about"
@@ -102,10 +104,10 @@ const Aboutpage = () => {
             We provide the <span className="text-slate-900 font-semibold">digital backbone</span> for communities and organizations across the region, making professional IT support accessible, secure, and efficient for all.
           </p>
 
-          <motion.a
+          <motion.button
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            href="#"
+            onClick={() => navigate('/signup')}
             className="group relative flex items-center gap-3 bg-slate-950 text-white px-12 py-5 rounded-2xl shadow-2xl shadow-slate-900/30 hover:bg-slate-900 transition-all duration-300 font-bold tracking-tight text-lg overflow-hidden"
           >
             {/* Button "Shine" Effect */}
@@ -113,7 +115,7 @@ const Aboutpage = () => {
 
             <Link to='/signup' className="relative z-10">Join the Movement</Link>
             <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1.5 transition-transform duration-300 text-blue-400" />
-          </motion.a>
+          </motion.button>
         </div>
 
         {/* Stats Section */}

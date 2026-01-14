@@ -10,7 +10,7 @@ export async function createDefaultManager() {
       return;
     }
 
-    const hashedPassword = await bcrypt.hash("Admin@123", 10); // Default password, change later
+    const hashedPassword = await bcrypt.hash("Admin@123", 10);
 
     const manager = new User({
       username: "adminManager",
@@ -25,10 +25,10 @@ export async function createDefaultManager() {
     });
 
     await manager.save();
-    console.log("🎉 Default Manager created successfully");
+    console.log("Default Manager created successfully");
   } catch (error) {
-    console.error("❌ Error creating default Manager:", error);
-    throw new Error(`❌ Error creating default Manager: ${error}`);
+    console.error("Error creating default Manager:", error);
+    throw new Error(`Error creating default Manager: ${error}`);
     
   }
 }

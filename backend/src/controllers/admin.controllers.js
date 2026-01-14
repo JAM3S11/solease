@@ -35,7 +35,7 @@ export const updateUserRoleAndStatus = async (req, res) => {
     // Check if caller is an admin/manager
     const adminUser = await User.findById(req.userId);
     if (!adminUser || adminUser.role !== "Manager") {
-      return res.status(403).json({ success: false, message: "Forbidden - not an admin" });
+      return res.status(403).json({ success: false, message: "Forbidden - you are not an admin." });
     }
 
     // Find the target user by username (they don’t need a token)

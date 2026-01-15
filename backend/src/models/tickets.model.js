@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const ticketSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Owner of the ticket
+        ref: "User", // Creator/owner of the ticket
         required: true
     },
     location: {
@@ -36,11 +36,42 @@ const ticketSchema = new mongoose.Schema({
         enum: ["Open", "In Progress", "Resolved", "Closed"],
         default: "Open",
     },
-    assignedTo: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Officer handling the ticket
-        default: null,
+    isAutomated: {
+        type: Boolean,
+        default: false
     },
-}, { timestamps: true });
+    autoResolvedAt: {
+        type: Date,
+        default: null
+    },
+    automationHistory: [{
+        action: String,
+        timestamp: Date,
+        details: String
+    }],
+    resolutionMethod: {
+        type: String,
+        enum: ["Manual", "Auto"],
+        default: "Manual"
+    },
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        content: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
+}, { timestamps: {
+    createdAt: "createdAt",
+    updatedAt: "updatedAt"
+} });
 
 export const Ticket = mongoose.model("Ticket", ticketSchema);

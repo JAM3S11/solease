@@ -39,8 +39,8 @@ const AdminUserDetailPage = () => {
     toast.success(`${user.username}'s profile updated!`);
   };
 
-  const roles = ["Client", "Service Desk", "IT Support", "Manager"];
-  const statuses = ["Pending", "Active", "Rejected"];
+  const roles = ["Client", "Reviewer", "Manager"];
+  const statuses = ["Active", "Rejected"];
 
   // Motion Variants
   const cardVariants = {

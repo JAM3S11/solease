@@ -40,8 +40,7 @@ const LoginForm = () => {
 
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;
-        case "IT Support": navigate("/itsupport-dashboard"); break;
-        case "Service Desk": navigate("/servicedesk-dashboard"); break;
+        case "Reviewer": navigate("/reviewer-dashboard"); break;
         case "Manager": navigate("/admin-dashboard"); break;
         default: navigate("/");
       }

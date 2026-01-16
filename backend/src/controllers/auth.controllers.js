@@ -108,13 +108,6 @@ export const login = async (req, res) => {
 			return res.status(400).json({ success: false, message: "Invalid credentials" });
 		};
 
-        if (user.status === "Pending") {
-            return res.status(403).json({
-              success: false,
-              message: "Your account is awaiting admin approval"
-            });
-        }
-          
         if (user.status === "Rejected") {
           return res.status(403).json({
             success: false,
@@ -234,6 +227,59 @@ export const resetPassword = async (req, res) => {
 		res.status(400).json({ success: false, message: error.message });
     }
 }
+
+// Manager role only
+export const createReviewer = async (req, res) => {
+    if (req.user.role !== "Manager") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { username, name, email, password } = req.body;
+
+    try {
+        if(!username || !name || !email || !password){
+            throw new Error("All Fields are required for one to proceed");
+        }
+
+        const userAlreadyExists = await User.findOne({ email });
+        if(userAlreadyExists){
+            return res.status(400).json({ success: false, message: "User already exists" });
+        }
+
+        const hashedPassword = await bcryptjs.hash(password, 10);
+        const user = new User({
+            username,
+            name,
+            email,
+            password: hashedPassword,
+            role: "Reviewer",
+            status: "Active"
+        });
+
+        const resetToken = crypto.randomBytes(20).toString("hex");
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000;
+
+        await user.save();
+
+        await sendPasswordResetEmail(
+            user.email,
+            `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "Reviewer created successfully; password reset email sent",
+            user: {
+                ...user._doc,
+                password: undefined,
+            },
+        });
+    } catch (error) {
+        console.log("Error in createReviewer ", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
 
 export const checkAuth = async (req, res) => {
 	try {

@@ -87,28 +87,9 @@ const Sidebar = ({ userRole }) => {
         { name: "Logout", icon: <LogOut />, action: handleLogout },
       ],
     },
-    "Service Desk": {
+    "Reviewer": {
       top: [
-        { name: "Dashboard", icon: <Home />, path: "/servicedesk-dashboard" },
-        { 
-          name: "Tickets", 
-          icon: <Ticket />, 
-          submenu: [
-            {name: "All Tickets", path: "/servicedesk-dashboard/service-tickets" },
-            {name: "New Tickets", path: "/servicedesk-dashboard/service-new-ticket" },
-            // {name: "Ticket Detail", path: "/servicedesk-dashboard/service-tickets/:id" },
-          ]
-        },
-        { name: "Reports", icon: <FileText />, path: "/servicedesk-dashboard/service-reports" },
-      ],
-      bottom: [
-        { name: "Settings", icon: <Settings />, path: "/servicedesk-dashboard/profile" },
-        { name: "Logout", icon: <LogOut />, action: handleLogout }
-      ],
-    },
-    "IT Support": {
-      top: [
-        { name: "Dashboard", icon: <Home />, path: "/itsupport-dashboard" },
+        { name: "Dashboard", icon: <Home />, path: "/reviewer-dashboard" },
         { name: "Tickets", 
           icon: <Ticket />, 
           submenu: [

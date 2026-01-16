@@ -49,7 +49,24 @@ const useAdminStore = create((set) => ({
       console.error("Error deleting user: ", error);
       set({ error: "Failed to delete user", loading: false })
     }
-  } 
+  },
+
+  // create reviewer
+  createReviewer: async (username, name, email, password) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await api.post("/auth/create-reviewer", { username, name, email, password });
+      set((state) => ({
+        users: [...state.users, res.data.user],
+        loading: false
+      }));
+      return res.data;
+    } catch (error) {
+      console.error("Error creating reviewer:", error);
+      set({ error: "Failed to create reviewer", loading: false });
+      throw error;
+    }
+  }
 }));
 
 export default useAdminStore;

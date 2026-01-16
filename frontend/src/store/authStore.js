@@ -129,7 +129,7 @@ export const useAuthenticationStore = create((set) => ({
         } catch (error) {
             set({
                 isLoading: false,
-                error: error.response?.data?.message || "Error reseting password",
+                error: error.response?.data?.message || "Error reseting password"
             });
             throw error;
         }

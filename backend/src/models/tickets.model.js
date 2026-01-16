@@ -36,6 +36,11 @@ const ticketSchema = new mongoose.Schema({
         enum: ["Open", "In Progress", "Resolved", "Closed"],
         default: "Open",
     },
+    visibility: {
+        type: String,
+        enum: ["Role-Based"],
+        default: "Role-Based"
+    },
     isAutomated: {
         type: Boolean,
         default: false
@@ -67,8 +72,64 @@ const ticketSchema = new mongoose.Schema({
         createdAt: {
             type: Date,
             default: Date.now
+        },
+        isHidden: {
+            type: Boolean,
+            default: false
+        },
+        unhideCode: {
+            type: String
+        },
+        approvedForManager: {
+            type: Boolean,
+            default: false
+        },
+        isOffensive: {
+            type: Boolean,
+            default: false
+        },
+        replies: [{
+            user: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            content: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            },
+            updatedAt: {
+                type: Date
+            },
+            aiGenerated: {
+                type: Boolean,
+                default: false
+            },
+            editedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            editedAt: {
+                type: Date
+            }
+        }],
+        commentCount: {
+            type: Number,
+            default: 0
         }
-    }]
+    }],
+    feedbackSubmitted: {
+        type: Boolean,
+        default: false
+    },
+    chatEnabled: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: {
     createdAt: "createdAt",
     updatedAt: "updatedAt"

@@ -23,20 +23,23 @@ import AdminNewTicketPage from "./components/admin/AdminNewTicketPage";
 import AdminReportPage from "./components/admin/AdminReportPage";
 import AdminSettingPage from "./components/admin/AdminSettingPage";
 
-// SERVICE DESK DASHBOARD
-import ServiceDeskDashboard from "./components/service/ServiceDeskDashboard";
-import ServiceDeskAllTicketPage from "./components/service/ServiceDeskAllTicketPage";
-import ServiceDeskNewTicket from "./components/service/ServiceDeskNewTicket";
-import ServiceDeskReportPage from "./components/service/ServiceDeskReportPage";
-import ServiceDeskProfile from "./components/service/ServiceDeskProfile";
+//REVIEWER DASHBOARD
+import ReviewerDashbord from "./components/reviewer/ReviewerDashbord";
 
-// IT SUPPORT DASHBOARD
-import ItSupportDashboard from "./components/it/ItSupportDashboard";
-import ItSupportNewTicket from "./components/it/ItSupportNewTicket";
-import ItSupportAssignedTicket from "./components/it/ItSupportAssignedTicket";
-import ItSupportTicketDetail from "./components/it/ItSupportTicketDetail";
-import ItSupportProfile from "./components/it/ItSupportProfile";
-import ItSupportReport from "./components/it/ItSupportReport";
+// // SERVICE DESK DASHBOARD
+// import ServiceDeskDashboard from "./components/service/ServiceDeskDashboard";
+// import ServiceDeskAllTicketPage from "./components/service/ServiceDeskAllTicketPage";
+// import ServiceDeskNewTicket from "./components/service/ServiceDeskNewTicket";
+// import ServiceDeskReportPage from "./components/service/ServiceDeskReportPage";
+// import ServiceDeskProfile from "./components/service/ServiceDeskProfile";
+
+// // IT SUPPORT DASHBOARD
+// import ItSupportDashboard from "./components/it/ItSupportDashboard";
+// import ItSupportNewTicket from "./components/it/ItSupportNewTicket";
+// import ItSupportAssignedTicket from "./components/it/ItSupportAssignedTicket";
+// import ItSupportTicketDetail from "./components/it/ItSupportTicketDetail";
+// import ItSupportProfile from "./components/it/ItSupportProfile";
+// import ItSupportReport from "./components/it/ItSupportReport";
 
 // CLIENT DASHBOARD
 import ClientDashboard from "./components/client/ClientDashBoard";
@@ -81,10 +84,8 @@ const RedirectAuthenticatedUser = ({ children }) => {
     switch (user.role) {
       case "Manager":
         return <Navigate to="/admin-dashboard" replace />;
-      case "Service Desk":
-        return <Navigate to="/servicedesk-dashboard" replace />;
-      case "IT Support":
-        return <Navigate to="/itsupport-dashboard" replace />;
+      case "Reviewer":
+        return <Navigate to="/reviewer-dashboard" replace />;
       case "Client":
         return <Navigate to="/client-dashboard" replace />;
       default:
@@ -103,8 +104,7 @@ const dashboardRoutes = [
   "/forgot-password",
   "/reset-password",
   "/admin-dashboard",
-  "/servicedesk-dashboard",
-  "/itsupport-dashboard",
+  "/reviewer-dashboard",
   "/client-dashboard",
 ];
 
@@ -300,74 +300,12 @@ const App = () => {
             </ProtectedRoute>
           }
          />
-
-        {/* SERVICE DESK ROUTES */}
-        <Route path="/servicedesk-dashboard" 
-          element={
-            <ProtectedRoute allowedRoles={["Service Desk"]}>
-              <ServiceDeskDashboard />
-            </ProtectedRoute>
-          } />
-        <Route path="/servicedesk-dashboard/service-tickets"
-          element={
-            <ProtectedRoute allowedRoles={["Service Desk"]}>
-              <ServiceDeskAllTicketPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/servicedesk-dashboard/service-new-ticket"
-          element={
-            <ProtectedRoute allowedRoles={["Service Desk"]}>
-              <ServiceDeskNewTicket />
-            </ProtectedRoute>
-          } />
-        <Route path="/servicedesk-dashboard/service-reports" 
-          element={
-            <ProtectedRoute allowedRoles={["Service Desk"]}>
-              <ServiceDeskReportPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/servicedesk-dashboard/profile"
-          element={
-            <ProtectedRoute allowedRoles={["Service Desk"]}>
-              <ServiceDeskProfile />
-            </ProtectedRoute>
-          } />
         
-        {/* IT SUPPORT ROUTES */}
-        <Route path="/itsupport-dashboard" 
+        {/* REVIEWER ROLES */}
+        <Route path="/reviewer-dashboard" 
           element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportDashboard />
-            </ProtectedRoute>
-          } />
-        <Route path="/itsupport-dashboard/new-ticket" 
-          element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportNewTicket />
-            </ProtectedRoute>
-          } />
-        <Route path="/itsupport-dashboard/assigned-ticket"
-          element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportAssignedTicket />
-            </ProtectedRoute>
-          } />
-        <Route path="/itsupport-dashboard/assigned-ticket/:id" 
-          element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportTicketDetail />
-            </ProtectedRoute>
-          } />
-        <Route path="/itsupport-dashboard/report"
-          element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportReport />
-            </ProtectedRoute>
-          } />
-        <Route path="itsupport-dashboard/settings"
-          element={
-            <ProtectedRoute allowedRoles={["IT Support"]}>
-              <ItSupportProfile />
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerDashbord />
             </ProtectedRoute>
           } />
         

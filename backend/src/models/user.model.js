@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Active", "Rejected"],
-        default: "Pending",
+        enum: ["Active", "Rejected"],
+        default: "Active",
     },
     approvedBy: {
         type: mongoose.Schema.Types.ObjectId,

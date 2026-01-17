@@ -1,12 +1,12 @@
 //backend>src>routes>ticket.routes.js
 import express from "express";
 import { protect } from "../middleware/authTicketTok.js";
-import { createTicket, getTickets, updateTicketStatus, submitFeedback, addReply, editReply, deleteReply, hideFeedback, unhideFeedback, viewHiddenFeedback, approveHiddenForManager, managerIntervention, triggerAIResponse } from "../controllers/ticket.controllers.js";
+import { createTicket, getTickets, updateTicketStatus, submitFeedback, addReply, editReply, deleteReply, hideFeedback, unhideFeedback, viewHiddenFeedback, approveHiddenForManager, managerIntervention, triggerAIResponse, uploadMiddleware, uploadAttachment } from "../controllers/ticket.controllers.js";
 
 const router = express.Router();
 
-// Create ticket router
-router.post("/create-ticket", protect, createTicket);
+// Create ticket router (with file upload support)
+router.post("/create-ticket", protect, uploadMiddleware, createTicket);
 
 // Get tickets router
 router.get("/get-ticket", protect, getTickets);
@@ -43,5 +43,8 @@ router.post("/ticket/:ticketId/comment/:commentId/manager-intervention", protect
 
 // AI-triggered reply (for automation)
 router.post("/ticket/:ticketId/comment/:commentId/ai-response", protect, triggerAIResponse);
+
+// Upload attachment to ticket
+router.post("/ticket/:id/attachment", protect, uploadMiddleware, uploadAttachment);
 
 export default router;

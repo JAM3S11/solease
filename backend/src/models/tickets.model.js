@@ -129,7 +129,35 @@ const ticketSchema = new mongoose.Schema({
     chatEnabled: {
         type: Boolean,
         default: false
-    }
+    },
+    attachments: [{
+        filename: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        mimetype: {
+            type: String,
+        },
+        size: {
+            type: Number,
+            required: true,
+        },
+        url: {
+            type: String,
+            default: null
+        },
+        uploadedAt: {
+            type: Date,
+            default: Date.now
+        },
+        uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            default: null
+        }
+    }]
 }, { timestamps: {
     createdAt: "createdAt",
     updatedAt: "updatedAt"

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, Fragment } from "react";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
-import { 
-  Plus, Search, Calendar, Ticket, CheckCircle, 
-  Clock, ChevronDown, Check, MessageCircle, Eye 
+import {
+  Plus, Search, Calendar, Ticket, CheckCircle,
+  Clock, ChevronDown, Check, MessageCircle, Eye, Paperclip
 } from "lucide-react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import useTicketStore from "../../store/ticketStore";
@@ -73,7 +73,7 @@ const ClientAllTicketPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -237,7 +237,7 @@ const ClientAllTicketPage = () => {
                 <table className="w-full table-auto">
                   <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                     <tr>
-                      {["Ticket ID", "Issue Type", "Description", "Urgency", "Status", "Date", "Actions"].map((col) => (
+                      {["Ticket ID", "Issue Type", "Description", "Urgency", "Status", "Date", "Attachments", "Actions"].map((col) => (
                         <th key={col} className="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {col}
                         </th>
@@ -298,11 +298,36 @@ const ClientAllTicketPage = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(ticket.createdAt).toLocaleDateString(undefined, 
-                              { 
-                                day: 'numeric', 
-                                month: 'short' 
+                            {new Date(ticket.createdAt).toLocaleDateString(undefined,
+                              {
+                                day: 'numeric',
+                                month: 'short'
                               }
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                             {ticket.attachments?.length > 0 ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <a
+                                  href={`http://localhost:5001/uploads/${ticket.attachments[0].filename}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                  title={ticket.attachments[0].filename}
+                                >
+                                  <Paperclip size={14} />
+                                  <span className="text-xs font-medium max-w-[100px] truncate">
+                                    {ticket.attachments[0].filename}
+                                  </span>
+                                </a>
+                                {ticket.attachments.length > 1 && (
+                                  <span className="text-xs text-gray-400">
+                                    +{ticket.attachments.length - 1} more
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">—</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

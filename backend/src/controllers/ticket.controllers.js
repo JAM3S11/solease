@@ -1,6 +1,49 @@
 // controllers/ticket.controller.js
 import { Ticket } from "../models/tickets.model.js";
 import { User } from "../models/user.model.js";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(process.cwd(), "uploads");
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024
+    },
+    fileFilter: function (req, file, cb) {
+        const allowedMimes = [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "application/pdf",
+            "text/plain",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ];
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Invalid file type. Only images, PDFs, and documents are allowed."));
+        }
+    }
+});
+
+export const uploadMiddleware = upload.single("attachment");
 
 // Create a ticket
 export const createTicket = async (req, res) => {
@@ -25,6 +68,18 @@ export const createTicket = async (req, res) => {
             urgency,
             visibility: "Role-Based"
         });
+
+        // Handle file attachment if present
+        if (req.file) {
+            ticket.attachments.push({
+                filename: req.file.filename,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+                url: `/uploads/${req.file.filename}`,
+                uploadedBy: req.user._id,
+                uploadedAt: new Date()
+            });
+        }
 
         // Save the ticket
         await ticket.save();
@@ -62,7 +117,7 @@ export const getTickets = async (req, res) => {
 
         const tickets = await Ticket.find(query)
         .populate("user", "username role")
-        .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments")
+        .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments")
         .sort(sort);
 
         res.status(200).json({
@@ -661,6 +716,59 @@ export const triggerAIResponse = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Server error while triggering AI response"
+        });
+    }
+};
+
+// Upload attachment to existing ticket
+export const uploadAttachment = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const ticket = await Ticket.findById(id);
+
+        if(!ticket){
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found",
+            });
+        }
+
+        if(req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to upload to this ticket"
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No file uploaded"
+            });
+        }
+
+        ticket.attachments.push({
+            filename: req.file.filename,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            url: `/uploads/${req.file.filename}`,
+            uploadedBy: req.user._id,
+            uploadedAt: new Date()
+        });
+
+        await ticket.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Attachment uploaded successfully",
+            attachment: ticket.attachments[ticket.attachments.length - 1],
+        });
+    } catch (error) {
+        console.log("Error uploading attachment", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while uploading attachment"
         });
     }
 };

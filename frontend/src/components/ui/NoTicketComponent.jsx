@@ -15,11 +15,6 @@ const NoTicketComponent = ({ noTicket }) => {
         relative flex flex-col items-center justify-center
         p-10 sm:p-14
         max-w-2xl mx-auto text-center
-        rounded-3xl
-        bg-white/80 dark:bg-gray-900/80
-        backdrop-blur-xl
-        border border-gray-200 dark:border-gray-700
-        shadow-[0_20px_40px_rgba(0,0,0,0.08)]
       "
     >
       {/* Icon badge */}

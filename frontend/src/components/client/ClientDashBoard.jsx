@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, ArrowRight, Ticket, Clock, CheckCircle, Search, MessageCircle, Eye } from "lucide-react";
+import { Plus, ArrowRight, Ticket, Clock, CheckCircle, Search, MessageCircle, Eye, Paperclip } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
@@ -157,7 +157,7 @@ const ClientDashboard = () => {
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-gray-50/50 dark:bg-gray-900/50">
                     <tr>
-                      {["Ticket ID", "Subject", "Urgency", "Location", "Status", "Submitted", "Feedback", ""].map((header) => (
+                      {["Ticket ID", "Subject", "Urgency", "Location", "Status", "Submitted", "Attachments", "Feedback", ""].map((header) => (
                         <th key={header} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                           {header}
                         </th>
@@ -204,6 +204,31 @@ const ClientDashboard = () => {
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          {ticket.attachments?.length > 0 ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <a
+                                href={`http://localhost:5001/uploads/${ticket.attachments[0].filename}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                title={ticket.attachments[0].filename}
+                              >
+                                <Paperclip size={14} />
+                                <span className="text-xs font-medium max-w-[100px] truncate">
+                                  {ticket.attachments[0].filename}
+                                </span>
+                              </a>
+                              {ticket.attachments.length > 1 && (
+                                <span className="text-xs text-gray-400">
+                                  +{ticket.attachments.length - 1} more
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-4 text-center">
                           {ticket.comments && ticket.comments.length > 0 ? (

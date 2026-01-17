@@ -29,6 +29,9 @@ app.use(express.json()); // middleware for :req.body
 app.use(express.urlencoded({ extended: true })) // 👈 parses form data
 app.use(cookieParser()); // allows us to parse incoming cookies
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 app.use("/sol/contact", contactRoutes);
 
 app.use("/sol/auth", authRoutes);

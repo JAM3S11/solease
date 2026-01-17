@@ -1,6 +1,6 @@
 // components/TicketDetailModal.jsx
 import React from "react";
-import { X } from "lucide-react";
+import { X, Paperclip, Download, Image as ImageIcon, FileText } from "lucide-react";
 
 const SelectedTicketModal = ({ ticket, onClose }) => {
   if (!ticket) return null;
@@ -49,16 +49,52 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:justify-between sm:gap-8 gap-4">
-          <DetailItem 
-            label="Assigned To" 
-            value={ticket.assignedTo ? ticket.assignedTo.username || ticket.assignedTo.email : "Pending"} 
+          <DetailItem
+            label="Created At"
+            value={new Date(ticket.createdAt).toLocaleString()}
           />
+        </div>
 
-            <DetailItem
-              label="Created At"
-              value={new Date(ticket.createdAt).toLocaleString()}
-            />
+        {/* Attachments Section */}
+        {ticket.attachments && ticket.attachments.length > 0 && (
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 mb-3">
+              <Paperclip size={16} className="text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Attachments ({ticket.attachments.length})
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {ticket.attachments.map((attachment, index) => (
+                <a
+                  key={index}
+                  href={`http://localhost:5001/uploads/${attachment.filename}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={attachment.filename}
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                    {attachment.mimetype?.startsWith("image/") ? (
+                      <ImageIcon size={18} className="text-blue-600 dark:text-blue-400" />
+                    ) : (
+                      <FileText size={18} className="text-blue-600 dark:text-blue-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                      {attachment.filename}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {(attachment.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                  <Download size={16} className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                </a>
+              ))}
+            </div>
           </div>
+        )}
         </div>
 
         {/* Footer */}

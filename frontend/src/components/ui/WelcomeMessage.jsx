@@ -22,9 +22,7 @@ const WelcomeMessage = ({ userName }) => {
 
   return (
     <motion.div
-      className="flex flex-col items-center justify-center p-12 sm:p-16 
-      bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900 
-      rounded-3xl shadow-xl border border-blue-100 dark:border-gray-700 mx-auto max-w-2xl text-center"
+      className="flex flex-col items-center justify-center p-12 sm:p-16 mx-auto max-w-2xl text-center"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

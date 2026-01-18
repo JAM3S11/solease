@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router";
-import { KeyRound, User, X, LogIn, ShieldCheck, ArrowRight } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom"; // Fixed import
+import { KeyRound, User, LogIn, ArrowRight, Mail, Lock } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -12,7 +12,7 @@ const LoginForm = () => {
   });
 
   const navigate = useNavigate();
-  const { error, isLoading, login } = useAuthenticationStore();
+  const { isLoading, login } = useAuthenticationStore();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -25,18 +25,7 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       const user = await login(formData.username, formData.password);
-
-      toast.success(`Welcome back, ${user.name || "User"}!`, { 
-        duration: 2000,
-        style: {
-          background: "rgba(255, 255, 255, 0.9)",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(0, 147, 255, 0.2)",
-          color: "#1e293b",
-          fontWeight: "600"
-        },
-        icon: "✨" 
-      });
+      toast.success(`Welcome back, ${user.name || "User"}!`);
 
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;
@@ -44,148 +33,121 @@ const LoginForm = () => {
         case "Manager": navigate("/admin-dashboard"); break;
         default: navigate("/");
       }
-
-      setFormData({ username: "", password: "" });
     } catch (err) {
-      toast.error(err.message || "Invalid credentials. Try again.");
+      toast.error(err.message || "Invalid credentials.");
     }
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-[#e3e6e9] px-2 overflow-hidden font-sans">
-      {/* Background Decorative Accents */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-500/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-blue-500/5 rounded-full blur-[120px] -z-10" />
+    <section className="relative min-h-screen flex items-center justify-center bg-[#0a0a0a] overflow-hidden px-4 font-sans">
+      
+      {/* --- BACKGROUND DECORATIONS --- */}
+      {/* Large central glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+      
+      {/* Corner accents */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative w-full max-w-5xl bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.06)] rounded-[3rem] overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-100">
-        
-        {/* Left Side: Visual Welcome Panel */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="hidden md:flex flex-col justify-center items-center bg-[#050a18] text-white p-14 relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full" />
-          
-          <div className="relative z-10 flex flex-col items-center">
-             <div className="w-16 h-16 bg-white/5 rounded-[1.5rem] flex items-center justify-center mb-10 border border-white/10 backdrop-blur-xl">
-                <LogIn className="text-blue-400" size={28} />
-             </div>
-             
-             <h1 className="text-5xl font-bold mb-6 tracking-tighter text-center leading-[1.1]">
-               Welcome to<br />
-               <span className="text-[#3b82f6]">SOLEASE.</span>
-             </h1>
-             
-             <p className="text-slate-400 text-center leading-relaxed max-w-xs font-medium opacity-80 mb-14">
-               Access your workspace to streamline IT support and manage operations with ease.
-             </p>
-
-             <div className="flex items-center gap-2 px-6 py-2 bg-white/5 rounded-full border border-white/10 shadow-inner">
-                <ShieldCheck size={14} className="text-green-400" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Secure Access Point</span>
-             </div>
-          </div>
-        </motion.div>
-
-        {/* Right Side: Form section */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex flex-col justify-center p-10 md:p-20 bg-white relative"
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => navigate("/")}
-            className="absolute top-8 right-8 p-2 rounded-full text-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all"
-          >
-            <X size={20} />
-          </button>
-
-          {/* Header */}
-          <div className="mb-5 group">
-            <span className="text-[#3b82f6] text-[12px] font-bold uppercase tracking-[0.08em] mb-3 block antialiased">System Login</span>
-            <h2 className="text-5xl font-extrabold text-slate-900 tracking-tighter mb-3">Sign In</h2>
-            <div className="relative h-[2px] w-24 overflow-hidden rounded-full bg-slate-100">
-              <div className="absolute inset-0 bg-blue-500 animate-pulse"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-[440px] bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-[32px] border border-white/5 shadow-2xl"
+      >
+        {/* Header with Logo Link */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#121212] border border-white/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
+              <img src="/solease.svg" alt="Solease" className="h-6 w-6 group-hover:scale-110 transition-transform" />
             </div>
+            <Link to="/" className="text-white text-xl font-bold tracking-tight hover:text-blue-400 transition-colors">
+              SOLEASE
+            </Link>
+          </div>
+        </div>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
+            <p className="text-gray-400 text-sm">Sign in to continue using SOLEASE</p>
           </div>
 
-          <form className="space-y-2" onSubmit={handleLogin}>
-            {/* Username Field */}
-            <div className="space-y-3">
-              <label className="text-[14px] font-bold text-slate-400 uppercase ml-1 tracking-wide">Username</label>
-              <div className="flex items-center gap-4 px-6 py-5 bg-[#f0f7ff] border border-transparent rounded-[1.5rem] focus-within:border-blue-400/30 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 group">
-                <User size={18} className="text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+          <form className="space-y-6" onSubmit={handleLogin}>
+            
+            {/* Username/Email Field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300 ml-1">Username</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                  <Mail size={18} />
+                </div>
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  className="grow bg-transparent outline-none text-slate-800 font-semibold placeholder:text-slate-300 text-base"
-                  placeholder="e.g. JDoe"
+                  placeholder="e.g. adminManager"
+                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
             </div>
 
             {/* Password Field */}
-            <div className="space-y-3">
-              <label className="text-[14px] font-bold text-slate-400 uppercase ml-1 tracking-wide">Password</label>
-              <div className="flex items-center gap-4 px-6 py-5 bg-[#f0f7ff] border border-transparent rounded-[1.5rem] focus-within:border-blue-400/30 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-500/5 transition-all duration-300 group">
-                <KeyRound size={18} className="text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-300 ml-1">Password</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                  <Lock size={18} />
+                </div>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="grow bg-transparent outline-none text-slate-800 font-semibold placeholder:text-slate-300 text-base"
                   placeholder="••••••••"
+                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
             </div>
 
-            <div className="flex justify-end pr-2">
-              <Link
-                to={"/forgot-password"}
-                className="text-xs font-bold text-[#3b82f6] hover:text-blue-700 transition-colors"
-              >
-                Forgot Password?
+            <div className="flex items-center justify-between px-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-[#1a1a1a] text-blue-500 focus:ring-blue-500/20" />
+                <span className="text-xs text-gray-400">Remember me</span>
+              </label>
+              <Link to="/forgot-password" size={16} className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">
+                Forgot password?
               </Link>
             </div>
 
-            {/* Login Button */}
+            {/* Sign In Button */}
             <motion.button
               type="submit"
               disabled={isLoading}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-5 bg-[#050a18] text-white rounded-[1.5rem] font-black shadow-2xl shadow-[#050a18]/20 hover:bg-blue-600 transition-all duration-300 uppercase tracking-widest text-sm mt-4 flex items-center justify-center gap-3"
+              className="w-full py-4 bg-blue-500 hover:bg-blue-400 text-[#0a0a0a] rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
             >
               {isLoading ? (
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <div className="w-5 h-5 border-2 border-[#0a0a0a]/30 border-t-[#0a0a0a] rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Sign In</span>
-                  <ArrowRight size={18} className="opacity-50" />
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </motion.button>
           </form>
 
-          {/* Create Account Link */}
-          <div className="mt-9 text-center">
-            <p className="text-slate-400 text-sm font-medium">
-              New to the platform?{" "}
-              <Link to="/signup" className="text-[#3b82f6] font-bold ml-1">
-                Create Account
-              </Link>
-            </p>
-          </div>
-        </motion.div>
-      </div>
+        {/* Footer Link */}
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            New to the platform?{" "}
+            <Link to="/signup" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+              Create Account
+            </Link>
+          </p>
+        </div>
+      </motion.div>
     </section>
   );
 };

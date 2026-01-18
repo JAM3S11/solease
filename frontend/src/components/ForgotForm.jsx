@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
-import { Mail, X, ArrowBigRight, Send, CheckCircle2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Send, CheckCircle2 } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
-import { motion, AnimatePresence } from "framer-motion"; // Added for motion
+import { motion, AnimatePresence } from "framer-motion";
 
 const ForgotPassForm = () => {
   const [formData, setFormData] = useState({
@@ -21,41 +21,39 @@ const ForgotPassForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await forgotPassword(formData.email);
-    setIsSending(true);
+    try {
+      await forgotPassword(formData.email);
+      setIsSending(true);
+    } catch (error) {
+      // Handle error if necessary
+    }
   };
 
   return (
-    <section
-      className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(120deg, rgba(173, 194, 230, 0.57) 0%, rgba(133, 175, 242, 0.43) 100%)",
-      }}
-    >
-      {/* Background Decorative Circles */}
-      <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-blue-400/20 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-72 h-72 bg-indigo-400/20 rounded-full blur-3xl -z-10" />
+    <section className="relative min-h-screen flex items-center justify-center bg-[#0a0a0a] overflow-hidden px-4 font-sans">
 
-      <motion.div 
+      {/* --- BACKGROUND DECORATIONS --- */}
+      {/* Large central glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Corner accents */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md bg-white/80 backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-2xl p-8 relative border border-white/50"
+        className="relative z-10 w-full max-w-[440px] bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-[32px] border border-white/5 shadow-2xl"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-blue-600 tracking-tight">
-            Reset Password
-          </h2>
-          <motion.button
-            whileHover={{ rotate: 90, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => navigate("/")}
-            className="text-gray-400 hover:text-red-500 transition-colors p-1"
-          >
-            <X size={24} />
-          </motion.button>
+        {/* Header with Logo Link */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center gap-3">
+            <motion.div className="w-10 h-10 bg-[#121212] border border-white/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
+              <img src="/solease.svg" alt="Solease" className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            </motion.div>
+            <Link to="/" className="text-white text-xl font-bold tracking-tight hover:text-blue-400 transition-colors">
+              SOLEASE
+            </Link>
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -67,39 +65,45 @@ const ForgotPassForm = () => {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              <p className="text-xs md:text-sm -mt-4 mb-6 text-gray-500 font-medium">
-                Enter your email address and we'll send a link to reset your password.
-              </p>
+               <div className="text-center mb-8">
+                 <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
+                 <p className="text-gray-400 text-sm">Enter your email to receive a reset link</p>
+               </div>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="form-control group">
-                  <label className="input input-bordered flex items-center gap-3 rounded-xl bg-white/50 border-gray-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-300">
-                    <Mail size={18} className="text-gray-400 group-focus-within:text-blue-500" />
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 ml-1">Email Address</label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                      <Mail size={18} />
+                    </div>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="grow outline-none text-gray-700 bg-transparent"
-                      placeholder="Email Address"
+                      placeholder="e.g. user@example.com"
+                      className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                       required
                     />
-                  </label>
+                  </div>
                 </div>
 
-                {/* Button */}
+                {/* Send Reset Button */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isLoading}
-                  className="w-full btn btn-primary text-white rounded-xl shadow-lg shadow-blue-500/30 uppercase tracking-widest font-bold border-none transition-all flex items-center justify-center gap-2"
+                  whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 bg-blue-500 hover:bg-blue-400 text-[#0a0a0a] rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
                 >
                   {isLoading ? (
-                    <span className="loading loading-spinner loading-sm"></span>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      Send Reset Link <Send size={18} />
+                      <span className="uppercase tracking-widest text-xs">Send Reset Link</span>
+                      <Send size={18} className="group-hover:translate-x-1 transition-transform opacity-70" />
                     </>
                   )}
                 </motion.button>
@@ -110,35 +114,38 @@ const ForgotPassForm = () => {
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-4"
+              className="text-center py-6"
             >
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100">
-                <CheckCircle2 size={32} className="text-green-500" />
+              <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
+                <CheckCircle2 size={32} className="text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Check your inbox</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                If an account exists for <span className="text-blue-600 font-semibold">{formData.email}</span>, you will receive a password reset link shortly.
+              <h3 className="text-xl font-bold text-white mb-2">Check your inbox</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                If an account exists for <span className="text-blue-500 font-semibold">{formData.email}</span>, you will receive a password reset link shortly.
               </p>
+              
+              <motion.button 
+                onClick={() => setIsSending(false)}
+                className="mt-8 text-xs font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest"
+              >
+                Didn't get the email? Try again
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Footer */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-sm md:text-base text-center text-gray-500 mt-8 flex items-center justify-center gap-2 group"
-        >
-          Back to Login?{" "}
-          <a
-            href="/login"
-            className="text-blue-600 font-bold hover:text-blue-700 transition-colors flex items-center gap-1"
-          >
-            Go back <ArrowBigRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </a>
-        </motion.p>
+        {/* Footer Link */}
+        <div className="mt-10 text-center">
+          <p className="text-gray-500 text-sm">
+            Back to Login?{" "}
+            <Link to="/login" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+              Sign In
+            </Link>
+          </p>
+        </div>
       </motion.div>
+
+
     </section>
   );
 };

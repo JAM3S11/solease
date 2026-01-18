@@ -140,7 +140,7 @@ const ClientDashboard = () => {
             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 overflow-hidden">
               {/* Table Header with Search */}
               <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white">Recent Tickets</h2>
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white tracking-tight">Recent Tickets</h2>
                 <div className="relative w-full sm:w-64">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input 
@@ -158,7 +158,7 @@ const ClientDashboard = () => {
                   <thead className="bg-gray-50/50 dark:bg-gray-900/50">
                     <tr>
                       {["Ticket ID", "Subject", "Urgency", "Location", "Status", "Submitted", "Attachments", "Feedback", ""].map((header) => (
-                        <th key={header} className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                        <th key={header} className="px-4 py-3 text-[10px] font-medium text-gray-400 uppercase tracking-widest">
                           {header}
                         </th>
                       ))}
@@ -176,7 +176,7 @@ const ClientDashboard = () => {
                             #{ticket._id.slice(-6).toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-4 py-4 font-medium text-gray-700 dark:text-gray-200 max-w-[200px] truncate">
+                        <td className="px-4 py-4 font-normal text-gray-700 dark:text-gray-400 max-w-[200px] truncate text-sm">
                           {ticket.subject}
                         </td>
                         <td className="px-4 py-4">
@@ -189,7 +189,7 @@ const ClientDashboard = () => {
                             {ticket.urgency}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
                           {ticket.location}
                         </td>
                         <td className="px-4 py-4">
@@ -199,7 +199,7 @@ const ClientDashboard = () => {
                               ticket.status === "In Progress" ? "bg-yellow-500" :
                               ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
                             }`} />
-                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{ticket.status}</span>
+                            <span className="text-sm font-normal text-gray-700 dark:text-gray-300">{ticket.status}</span>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">

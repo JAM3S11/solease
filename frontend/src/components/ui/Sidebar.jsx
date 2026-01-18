@@ -125,33 +125,36 @@ const Sidebar = ({ userRole }) => {
   };
 
   const renderItem = (item) => {
-    const itemClasses =
-      "flex items-center gap-3 p-3 rounded-lg hover:bg-slate-700 transition-colors duration-200 w-full text-left";
-    const activeClasses = "bg-blue-600 text-white shadow-lg";
+    const baseItemClasses =
+      "flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-700/80 hover:shadow-md transition-all duration-200 w-full text-left font-medium";
+    const activeClasses = "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg";
+    const submenuItemClasses =
+      "block px-3 py-2 ml-6 text-sm rounded-lg hover:bg-slate-600/50 transition-colors font-normal";
+    const submenuActiveClasses = "text-blue-300 font-semibold";
 
     if (item.submenu) {
       return (
-        <div key={item.name}>
+        <div key={item.name} className="mb-1">
           <button
             onClick={() => toggleMenu(item.name)}
-            className={`${itemClasses} justify-between`}
+            className={`${baseItemClasses} justify-between`}
           >
             <div className="flex items-center gap-3">
-              {React.cloneElement(item.icon, { size: 20 })}
-              {!isCollapsed && <span className="font-medium">{item.name}</span>}
+              {React.cloneElement(item.icon, { size: 20, className: "text-slate-300" })}
+              {!isCollapsed && <span className="text-slate-200">{item.name}</span>}
             </div>
             {!isCollapsed &&
-              (openMenus[item.name] ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+              (openMenus[item.name] ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />)}
           </button>
           {openMenus[item.name] && !isCollapsed && (
-            <div className="flex flex-col ml-8 mt-2 space-y-1 pl-3 border-l border-slate-700">
+            <div className="flex flex-col mt-2 space-y-1 border-l-2 border-slate-600 pl-2">
               {item.submenu.map((sub) => (
                 <NavLink
                   key={sub.name}
                   to={sub.path}
                   className={({ isActive }) =>
-                    `block p-2 rounded-md text-sm hover:bg-slate-700/50 transition-colors ${
-                      isActive ? "text-blue-400 font-semibold" : "text-gray-400"
+                    `${submenuItemClasses} ${
+                      isActive ? submenuActiveClasses : "text-slate-400 hover:text-slate-200"
                     }`
                   }
                 >
@@ -169,10 +172,10 @@ const Sidebar = ({ userRole }) => {
         <button
           key={item.name}
           onClick={item.action}
-          className={`${itemClasses} text-red-400 hover:bg-red-900/50 hover:text-red-300`}
+          className={`${baseItemClasses} text-red-400 hover:bg-red-900/30 hover:text-red-300 hover:shadow-md`}
         >
-          {React.cloneElement(item.icon, { size: 20 })}
-          {!isCollapsed && <span className="font-medium">{item.name}</span>}
+          {React.cloneElement(item.icon, { size: 20, className: "text-red-400" })}
+          {!isCollapsed && <span>{item.name}</span>}
         </button>
       );
     }
@@ -182,45 +185,45 @@ const Sidebar = ({ userRole }) => {
         key={item.name}
         to={item.path}
         className={({ isActive }) =>
-          `${itemClasses} ${isActive ? activeClasses : ""}`
+          `${baseItemClasses} ${isActive ? activeClasses : "text-slate-200"}`
         }
       >
-        {React.cloneElement(item.icon, { size: 20 })}
-        {!isCollapsed && <span className="font-medium">{item.name}</span>}
+        {React.cloneElement(item.icon, { size: 20, className: "text-slate-300" })}
+        {!isCollapsed && <span>{item.name}</span>}
       </NavLink>
     );
   };
 
   return (
     <aside
-      className={`bg-slate-900 text-gray-200 min-h-screen p-4 flex flex-col justify-between transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-20" : "w-64"
+      className={`bg-gradient-to-b from-slate-900 to-slate-800 text-gray-200 min-h-screen p-5 flex flex-col justify-between transition-all duration-300 ease-in-out shadow-2xl border-r border-slate-700 ${
+        isCollapsed ? "w-20" : "w-72"
       }`}
     >
       {/* Top section */}
       <div>
-        <div className="flex items-center justify-between mb-6 h-10">
+        <div className="flex items-center justify-between mb-8">
           {!isCollapsed && (
-            <div className="flex items-center gap-2">
-              <img src="/solease.svg" alt="Solease" className="h-8 w-8" />
-              <h2 className="text-2xl font-bold tracking-wide text-white">SOLEASE</h2>
+            <div className="flex items-center gap-3">
+              <img src="/solease.svg" alt="Solease" className="h-10 w-10 drop-shadow-lg" />
+              <h2 className="text-2xl font-bold tracking-wide text-white drop-shadow-sm">SOLEASE</h2>
             </div>
           )}
           <button
-            className="p-2 rounded-lg hover:bg-slate-700 transition-colors"
+            className="p-2 rounded-xl hover:bg-slate-700/80 hover:shadow-lg transition-all duration-200"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            <Menu size={20} />
+            <Menu size={22} className="text-slate-300" />
           </button>
         </div>
 
-        <nav className="flex flex-col gap-2">
+        <nav className="flex flex-col gap-1">
           {menuItems[userRole]?.top.map((item) => renderItem(item))}
         </nav>
       </div>
 
       {/* Bottom section */}
-      <div className="flex flex-col gap-2 border-t border-slate-700 pt-4">
+      <div className="flex flex-col gap-1 border-t border-slate-600 pt-6">
         {menuItems[userRole]?.bottom.map((item) => renderItem(item))}
       </div>
     </aside>

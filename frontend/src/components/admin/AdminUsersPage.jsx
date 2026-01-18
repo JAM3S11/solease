@@ -79,7 +79,7 @@ const AdminUsersPage = () => {
               <thead className="bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                   {["Name", "Role", "Status", "Actions"].map((header) => (
-                    <th key={header} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <th key={header} className="px-6 py-4 text-[11px] font-medium uppercase tracking-wide text-gray-400">
                       {header}
                     </th>
                   ))}
@@ -109,7 +109,7 @@ const AdminUsersPage = () => {
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider
                           ${user.role === "Manager" ? "bg-blue-100 text-blue-600" :
                             user.role === "Service Desk" ? "bg-emerald-100 text-emerald-600" :
                             user.role === "IT Support" ? "bg-amber-100 text-amber-600" :
@@ -120,7 +120,7 @@ const AdminUsersPage = () => {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap font-bold">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold 
                           ${user.status === "Active" ? "bg-green-100/50 text-green-700" :
                             user.status === "Pending" ? "bg-orange-100/50 text-orange-700" :

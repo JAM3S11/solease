@@ -1106,13 +1106,13 @@ The MIT License allows for free use, modification, and distribution of the softw
 
 ## 📝 Changelog
 
-### [Unreleased]
+### [Unreleased] - Under maintainance and development
 - AI-powered ticket automation (in development)
 - Real-time notifications via SMS
 - Enhanced analytics dashboards
 - AI chatbot for support triaging
 
-### [v1.0.0] - 2024-01-15
+### [v1.0.0] - 2025-10-24
 - Initial release of SOLEASE platform
 - Role-based access control (Manager, Client)
 - Full ticket lifecycle management

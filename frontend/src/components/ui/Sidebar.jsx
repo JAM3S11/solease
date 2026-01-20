@@ -5,13 +5,11 @@ import {
   Users,
   Ticket,
   Settings,
-  FileText,
-  ChevronDown,
-  ChevronUp,
   LogOut,
   Menu,
   LucideChartSpline,
-  icons
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
@@ -23,24 +21,19 @@ const Sidebar = ({ userRole }) => {
   const { logout } = useAuthenticationStore();
   const navigate = useNavigate();
 
-  // Collapse automatically on small screens
   useEffect(() => {
     const handleResize = () => {
-      setIsCollapsed(window.innerWidth < 768);
+      if (window.innerWidth < 768) setIsCollapsed(true);
     };
-
-    handleResize();
     window.addEventListener("resize", handleResize);
+    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("We shall miss you..", { 
-        duration: 2000,
-        icon: "😭" 
-      });
+      toast.success("We shall miss you..", { duration: 2000, icon: "😭" });
       navigate("/login");
     } catch (err) {
       console.error("Logout failed", err);
@@ -48,73 +41,55 @@ const Sidebar = ({ userRole }) => {
   };
 
   const toggleMenu = (menuName) => {
+    if (isCollapsed) return;
     setOpenMenus((prev) => ({
       ...prev,
       [menuName]: !prev[menuName],
     }));
   };
 
-  // Separate top and bottom items
   const menuItems = {
     Manager: {
       top: [
         { name: "Dashboard", icon: <Home />, path: "/admin-dashboard" },
-        {
-          name: "Users",
-          icon: <Users />,
-          submenu: [
-            { name: "All Users", path: "/admin-dashboard/users" },
-            // { name: "User Detail", path: "/admin-dashboard/users/:username" },
-          ],
-        },
-        {
-          name: "Tickets",
-          icon: <Ticket />,
+        { name: "Users", icon: <Users />, submenu: [{ name: "All Users", path: "/admin-dashboard/users" }] },
+        { 
+          name: "Tickets", 
+          icon: <Ticket />, 
           submenu: [
             { name: "All Tickets", path: "/admin-dashboard/admin-tickets" },
-            { name: "Pending Tickets", path: "/admin-dashboard/admin-pending-tickets" },
+            { name: "Pending", path: "/admin-dashboard/admin-pending-tickets" },
             { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
-          ],
+          ] 
         },
-        {
-          name: "Reports",
-          icon: <LucideChartSpline />,
-          path: "/admin-dashboard/admin-reports"
-        },
+        { name: "Reports", icon: <LucideChartSpline />, path: "/admin-dashboard/admin-reports" },
       ],
       bottom: [
         { name: "Settings", icon: <Settings />, path: "/admin-dashboard/admin-settings" },
         { name: "Logout", icon: <LogOut />, action: handleLogout },
       ],
     },
-    "Reviewer": {
-      top: [
-        { name: "Dashboard", icon: <Home />, path: "/reviewer-dashboard" },
-        { name: "Tickets", 
-          icon: <Ticket />, 
-          submenu: [
-            {name: "New Ticket", path: "/itsupport-dashboard/new-ticket"},
-            {name: "Assigned Tickets", path: "/itsupport-dashboard/assigned-ticket"},
-          ] 
-        },
-        { name: "Report", icon: <LucideChartSpline />, path: "/itsupport-dashboard/report" },
-      ],
-      bottom: [
-        { name: "Settings", icon: <Settings />, path: "/itsupport-dashboard/settings" },
-        { name: "Logout", icon: <LogOut />, action: handleLogout },
-      ],
+    Reviewer: {
+        top: [
+          { name: "Dashboard", icon: <Home />, path: "/reviewer-dashboard" },
+          { name: "Tickets", icon: <Ticket />, submenu: [
+              {name: "New Ticket", path: "/itsupport-dashboard/new-ticket"},
+              {name: "Assigned", path: "/itsupport-dashboard/assigned-ticket"},
+          ]},
+          { name: "Report", icon: <LucideChartSpline />, path: "/itsupport-dashboard/report" },
+        ],
+        bottom: [
+          { name: "Settings", icon: <Settings />, path: "/itsupport-dashboard/settings" },
+          { name: "Logout", icon: <LogOut />, action: handleLogout },
+        ],
     },
     Client: {
       top: [
         { name: "Dashboard", icon: <Home />, path: "/client-dashboard" },
-        { 
-          name: "My Tickets", 
-          icon: <Ticket />, 
-          submenu: [
+        { name: "My Tickets", icon: <Ticket />, submenu: [
             { name: "All Tickets", path: "/client-dashboard/all-tickets" },
             { name: "New Ticket", path: "/client-dashboard/new-ticket" },
-          ] 
-        },
+        ]},
         { name: "Report", icon: <LucideChartSpline />, path: "/client-dashboard/report" },
       ],
       bottom: [
@@ -125,37 +100,49 @@ const Sidebar = ({ userRole }) => {
   };
 
   const renderItem = (item) => {
-    const baseItemClasses =
-      "flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-700/80 hover:shadow-md transition-all duration-200 w-full text-left font-medium";
-    const activeClasses = "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg";
-    const submenuItemClasses =
-      "block px-3 py-2 ml-6 text-sm rounded-lg hover:bg-slate-600/50 transition-colors font-normal";
-    const submenuActiveClasses = "text-blue-300 font-semibold";
+    const isActiveLink = (path) => window.location.pathname === path;
+    
+    // UI Logic
+    const iconSize = isCollapsed ? 24 : 22;
+    const baseItemClasses = `group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full font-medium ${
+      isCollapsed ? "justify-center px-0" : "hover:bg-slate-800/50"
+    }`;
+    const activeClasses = "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/20";
+    const nonActiveClasses = "text-slate-400 hover:text-white";
+
+    // This is a tooltip Component for the Collapsed States
+    const Tooltip = ({ text }) => (
+      isCollapsed && (
+        <div className="absolute left-16 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bg-slate-900 text-cyan-400 text-xs py-2 px-3 rounded-lg border border-slate-700 whitespace-nowrap z-50 shadow-xl pointer-events-none">
+          {text}
+        </div>
+      )
+    );
 
     if (item.submenu) {
+      const isAnySubActive = item.submenu.some(sub => isActiveLink(sub.path));
       return (
         <div key={item.name} className="mb-1">
           <button
             onClick={() => toggleMenu(item.name)}
-            className={`${baseItemClasses} justify-between`}
+            className={`${baseItemClasses} ${!isCollapsed && isAnySubActive ? "text-cyan-400" : nonActiveClasses}`}
           >
             <div className="flex items-center gap-3">
-              {React.cloneElement(item.icon, { size: 20, className: "text-slate-300" })}
-              {!isCollapsed && <span className="text-slate-200">{item.name}</span>}
+              {React.cloneElement(item.icon, { size: iconSize })}
+              {!isCollapsed && <span>{item.name}</span>}
             </div>
-            {!isCollapsed &&
-              (openMenus[item.name] ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />)}
+            {!isCollapsed && (openMenus[item.name] ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+            <Tooltip text={item.name} />
           </button>
+          
           {openMenus[item.name] && !isCollapsed && (
-            <div className="flex flex-col mt-2 space-y-1 border-l-2 border-slate-600 pl-2">
+            <div className="flex flex-col mt-1 ml-6 border-l border-slate-700 pl-4 space-y-1">
               {item.submenu.map((sub) => (
                 <NavLink
                   key={sub.name}
                   to={sub.path}
                   className={({ isActive }) =>
-                    `${submenuItemClasses} ${
-                      isActive ? submenuActiveClasses : "text-slate-400 hover:text-slate-200"
-                    }`
+                    `text-sm py-2 transition-colors ${isActive ? "text-cyan-400 font-bold" : "text-slate-500 hover:text-slate-300"}`
                   }
                 >
                   {sub.name}
@@ -169,13 +156,12 @@ const Sidebar = ({ userRole }) => {
 
     if (item.action) {
       return (
-        <button
-          key={item.name}
-          onClick={item.action}
-          className={`${baseItemClasses} text-red-400 hover:bg-red-900/30 hover:text-red-300 hover:shadow-md`}
-        >
-          {React.cloneElement(item.icon, { size: 20, className: "text-red-400" })}
+        <button key={item.name} 
+          onClick={item.action} 
+          className={`${baseItemClasses} text-red-400 hover:bg-red-500/10`}>
+          {React.cloneElement(item.icon, { size: iconSize })}
           {!isCollapsed && <span>{item.name}</span>}
+          <Tooltip text={item.name} />
         </button>
       );
     }
@@ -184,46 +170,52 @@ const Sidebar = ({ userRole }) => {
       <NavLink
         key={item.name}
         to={item.path}
-        className={({ isActive }) =>
-          `${baseItemClasses} ${isActive ? activeClasses : "text-slate-200"}`
-        }
+        className={
+          ({ isActive }) => 
+            `${baseItemClasses} ${isActive 
+              ? activeClasses 
+              : nonActiveClasses}`}
       >
-        {React.cloneElement(item.icon, { size: 20, className: "text-slate-300" })}
+        {React.cloneElement(item.icon, { size: iconSize })}
         {!isCollapsed && <span>{item.name}</span>}
+        <Tooltip text={item.name} />
       </NavLink>
     );
   };
 
   return (
     <aside
-      className={`bg-gradient-to-b from-slate-900 to-slate-800 text-gray-200 min-h-screen p-5 flex flex-col justify-between transition-all duration-300 ease-in-out shadow-2xl border-r border-slate-700 ${
-        isCollapsed ? "w-20" : "w-72"
+      className={`bg-[#020617] text-gray-200 min-h-screen p-4 flex flex-col justify-between transition-all duration-300 ease-in-out border-r border-white/5 ${
+        isCollapsed ? "w-20" : "w-64"
       }`}
     >
-      {/* Top section */}
       <div>
-        <div className="flex items-center justify-between mb-8">
+        {/* Header Area */}
+        <div className={`flex items-center mb-10 mt-2 ${isCollapsed ? "justify-center" : "justify-between px-2"}`}>
           {!isCollapsed && (
             <div className="flex items-center gap-3">
-              <img src="/solease.svg" alt="Solease" className="h-10 w-10 drop-shadow-lg" />
-              <h2 className="text-2xl font-bold tracking-wide text-white drop-shadow-sm">SOLEASE</h2>
+              <div className="p-1.5 bg-slate-900 rounded-lg border border-slate-800">
+                <img src="/solease.svg" alt="Logo" className="h-6 w-6" />
+              </div>
+              <h2 className="text-lg font-black tracking-tighter text-white">SOLEASE</h2>
             </div>
           )}
           <button
-            className="p-2 rounded-xl hover:bg-slate-700/80 hover:shadow-lg transition-all duration-200"
+            className="p-2 rounded-xl hover:bg-slate-800 transition-colors"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            <Menu size={22} className="text-slate-300" />
+            <Menu size={20} className="text-slate-400" />
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1">
+        {/* Navigation */}
+        <nav className="flex flex-col gap-2">
           {menuItems[userRole]?.top.map((item) => renderItem(item))}
         </nav>
       </div>
 
       {/* Bottom section */}
-      <div className="flex flex-col gap-1 border-t border-slate-600 pt-6">
+      <div className="flex flex-col gap-2 pt-6 border-t border-white/5">
         {menuItems[userRole]?.bottom.map((item) => renderItem(item))}
       </div>
     </aside>

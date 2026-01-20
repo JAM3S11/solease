@@ -48,7 +48,7 @@ const SignUpForm = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-[#0a0a0a] overflow-hidden px-4 font-sans">
+    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6">
 
       {/* --- BACKGROUND DECORATIONS --- */}
       {/* Large central glow */}
@@ -57,35 +57,35 @@ const SignUpForm = () => {
       {/* Corner accents */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
+      {/* Header with Logo Link - Outside Form */}
+      <div className="flex items-center justify-center mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-100 border border-gray-300/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
+            <img src="/solease.svg" alt="Solease" className="h-8 w-8 group-hover:scale-110 transition-transform" />
+          </div>
+          <Link to="/" className="text-gray-900 text-2xl font-bold tracking-tight hover:text-blue-400 transition-colors">
+            SOLEASE
+          </Link>
+        </div>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[440px] bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-[32px] border border-white/5 shadow-2xl"
+        className="relative z-10 w-full max-w-[440px] bg-white/40 backdrop-blur-xl px-8 md:px-10 py-7 rounded-[32px] border border-gray-300/5 shadow-2xl"
       >
 
-        {/* Header with Logo Link */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#121212] border border-white/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
-              <img src="/solease.svg" alt="Solease" className="h-6 w-6 group-hover:scale-110 transition-transform" />
-            </div>
-            <Link to="/" className="text-white text-xl font-bold tracking-tight hover:text-blue-400 transition-colors">
-              SOLEASE
-            </Link>
-          </div>
-        </div>
-
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
-          <p className="text-gray-400 text-sm">Join the network and get started</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+          <p className="text-gray-600 text-sm">Join the network and get started</p>
         </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Username Field */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Username</label>
+              <label className="text-sm font-medium text-gray-600 ml-1">Username</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
                   <User size={18} />
                 </div>
                 <input
@@ -94,7 +94,7 @@ const SignUpForm = () => {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="e.g. JDoe"
-                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
@@ -102,9 +102,9 @@ const SignUpForm = () => {
 
             {/* Name Field */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Full Name</label>
+              <label className="text-sm font-medium text-gray-600 ml-1">Full Name</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
                   <CircleUser size={18} />
                 </div>
                 <input
@@ -113,7 +113,7 @@ const SignUpForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g. John Doe"
-                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
@@ -121,9 +121,9 @@ const SignUpForm = () => {
 
             {/* Email Field */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Email Address</label>
+              <label className="text-sm font-medium text-gray-600 ml-1">Email Address</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
                   <Mail size={18} />
                 </div>
                 <input
@@ -132,7 +132,7 @@ const SignUpForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="jdoe@company.com"
-                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
@@ -140,9 +140,9 @@ const SignUpForm = () => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300 ml-1">Password</label>
+              <label className="text-sm font-medium text-gray-600 ml-1">Password</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
                   <KeyRound size={18} />
                 </div>
                 <input
@@ -151,7 +151,7 @@ const SignUpForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                   required
                 />
               </div>
@@ -188,7 +188,7 @@ const SignUpForm = () => {
 
         {/* Footer Link */}
         <div className="mt-8 text-center">
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-600 text-sm">
             Already have an account?{" "}
             <Link to="/login" className="text-blue-500 font-semibold hover:underline underline-offset-4">
               Sign In

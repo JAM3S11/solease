@@ -53,12 +53,12 @@ const ContactPage = () => {
   };
 
   return (
-    <div id="contact" className="min-h-screen bg-[#fafbfc] flex flex-col items-center py-24 px-6 overflow-hidden selection:bg-blue-600 selection:text-white">
+    <div id="contact" className="min-h-screen bg-[#fafbfc] flex flex-col items-center py-24 px-6 overflow-hidden selection:bg-blue-600 selection:text-white font-sans">
       {/* Heading Section */}
       <motion.div {...fadeInUp} className="max-w-3xl text-center mb-16">
         <span className="text-blue-600 text-xs font-black uppercase tracking-[0.4em] mb-4 block">Connect with us</span>
-        <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">Get in Touch</h1>
-        <p className="text-slate-500 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+        <h1 className="text-5xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">Get in Touch</h1>
+        <p className="text-gray-600 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
           Have questions or need support? Our team is here to help you bridge the gap between complexity and resolution.
         </p>
       </motion.div>
@@ -70,53 +70,53 @@ const ContactPage = () => {
         <motion.div 
           {...fadeInUp}
           transition={{ delay: 0.2 }}
-          className="bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] p-10 md:p-12 rounded-[2.5rem] border border-slate-100 relative group"
+          className="bg-white/40 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] p-10 md:p-12 rounded-[2.5rem] border border-gray-300/5 relative group"
         >
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
              <Send size={120} className="-rotate-12" />
           </div>
 
-          <h2 className="text-3xl font-black text-slate-900 mb-8 flex items-center gap-3 tracking-tight">
+          <h2 className="text-3xl font-black text-gray-900 mb-8 flex items-center gap-3 tracking-tight">
             Send us a Message
           </h2>
           
           <form className="space-y-6 relative z-10" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-slate-700"
-                />
-              </div>
+               <div className="space-y-2">
+                 <label className="text-sm font-bold uppercase tracking-wide text-gray-600 ml-1">Full Name</label>
+                 <input
+                   type="text"
+                   name="fullName"
+                   value={formData.fullName}
+                   onChange={handleChange}
+                   placeholder="John Doe"
+                   className="w-full px-6 py-4 rounded-2xl bg-gray-100 border border-gray-300/5 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900"
+                 />
+               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="support@solease.com"
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-slate-700"
-                />
-              </div>
+               <div className="space-y-2">
+                 <label className="text-sm font-bold uppercase tracking-wide text-gray-600 ml-1">Email Address</label>
+                 <input
+                   type="email"
+                   name="email"
+                   value={formData.email}
+                   onChange={handleChange}
+                   placeholder="support@solease.com"
+                   className="w-full px-6 py-4 rounded-2xl bg-gray-100 border border-gray-300/5 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900"
+                 />
+               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-black uppercase tracking-widest text-slate-400 ml-1">Your Message</label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                placeholder="How can we help your community today?"
-                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-slate-700 h-44 resize-none"
-              ></textarea>
-            </div>
+             <div className="space-y-2">
+               <label className="text-sm font-bold uppercase tracking-wide text-gray-600 ml-1">Your Message</label>
+               <textarea
+                 name="message"
+                 value={formData.message}
+                 onChange={handleChange}
+                 placeholder="How can we help your community today?"
+                 className="w-full px-6 py-4 rounded-2xl bg-gray-100 border border-gray-300/5 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900 h-44 resize-none"
+               ></textarea>
+             </div>
 
             <motion.button 
               whileHover={{ scale: 1.02, y: -2 }}
@@ -136,12 +136,12 @@ const ContactPage = () => {
           <motion.div 
             {...fadeInUp}
             transition={{ delay: 0.3 }}
-            className="bg-white shadow-xl shadow-slate-200/50 p-10 rounded-[2.5rem] border border-slate-100 hover:border-blue-200 transition-colors duration-500"
+            className="bg-white/40 shadow-xl shadow-slate-200/50 p-10 rounded-[2.5rem] border border-gray-300/5 hover:border-blue-200 transition-colors duration-500"
           >
-            <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3 tracking-tight">
+            <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3 tracking-tight">
               <ShieldCheck className="text-blue-600" /> Information
             </h2>
-            <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+            <p className="text-gray-600 font-medium mb-8 leading-relaxed">
               Reach out via our official channels or visit us for a personalized consultation.
             </p>
             <ul className="space-y-6">
@@ -155,8 +155,8 @@ const ContactPage = () => {
                     <item.icon size={24} />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">{item.label}</span>
-                    <span className="text-slate-900 font-bold text-lg">{item.val}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-1">{item.label}</span>
+                    <span className="text-gray-900 font-bold text-lg">{item.val}</span>
                   </div>
                 </li>
               ))}

@@ -87,7 +87,7 @@ const ServicePage = () => {
         {/* Search Bar - Enhanced Focus States */}
         <div className="relative max-w-xl mx-auto mb-20 group">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+            <Search className="h-5 w-5 text-gray-600 group-focus-within:text-blue-600 transition-colors" />
           </div>
           <input
             type="text"
@@ -131,8 +131,8 @@ const ServicePage = () => {
                 </div>
 
                 <div className="p-10 flex flex-col flex-grow">
-                   <h3 className="text-2xl font-bold text-gray-900 mb-4 tracking-tight group-hover:text-blue-600 transition-colors">{service.title}</h3>
-                   <p className="text-gray-600 text-base leading-relaxed mb-8 font-medium">
+                   <h3 className="text-xl font-bold text-gray-600 mb-5 tracking-tight group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                   <p className="text-gray-400 text-sm leading-relaxed mb-8 font-normal">
                     {service.description}
                   </p>
                   

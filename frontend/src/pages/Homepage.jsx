@@ -7,7 +7,6 @@ const Homepage = () => {
       id="home"
       className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] font-sans"
     >
-      {/* Optimized Background using Tailwind v4 Arbitrary Values */}
       <div 
         className="absolute inset-0 z-0 opacity-60"
         style={{
@@ -18,7 +17,6 @@ const Homepage = () => {
       {/* Content Layer */}
       <div className="relative z-10 max-w-5xl w-full px-6 sm:px-10 py-16 sm:py-20 flex flex-col items-center text-center">
         
-        {/* Modernized Tagline */}
         <div className="mb-8 flex flex-col items-center group">
           <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-blue-200 text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] mb-6 border border-white/20 shadow-2xl transition-all duration-500 hover:bg-white/20">
             <Sparkles className="w-3 h-3" />
@@ -41,7 +39,7 @@ const Homepage = () => {
           </p>
         </div>
 
-        {/* Updated Buttons with Glassmorphism */}
+        {/* Glassmorphism */}
         <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto justify-center">
           <a href="#about" className="w-full sm:w-auto group">
             <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-1 font-bold text-base flex items-center justify-center gap-2">
@@ -59,7 +57,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      {/* Animated Decorative Blobs (Enhanced for v4) */}
+      {/* Animated Decorative Blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,transparent_0%,rgba(15,23,42,0.8)_100%)] pointer-events-none"></div>

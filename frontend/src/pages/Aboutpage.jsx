@@ -77,20 +77,20 @@ const Aboutpage = () => {
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-16">
             <div className="flex-1 text-center md:text-left">
                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100/5 backdrop-blur-2xl rounded-2xl mb-8 border border-gray-300/10">
-                <Bot size={20} className="text-blue-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-blue-100">
+                <Bot size={20} className="text-blue-700" />
+                <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
                   Intelligent Infrastructure
                 </span>
               </div>
                <h4 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-8 tracking-tight text-gray-900">
-                 Smarter Support <span className="text-blue-400 font-serif italic">for Everyone</span>
+                 Smarter Support <span className="text-blue-500 font-serif italic">for Everyone</span>
                </h4>
                <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-10 max-w-2xl">
                 Whether you're a startup or a global network, SOLEASE uses **AI-driven logic** to route requests instantly, ensuring no user is left waiting.
               </p>
               <div className="flex flex-wrap justify-center md:justify-start gap-4">
                 {["Human-Centric AI", "Predictive Support", "Instant Routing"].map((tag) => (
-                   <span key={tag} className="px-6 py-2.5 bg-gray-100/5 rounded-xl text-xs font-bold border border-gray-300/10 hover:border-blue-500/50 hover:bg-gray-100/10 transition-all duration-300">
+                   <span key={tag} className="px-6 py-2.5 bg-gray-300/25 rounded-xl text-xs font-bold border border-gray-300/10 hover:border-blue-500/50 hover:bg-gray-100/10 transition-all duration-300">
                     {tag}
                   </span>
                 ))}
@@ -173,7 +173,7 @@ const StatCard = ({ icon, value, label }) => (
     <div className="mb-6 text-blue-500 p-4 bg-blue-500/10 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
       {icon}
     </div>
-    <span className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+    <span className="text-2xl md:text-3xl font-bold text-slate-700 tracking-tight">
       {value}
     </span>
     <span className="text-gray-400 mt-4 text-xs sm:text-sm font-bold uppercase tracking-[0.15em]">

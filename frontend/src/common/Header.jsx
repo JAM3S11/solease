@@ -23,27 +23,25 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        isBlurred 
-          ? "backdrop-blur-xl bg-white/70 border-b border-white/20 py-3 shadow-sm" 
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-sans ${
+        isBlurred
+          ? "backdrop-blur-2xl bg-white/40 border-b border-white/10 py-3 shadow-sm"
           : "bg-transparent py-5"
       }`}
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10">
         {/* Logo */}
-        <div className="text-2xl md:text-3xl font-black tracking-tighter text-blue-600 drop-shadow-sm">
+        <div className="text-3xl md:text-4xl font-black tracking-tighter text-blue-600 drop-shadow-sm">
           SOLEASE
         </div>
 
         {/* Desktop Navigation */}
-        <ul className="hidden md:flex items-center space-x-8 uppercase text-[12px] font-extrabold tracking-[0.1em]">
+        <ul className="hidden md:flex items-center space-x-8 uppercase text-sm font-extrabold tracking-[0.1em]">
           {navLinks.map((link) => (
             <li key={link.name}>
               <a
                 href={link.href}
-                className={`relative transition-colors duration-300 group ${
-                  isBlurred ? "text-slate-700" : "text-white"
-                } hover:text-blue-600`}
+                className={`relative transition-colors duration-300 group ${isBlurred ? "text-gray-900 hover:text-blue-700" : "text-white hover:text-blue-400"}`}
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full" />
@@ -56,7 +54,7 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           <Link
             to="/login"
-            className={`text-sm font-bold transition-all px-4 ${isBlurred ? "text-slate-700 hover:text-blue-600" : "text-white/90 hover:text-white"}`}
+            className={`text-sm font-bold transition-all px-4 ${isBlurred ? "text-gray-900 hover:text-blue-700" : "text-white hover:text-blue-400"}`}
           >
             Login
           </Link>
@@ -71,7 +69,7 @@ const Header = () => {
 
         {/* Mobile Toggle */}
         <button
-          className={`p-2 md:hidden transition-colors ${isMenuOpen || isBlurred ? "text-slate-900" : "text-white"}`}
+          className={`p-2 md:hidden transition-colors ${isBlurred ? "text-gray-900" : "text-white"}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -88,14 +86,14 @@ const Header = () => {
         <div className="absolute inset-5 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}></div>
         
         {/* Menu Content Container */}
-        <div className="relative bg-white h-auto max-h-[80vh] rounded-b-[2rem] shadow-2xl px-8 pt-24 pb-12 flex flex-col border-b border-blue-50/50">
+         <div className="relative bg-[#0a0a0a]/80 h-auto max-h-[80vh] rounded-b-[2rem] shadow-2xl px-8 pt-24 pb-12 flex flex-col border-b border-white/10">
           <div className="flex flex-col space-y-1">
             {navLinks.map((link, index) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="group flex items-center justify-between py-4 text-xl font-bold text-slate-800 hover:text-blue-600 border-b border-slate-50 transition-all"
+                className="group flex items-center justify-between py-4 text-xl font-bold text-white hover:text-blue-600 border-b border-white/10 transition-all"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
                 {link.name}
@@ -108,7 +106,7 @@ const Header = () => {
             <Link
               to="/login"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-all active:scale-95"
+              className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-gray-800 hover:bg-gray-700 transition-all active:scale-95"
             >
               <User size={18} />
               Login

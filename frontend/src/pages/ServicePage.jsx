@@ -66,7 +66,7 @@ const ServicePage = () => {
   );
 
   return (
-    <div id='services' className="min-h-screen w-full bg-[#fafbfc] flex flex-col items-center pt-24 pb-24">
+    <div id='services' className="min-h-screen w-full bg-[#fafbfc] flex flex-col items-center pt-24 pb-24 font-sans">
       <div className="max-w-7xl w-full px-6">
         
         {/* Header Section - Modernized with better tracking */}
@@ -78,7 +78,7 @@ const ServicePage = () => {
         >
           <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Expert Solutions</span>
           <h2 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight">IT Support Services</h2>
-          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
+           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed">
             Discover our comprehensive suite of services designed to streamline your{" "}
             <span className="text-blue-600 border-b-2 border-blue-100 pb-0.5">IT operations</span>.
           </p>
@@ -92,7 +92,7 @@ const ServicePage = () => {
           <input
             type="text"
             placeholder="Search for a specialized service..."
-            className="block w-full pl-12 pr-4 py-4 border border-slate-200 rounded-[2rem] bg-white shadow-xl shadow-slate-200/40 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-slate-700 font-medium placeholder:text-slate-400"
+            className="block w-full pl-12 pr-4 py-4 border border-slate-200 rounded-[2rem] bg-white shadow-xl shadow-slate-200/40 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none text-gray-900 font-medium placeholder:text-gray-600"
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
@@ -111,7 +111,7 @@ const ServicePage = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 whileHover={{ y: -10 }}
-                className="group bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(59,130,246,0.15)] transition-all duration-500 flex flex-col relative"
+                className="group bg-white/40 rounded-[2.5rem] overflow-hidden border border-gray-300/5 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(59,130,246,0.15)] transition-all duration-500 flex flex-col relative"
               >
                 {service.isAI && (
                   <div className="absolute top-4 right-4 z-20">
@@ -131,17 +131,17 @@ const ServicePage = () => {
                 </div>
 
                 <div className="p-10 flex flex-col flex-grow">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight group-hover:text-blue-600 transition-colors">{service.title}</h3>
-                  <p className="text-slate-500 text-base leading-relaxed mb-8 font-medium">
+                   <h3 className="text-2xl font-bold text-gray-900 mb-4 tracking-tight group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                   <p className="text-gray-600 text-base leading-relaxed mb-8 font-medium">
                     {service.description}
                   </p>
                   
                   {service.task && (
                     <div className="mt-auto flex flex-wrap gap-2">
-                      <span className="px-4 py-1.5 bg-blue-50 text-blue-600 text-[11px] font-extrabold uppercase rounded-full border border-blue-100 shadow-sm">
-                        {service.task[1]}
-                      </span>
-                      <span className="px-4 py-1.5 bg-slate-50 text-slate-500 text-[11px] font-extrabold uppercase rounded-full border border-slate-100">
+                       <span className="px-4 py-1.5 bg-blue-50 text-blue-600 text-[11px] font-extrabold uppercase rounded-full border border-blue-100 shadow-sm">
+                         {service.task[1]}
+                       </span>
+                       <span className="px-4 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-extrabold uppercase rounded-full border border-gray-300/5">
                         {service.task[2]}
                       </span>
                     </div>
@@ -157,26 +157,26 @@ const ServicePage = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-white rounded-[3.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] border border-slate-100 p-12 md:p-20 relative overflow-hidden"
+          className="bg-white/40 rounded-[3.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] border border-gray-300/5 p-12 md:p-20 relative overflow-hidden"
         >
           {/* Decorative background element */}
           <HelpCircle className="absolute -bottom-10 -right-10 size-64 text-slate-50 opacity-[0.03] rotate-12" />
 
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold text-slate-900 text-center mb-4 tracking-tight">Support Made Simple</h2>
-            <p className="text-slate-500 text-center mb-16 text-lg font-medium">
+            <h2 className="text-4xl font-bold text-gray-900 text-center mb-4 tracking-tight">Support Made Simple</h2>
+            <p className="text-gray-600 text-center mb-16 text-lg font-medium">
               Explore common queries about our digital ticketing platform.
             </p>
             
             <div className="space-y-4">
               {faqs.map((faq, i) => (
-                <div key={i} className="collapse collapse-arrow border border-slate-100 rounded-3xl bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
-                  <input type="checkbox" /> 
-                  <div className="collapse-title text-xl font-bold text-slate-900 flex items-center gap-4">
+                <div key={i} className="collapse collapse-arrow border border-gray-300/5 rounded-3xl bg-gray-100/5 hover:bg-white/60 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                  <input type="checkbox" />
+                  <div className="collapse-title text-xl font-bold text-gray-900 flex items-center gap-4">
                     <span className="text-blue-600/30 text-2xl font-black">0{i + 1}</span>
                     {faq.q}
                   </div>
-                  <div className="collapse-content text-slate-500 px-14"> 
+                  <div className="collapse-content text-gray-600 px-14">
                     <p className="text-base leading-relaxed font-medium pt-2 pb-4">{faq.a}</p>
                   </div>
                 </div>

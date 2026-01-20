@@ -5,7 +5,7 @@ const Homepage = () => {
   return (
     <div
       id="home"
-      className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-slate-950"
+      className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] font-sans"
     >
       {/* Optimized Background using Tailwind v4 Arbitrary Values */}
       <div 
@@ -20,19 +20,19 @@ const Homepage = () => {
         
         {/* Modernized Tagline */}
         <div className="mb-8 flex flex-col items-center group">
-          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-blue-200 text-[10px] sm:text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] mb-6 border border-white/20 shadow-2xl transition-all duration-500 hover:bg-white/20">
+          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md text-blue-200 text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] mb-6 border border-white/20 shadow-2xl transition-all duration-500 hover:bg-white/20">
             <Sparkles className="w-3 h-3" />
             New Era of Business
           </span>
           
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white mb-6 tracking-tight leading-[1.1]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
             Welcome to{" "}
             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-blue-500 bg-clip-text text-transparent uppercase">
               SOLEASE
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl text-slate-200/90 mb-10 font-medium max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-200/90 mb-10 font-medium max-w-2xl leading-relaxed">
             Empowering your business with{" "}
             <span className="text-white border-b-2 border-blue-500/50 pb-0.5">
               modern solutions
@@ -44,14 +44,14 @@ const Homepage = () => {
         {/* Updated Buttons with Glassmorphism */}
         <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto justify-center">
           <a href="#about" className="w-full sm:w-auto group">
-            <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-1 font-bold text-lg flex items-center justify-center gap-2">
+            <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-1 font-bold text-base flex items-center justify-center gap-2">
               Get Started 
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </a>
           
           <a href="#contact" className="w-full sm:w-auto group">
-            <button className="w-full sm:w-auto bg-white/5 backdrop-blur-xl text-white border border-white/20 px-8 py-4 rounded-2xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 font-bold text-lg flex items-center justify-center gap-2">
+            <button className="w-full sm:w-auto bg-white/5 backdrop-blur-xl text-white border border-white/20 px-8 py-4 rounded-2xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 font-bold text-base flex items-center justify-center gap-2">
               Contact Us
               <Mail className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
             </button>

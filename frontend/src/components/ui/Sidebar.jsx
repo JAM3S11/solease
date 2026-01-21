@@ -101,8 +101,6 @@ const Sidebar = ({ userRole }) => {
 
   const renderItem = (item) => {
     const isActiveLink = (path) => window.location.pathname === path;
-    
-    // UI Logic
     const iconSize = isCollapsed ? 24 : 22;
     const baseItemClasses = `group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full font-medium ${
       isCollapsed ? "justify-center px-0" : "hover:bg-slate-800/50"
@@ -110,10 +108,9 @@ const Sidebar = ({ userRole }) => {
     const activeClasses = "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/20";
     const nonActiveClasses = "text-slate-400 hover:text-white";
 
-    // This is a tooltip Component for the Collapsed States
     const Tooltip = ({ text }) => (
       isCollapsed && (
-        <div className="absolute left-16 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bg-slate-900 text-cyan-400 text-xs py-2 px-3 rounded-lg border border-slate-700 whitespace-nowrap z-50 shadow-xl pointer-events-none">
+        <div className="absolute left-16 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bg-slate-900 text-cyan-400 text-xs py-2 px-3 rounded-lg border border-slate-700 whitespace-nowrap z-[100] shadow-xl pointer-events-none">
           {text}
         </div>
       )
@@ -170,11 +167,7 @@ const Sidebar = ({ userRole }) => {
       <NavLink
         key={item.name}
         to={item.path}
-        className={
-          ({ isActive }) => 
-            `${baseItemClasses} ${isActive 
-              ? activeClasses 
-              : nonActiveClasses}`}
+        className={({ isActive }) => `${baseItemClasses} ${isActive ? activeClasses : nonActiveClasses}`}
       >
         {React.cloneElement(item.icon, { size: iconSize })}
         {!isCollapsed && <span>{item.name}</span>}
@@ -185,37 +178,37 @@ const Sidebar = ({ userRole }) => {
 
   return (
     <aside
-      className={`bg-[#020617] text-gray-200 min-h-screen p-4 flex flex-col justify-between transition-all duration-300 ease-in-out border-r border-white/5 ${
+      className={`bg-[#020617] text-gray-200 h-screen sticky top-0 p-4 flex flex-col transition-all duration-300 ease-in-out border-r border-white/5 overflow-hidden ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
-      <div>
-        {/* Header Area */}
-        <div className={`flex items-center mb-10 mt-2 ${isCollapsed ? "justify-center" : "justify-between px-2"}`}>
-          {!isCollapsed && (
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 bg-slate-900 rounded-lg border border-slate-800">
-                <img src="/solease.svg" alt="Logo" className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-black tracking-tighter text-white">SOLEASE</h2>
+      {/* FIXED HEADER */}
+      <div className={`flex items-center mb-6 mt-2 shrink-0 ${isCollapsed ? "justify-center" : "justify-between px-2"}`}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 bg-slate-900 rounded-lg border border-slate-800">
+              <img src="/solease.svg" alt="Logo" className="h-6 w-6" />
             </div>
-          )}
-          <button
-            className="p-2 rounded-xl hover:bg-slate-800 transition-colors"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            <Menu size={20} className="text-slate-400" />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col gap-2">
-          {menuItems[userRole]?.top.map((item) => renderItem(item))}
-        </nav>
+            <h2 className="text-lg font-black tracking-tighter text-white">SOLEASE</h2>
+          </div>
+        )}
+        <button
+          className="p-2 rounded-xl hover:bg-slate-800 transition-colors"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <Menu size={20} className="text-slate-400" />
+        </button>
       </div>
 
-      {/* Bottom section */}
-      <div className="flex flex-col gap-2 pt-6 border-t border-white/5">
+      {/* SCROLLABLE MENUITEMS*/}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
+        <div className="flex flex-col gap-2">
+          {menuItems[userRole]?.top.map((item) => renderItem(item))}
+        </div>
+      </nav>
+
+      {/* FIXED BOTTOM */}
+      <div className="flex flex-col gap-2 pt-6 mt-4 border-t border-white/5 shrink-0 mb-2">
         {menuItems[userRole]?.bottom.map((item) => renderItem(item))}
       </div>
     </aside>

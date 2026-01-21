@@ -25,6 +25,7 @@ import AdminSettingPage from "./components/admin/AdminSettingPage";
 
 //REVIEWER DASHBOARD
 import ReviewerDashbord from "./components/reviewer/ReviewerDashbord";
+import ReviewerNewTicketPage from "./components/reviewer/ReviewerNewTicketPage";
 
 // // SERVICE DESK DASHBOARD
 // import ServiceDeskDashboard from "./components/service/ServiceDeskDashboard";
@@ -302,13 +303,19 @@ const App = () => {
          />
         
         {/* REVIEWER ROLES */}
-        <Route path="/reviewer-dashboard" 
+        <Route path="/reviewer-dashboard"
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
               <ReviewerDashbord />
             </ProtectedRoute>
           } />
-        
+        <Route path="/reviewer-dashboard/new-ticket"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerNewTicketPage />
+            </ProtectedRoute>
+          } />
+
         {/* CLIENT ROUTES */}
         <Route path="/client-dashboard" 
           element={

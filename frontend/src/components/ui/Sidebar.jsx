@@ -73,13 +73,13 @@ const Sidebar = ({ userRole }) => {
         top: [
           { name: "Dashboard", icon: <Home />, path: "/reviewer-dashboard" },
           { name: "Tickets", icon: <Ticket />, submenu: [
-              {name: "New Ticket", path: "/itsupport-dashboard/new-ticket"},
-              {name: "Assigned", path: "/itsupport-dashboard/assigned-ticket"},
+              {name: "New Ticket", path: "/reviewer-dashboard/new-ticket"},
+              {name: "Assigned", path: "/reviewer-dashboard/assigned-ticket"},
           ]},
-          { name: "Report", icon: <LucideChartSpline />, path: "/itsupport-dashboard/report" },
+          { name: "Report", icon: <LucideChartSpline />, path: "/reviewer-dashboard/report" },
         ],
         bottom: [
-          { name: "Settings", icon: <Settings />, path: "/itsupport-dashboard/settings" },
+          { name: "Settings", icon: <Settings />, path: "/reviewer-dashboard/settings" },
           { name: "Logout", icon: <LogOut />, action: handleLogout },
         ],
     },

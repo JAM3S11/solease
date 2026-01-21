@@ -171,7 +171,7 @@ export const forgotPassword = async (req, res) => {
         //Send email for forgot password
         await sendPasswordResetEmail(
             user.email, 
-            `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+            `${process.env.CLIENT_URL}/auth/reset-password/${resetToken}`
         );
         
 
@@ -264,7 +264,7 @@ export const createReviewer = async (req, res) => {
 
         await sendPasswordResetEmail(
             user.email,
-            `${process.env.CLIENT_URL}/reset-password/${resetToken}`
+            `${process.env.CLIENT_URL}/auth/reset-password/${resetToken}`
         );
 
         res.status(201).json({

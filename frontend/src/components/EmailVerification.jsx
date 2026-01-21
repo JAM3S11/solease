@@ -36,7 +36,7 @@ const EmailVerificationPage = () => {
     try {
       await verifyEmail(verificationCode);
       toast.success("Email verified successfully!");
-      navigate("/login");
+      navigate("/auth/login");
     } catch (err) {
       toast.error(error || "Email verification failed")
     }
@@ -50,35 +50,33 @@ const EmailVerificationPage = () => {
   }, [code]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-[#0a0a0a] overflow-hidden px-4 font-sans">
+    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6">
 
       {/* --- BACKGROUND DECORATIONS --- */}
-      {/* Large central glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Corner accents */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-[440px] bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-[32px] border border-white/5 shadow-2xl">
-        {/* Header with Logo Link */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#121212] border border-white/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
-              <img src="/solease.svg" alt="Solease" className="h-6 w-6 group-hover:scale-110 transition-transform" />
-            </div>
-            <Link to="/" className="text-white text-xl font-bold tracking-tight hover:text-blue-400 transition-colors">
-              SOLEASE
-            </Link>
+      {/* Header with Logo Link - Outside Form */}
+      <div className="flex items-center justify-center mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-100 border border-gray-300/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
+            <img src="/solease.svg" alt="Solease" className="h-8 w-8 group-hover:scale-110 transition-transform" />
           </div>
+          <Link to="/" className="text-gray-900 text-2xl font-bold tracking-tight hover:text-blue-400 transition-colors">
+            SOLEASE
+          </Link>
         </div>
+      </div>
 
+      <div className="relative z-10 w-full max-w-[440px] bg-white/40 backdrop-blur-xl px-8 md:px-10 py-7 rounded-[32px] border border-gray-300/5 shadow-2xl">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Verify Your Email</h2>
-          <p className="text-gray-400 text-sm">Enter the 6-digit code sent to your email</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
+          <p className="text-gray-600 text-sm">Enter the 6-digit code sent to your email</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Code Input Boxes */}
           <div className="flex justify-between gap-3 mb-6">
             {code.map((digit, index) => (
               <input
@@ -89,12 +87,12 @@ const EmailVerificationPage = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-14 h-14 text-center text-2xl font-bold bg-[#1a1a1a] border-2 border-white/5 rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all"
+                className="w-14 h-14 text-center text-2xl font-bold bg-gray-100 border-2 border-gray-300/5 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all"
               />
             ))}
           </div>
 
-          {/* Verify Button */}
+          {/* Button */}
           <motion.button
             type="submit"
             disabled={isLoading || code.some((digit) => !digit)}

@@ -46,7 +46,7 @@ const LoginForm = () => {
       {/* Added corner accents */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Header with Logo Link - Outside Form */}
+      {/* Header */}
       <div className="flex items-center justify-center mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-100 border border-gray-300/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
@@ -113,7 +113,7 @@ const LoginForm = () => {
                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300/10 bg-gray-100 text-blue-500 focus:ring-blue-500/20" />
                 <span className="text-xs text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" size={16} className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">
+              <Link to="/auth/forgot-password" size={16} className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -141,7 +141,7 @@ const LoginForm = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-600 text-sm">
             New to the platform?{" "}
-            <Link to="/signup" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+            <Link to="/auth/signup" className="text-blue-500 font-semibold hover:underline underline-offset-4">
               Create Account
             </Link>
           </p>

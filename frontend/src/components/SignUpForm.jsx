@@ -51,13 +51,12 @@ const SignUpForm = () => {
     <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6">
 
       {/* --- BACKGROUND DECORATIONS --- */}
-      {/* Large central glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Corner accents */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Header with Logo Link - Outside Form */}
+      {/* Header */}
       <div className="flex items-center justify-center mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-100 border border-gray-300/10 rounded-xl flex items-center justify-center shadow-lg group hover:border-blue-500/50 transition-colors">
@@ -190,7 +189,7 @@ const SignUpForm = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-600 text-sm">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+            <Link to="/auth/login" className="text-blue-500 font-semibold hover:underline underline-offset-4">
               Sign In
             </Link>
           </p>

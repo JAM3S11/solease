@@ -56,11 +56,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthenticationStore();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   if (!user?.isVerified) {
-    return <Navigate to="/verify-email" replace />;
+    return <Navigate to="/auth/verify-email" replace />;
   }
 
   // check if user has one of the allowed roles
@@ -98,11 +98,11 @@ const RedirectAuthenticatedUser = ({ children }) => {
 
 //Hide the headers and footer here
 const dashboardRoutes = [
-  "/signup",
-  "/login",
-  "/verify-email",
-  "/forgot-password",
-  "/reset-password",
+  "/auth/signup",
+  "/auth/login",
+  "/auth/verify-email",
+  "/auth/forgot-password",
+  "/auth/reset-password",
   "/admin-dashboard",
   "/reviewer-dashboard",
   "/client-dashboard",

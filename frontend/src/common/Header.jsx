@@ -53,13 +53,13 @@ const Header = () => {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <Link
-            to="/login"
+            to="/auth/login"
             className={`text-sm font-bold transition-all px-4 ${isBlurred ? "text-gray-900 hover:text-blue-700" : "text-white hover:text-blue-400"}`}
           >
             Login
           </Link>
           <Link
-            to="/signup"
+            to="/auth/signup"
             className="flex items-center gap-2 bg-blue-600 text-white text-sm px-6 py-2.5 rounded-full shadow-lg shadow-blue-500/25 hover:bg-blue-500 hover:-translate-y-0.5 transition-all duration-300 font-bold"
           >
             Get Started
@@ -104,7 +104,7 @@ const Header = () => {
 
           <div className="grid grid-cols-2 gap-4 mt-10">
             <Link
-              to="/login"
+              to="/auth/login"
               onClick={() => setIsMenuOpen(false)}
               className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-gray-800 hover:bg-gray-700 transition-all active:scale-95"
             >
@@ -112,7 +112,7 @@ const Header = () => {
               Login
             </Link>
             <Link
-              to="/signup"
+              to="/auth/signup"
               onClick={() => setIsMenuOpen(false)}
               className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-blue-600 shadow-xl shadow-blue-500/20 active:scale-95"
             >

@@ -34,7 +34,7 @@ const Sidebar = ({ userRole }) => {
     try {
       await logout();
       toast.success("We shall miss you..", { duration: 2000, icon: "😭" });
-      navigate("/login");
+      navigate("/auth/login");
     } catch (err) {
       console.error("Logout failed", err);
     }

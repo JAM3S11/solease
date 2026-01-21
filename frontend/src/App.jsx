@@ -220,31 +220,31 @@ const App = () => {
         />
 
         {/** Navigations of getting started process */}
-        <Route path="/signup" 
+        <Route path="/auth/signup" 
           element={
             <RedirectAuthenticatedUser>
               <SignUpForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/login" 
+        <Route path="/auth/login" 
           element={
             <RedirectAuthenticatedUser>
               <LoginForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/verify-email" 
+        <Route path="/auth/verify-email" 
           element={
             <RedirectAuthenticatedUser>
               <EmailVerificationPage />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/forgot-password" 
+        <Route path="/auth/forgot-password" 
           element={
             <RedirectAuthenticatedUser>
               <ForgotPassForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/reset-password/:token" 
+        <Route path="/auth/reset-password/:token" 
           element={
             <ResetPassword />
           } />

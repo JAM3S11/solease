@@ -93,7 +93,7 @@ const useTicketStore = create((set) => ({
 
             return res.data.ticket;
         } catch (error) {
-            console.error("Error submitting feedback:", error);
+            console.log("Error submitting feedback:", error);
             console.error("Error details:", {
                 message: error.message,
                 response: error.response?.data,
@@ -133,7 +133,7 @@ const useTicketStore = create((set) => ({
 
             return res.data.comment;
         } catch (error) {
-            console.error("Error adding reply:", error);
+            console.log("Error adding reply:", error);
             console.error("Error details:", {
                 message: error.message,
                 response: error.response?.data,

@@ -197,7 +197,7 @@ const ReviewerDashbord = () => {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                          {ticket.clientName || 'N/A'}
+                          {ticket.user?.username || 'N/A'}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}

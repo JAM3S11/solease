@@ -26,6 +26,8 @@ import AdminSettingPage from "./components/admin/AdminSettingPage";
 //REVIEWER DASHBOARD
 import ReviewerDashbord from "./components/reviewer/ReviewerDashbord";
 import ReviewerNewTicketPage from "./components/reviewer/ReviewerNewTicketPage";
+import ReviewerAssignedTickets from "./components/reviewer/ReviewerAssignedTickets";
+import ReviewerTicketDetail from "./components/reviewer/ReviewerTicketDetail";
 
 // // SERVICE DESK DASHBOARD
 // import ServiceDeskDashboard from "./components/service/ServiceDeskDashboard";
@@ -48,6 +50,7 @@ import ClientAllTicketPage from "./components/client/ClientAllTicketPage";
 import ClientNewTicketPage from "./components/client/ClientNewTicketPage";
 import ClientProfilePage from "./components/client/CLientProfilePage";
 import ClientReportPage from "./components/client/ClientReportPage";
+import FeedbackComponent from "./components/ui/FeedbackComponent";
 
 // USE AUTHENTICATION STORE
 import { useAuthenticationStore } from "./store/authStore";
@@ -315,6 +318,30 @@ const App = () => {
               <ReviewerNewTicketPage />
             </ProtectedRoute>
           } />
+        <Route path="/reviewer-dashboard/assigned-ticket"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerAssignedTickets />
+            </ProtectedRoute>
+          } />
+        <Route path="/reviewer-dashboard/ticket/:id"
+           element={
+             <ProtectedRoute allowedRoles={["Reviewer"]}>
+               <ReviewerTicketDetail />
+             </ProtectedRoute>
+           } />
+        <Route path="/reviewer-dashboard/ticket/:id/feedback"
+           element={
+             <ProtectedRoute allowedRoles={["Reviewer", "Manager"]}>
+               <FeedbackComponent />
+             </ProtectedRoute>
+           } />
+        <Route path="/reviewer-dashboard/new-ticket"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerNewTicketPage />
+            </ProtectedRoute>
+          } />
 
         {/* CLIENT ROUTES */}
         <Route path="/client-dashboard" 
@@ -342,11 +369,17 @@ const App = () => {
             </ProtectedRoute>
           } />
         <Route path="/client-dashboard/report"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientReportPage />
-            </ProtectedRoute>
-          } />
+           element={
+             <ProtectedRoute allowedRoles={["Client"]}>
+               <ClientReportPage />
+             </ProtectedRoute>
+           } />
+        <Route path="/client-dashboard/ticket/:id/feedback"
+           element={
+             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
+               <FeedbackComponent />
+             </ProtectedRoute>
+           } />
       </Routes>
 
       {!hideLayout && <Footer />}

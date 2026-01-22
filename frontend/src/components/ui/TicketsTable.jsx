@@ -106,16 +106,32 @@ const TicketsTable = ({
         </span>
       ) },
       {
-        key: role === 'client' ? 'feedback' : 'description',
-        label: role === 'client' ? 'FEEDBACK' : 'DESCRIPTION',
-        render: (ticket) => role === 'client' ? (
+        key: (role === 'client' || role === 'admin' || role === 'reviewer') ? 'feedback' : 'description',
+        label: (role === 'client' || role === 'admin' || role === 'reviewer') ? 'FEEDBACK' : 'DESCRIPTION',
+        render: (ticket) => (role === 'client' || role === 'admin' || role === 'reviewer') ? (
           ticket.comments && ticket.comments.length > 0 ? (
             <Link
-              to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+              to={
+                role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
+                role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
+                `/client-dashboard/ticket/${ticket._id}/feedback` // admin/manager uses client route
+              }
               className="inline-flex items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
               title="View feedback"
             >
               <Eye size={16} />
+            </Link>
+          ) : (ticket.status === 'In Progress' || ticket.status === 'Resolved') ? (
+            <Link
+              to={
+                role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
+                role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
+                `/client-dashboard/ticket/${ticket._id}/feedback` // admin/manager uses client route
+              }
+              className="inline-flex items-center justify-center p-2 bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
+              title="Start feedback conversation"
+            >
+              <MessageCircle size={16} />
             </Link>
           ) : (
             <div className="inline-flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-lg">

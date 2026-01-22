@@ -34,11 +34,11 @@ const ClientDashboard = () => {
     activeChats: safeTickets.filter(t => t.chatEnabled).length
   };
 
-  const resolvedTicketsWithFeedback = safeTickets
-    .filter(t => t.status === "Resolved" && t.comments && t.comments.length > 0)
+  const ticketsWithFeedback = safeTickets
+    .filter(t => (t.status === "Resolved" || t.status === "In Progress") && t.comments && t.comments.length > 0)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-  const latestFeedback = resolvedTicketsWithFeedback.length > 0 ? resolvedTicketsWithFeedback[0] : null;
+  const latestFeedback = ticketsWithFeedback.length > 0 ? ticketsWithFeedback[0] : null;
 
   // Helper for Tailwind v4 dynamic colors
   const getColorClasses = (color) => {
@@ -277,7 +277,7 @@ const ClientDashboard = () => {
               <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
-                  Latest Feedback
+                  Latest Conversation
                 </h2>
                 {latestFeedback && (
                   <Link
@@ -349,7 +349,7 @@ const ClientDashboard = () => {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Feedback Yet</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                      Your resolved tickets will appear here once you submit feedback.
+                      Your active tickets will appear here once feedback is exchanged.
                     </p>
                   </div>
                 )}

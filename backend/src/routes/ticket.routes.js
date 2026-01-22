@@ -1,7 +1,14 @@
 //backend>src>routes>ticket.routes.js
 import express from "express";
 import { protect } from "../middleware/authTicketTok.js";
-import { createTicket, getTickets, updateTicketStatus, submitFeedback, addReply, editReply, deleteReply, hideFeedback, unhideFeedback, viewHiddenFeedback, approveHiddenForManager, managerIntervention, triggerAIResponse, uploadMiddleware, uploadAttachment } from "../controllers/ticket.controllers.js";
+import { createTicket, getTickets, 
+    updateTicketStatus, submitFeedback, 
+    addReply, editReply, deleteReply, 
+    hideFeedback, unhideFeedback, 
+    viewHiddenFeedback, approveHiddenForManager, 
+    managerIntervention, triggerAIResponse, 
+    uploadMiddleware, uploadAttachment 
+} from "../controllers/ticket.controllers.js";
 
 const router = express.Router();
 
@@ -12,39 +19,39 @@ router.post("/create-ticket", protect, uploadMiddleware, createTicket);
 router.get("/get-ticket", protect, getTickets);
 
 // Update ticket status router
-router.put("/ticket/:id/status", protect, updateTicketStatus);
+router.put("/:id/status", protect, updateTicketStatus);
 
-// Submit feedback/comment on resolved ticket
-router.post("/ticket/:id/feedback", protect, submitFeedback);
+// Submit feedback/comment on resolved or in progress ticket
+router.post("/:id/feedback", protect, submitFeedback);
 
 // Add reply to feedback/comment
-router.post("/ticket/:ticketId/comment/:commentId/reply", protect, addReply);
+router.post("/:ticketId/comment/:commentId/reply", protect, addReply);
 
 // Edit reply
-router.put("/ticket/:ticketId/comment/:commentId/reply/:replyId", protect, editReply);
+router.put("/:ticketId/comment/:commentId/reply/:replyId", protect, editReply);
 
 // Delete reply
-router.delete("/ticket/:ticketId/comment/:commentId/reply/:replyId", protect, deleteReply);
+router.delete("/:ticketId/comment/:commentId/reply/:replyId", protect, deleteReply);
 
 // Hide feedback (Reviewer only)
-router.put("/ticket/:ticketId/comment/:commentId/hide", protect, hideFeedback);
+router.put("/:ticketId/comment/:commentId/hide", protect, hideFeedback);
 
 // Unhide feedback (Reviewer only)
-router.put("/ticket/:ticketId/comment/:commentId/unhide", protect, unhideFeedback);
+router.put("/:ticketId/comment/:commentId/unhide", protect, unhideFeedback);
 
 // View hidden feedback with code (Manager only)
-router.post("/ticket/:ticketId/comment/:commentId/view-hidden", protect, viewHiddenFeedback);
+router.post("/:ticketId/comment/:commentId/view-hidden", protect, viewHiddenFeedback);
 
 // Approve hidden feedback for Manager view (Reviewer only)
-router.put("/ticket/:ticketId/comment/:commentId/approve", protect, approveHiddenForManager);
+router.put("/:ticketId/comment/:commentId/approve", protect, approveHiddenForManager);
 
 // Manager intervention - add reply to conversation
-router.post("/ticket/:ticketId/comment/:commentId/manager-intervention", protect, managerIntervention);
+router.post("/:ticketId/comment/:commentId/manager-intervention", protect, managerIntervention);
 
 // AI-triggered reply (for automation)
-router.post("/ticket/:ticketId/comment/:commentId/ai-response", protect, triggerAIResponse);
+router.post("/:ticketId/comment/:commentId/ai-response", protect, triggerAIResponse);
 
 // Upload attachment to ticket
-router.post("/ticket/:id/attachment", protect, uploadMiddleware, uploadAttachment);
+router.post("/:id/attachment", protect, uploadMiddleware, uploadAttachment);
 
 export default router;

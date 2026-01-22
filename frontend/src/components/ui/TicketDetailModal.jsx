@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { X, ChevronDown, Ticket, MapPin, Calendar, AlertCircle, Clock, Check, FileText, Bot, User } from "lucide-react"; // Added User icon
+import { X, ChevronDown, Ticket, MapPin, Calendar, AlertCircle, Clock, Check, FileText, Bot, User, MessageCircle } from "lucide-react"; // Added User icon and MessageCircle
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { useAuthenticationStore } from "../../store/authStore";
 import useTicketStore from "../../store/ticketStore";
+import { useNavigate } from "react-router-dom";
 
 const TicketDetailModal = ({ ticket, onClose }) => {
   const { user } = useAuthenticationStore();
   const { updateTicket } = useTicketStore();
+  const navigate = useNavigate();
 
   const [status, setStatus] = useState(ticket?.status || "");
 
@@ -178,22 +180,46 @@ const TicketDetailModal = ({ ticket, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
-          {canUpdateStatus && (
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
+          {/* Feedback Button - Left side */}
+          {(ticket.status === 'Resolved' || ticket.status === 'In Progress') && (
             <button
-              onClick={handleUpdate}
-              disabled={status === ticket.status}
-              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-lg shadow-blue-600/30"
+              onClick={() => {
+                onClose();
+                // Navigate to feedback based on user role
+                if (user?.role === 'Client') {
+                  navigate(`/client-dashboard/ticket/${ticket._id}/feedback`);
+                } else if (user?.role === 'Reviewer') {
+                  navigate(`/reviewer-dashboard/ticket/${ticket._id}/feedback`); // Reviewer uses dedicated feedback page
+                } else if (user?.role === 'Manager') {
+                  navigate(`/client-dashboard/ticket/${ticket._id}/feedback`); // Manager can also use the feedback component
+                }
+              }}
+              className="px-4 py-2.5 rounded-xl bg-green-600 text-white font-medium hover:bg-green-700 transition-colors shadow-lg shadow-green-600/30 flex items-center gap-2"
             >
-              Save Changes
+              <MessageCircle size={16} />
+              {ticket.chatEnabled ? 'Open Chat' : 'Provide Feedback'}
             </button>
           )}
+
+          {/* Action Buttons - Right side */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            {canUpdateStatus && (
+              <button
+                onClick={handleUpdate}
+                disabled={status === ticket.status}
+                className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-lg shadow-blue-600/30"
+              >
+                Save Changes
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

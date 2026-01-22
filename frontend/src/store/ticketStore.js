@@ -40,7 +40,7 @@ const useTicketStore = create((set) => ({
         }
     },
     
-    // Update ticket status (for automation or admin)
+    // Update ticket status (for automation or admin purposes only)
     updateTicket: async (id, updateData) => {
         set({ loading: true, error: null });
         try {
@@ -54,6 +54,13 @@ const useTicketStore = create((set) => ({
             return res.data.ticket;
         } catch (error) {
             console.error("Failed to update ticket:", error);
+            console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                url: `/ticket/${id}/status`,
+                updateData
+            });
             set({
                 error: error.response?.data?.message || "Failed to update ticket",
                 loading: false,
@@ -67,15 +74,33 @@ const useTicketStore = create((set) => ({
         set({ loading: true, error: null });
         try {
             const res = await api.post(`/ticket/${ticketId}/feedback`, { content });
+            const updatedTicket = res.data.ticket;
             set((state) => ({
                 tickets: state.tickets.map((ticket) =>
-                    ticket._id === ticketId ? res.data.ticket : ticket
+                    ticket._id === ticketId ? updatedTicket : ticket
                 ),
                 loading: false,
             }));
+
+            // Check if chat should be enabled (messages from Client/Reviewer/Manager > 4)
+            const relevantComments = updatedTicket.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
+            if (relevantComments.length > 4 && !updatedTicket.chatEnabled) {
+                // Enable chat asynchronously
+                setTimeout(() => {
+                    updateTicket(ticketId, { chatEnabled: true });
+                }, 0);
+            }
+
             return res.data.ticket;
         } catch (error) {
             console.error("Error submitting feedback:", error);
+            console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                url: `/ticket/${ticketId}/feedback`,
+                content
+            });
             set({
                 error: error.response?.data?.message || "Error submitting feedback",
                 loading: false,
@@ -89,15 +114,33 @@ const useTicketStore = create((set) => ({
         set({ loading: true, error: null });
         try {
             const res = await api.post(`/ticket/${ticketId}/comment/${commentId}/reply`, { content });
+            const updatedTicket = res.data.ticket;
             set((state) => ({
                 tickets: state.tickets.map((ticket) =>
-                    ticket._id === ticketId ? res.data.ticket : ticket
+                    ticket._id === ticketId ? updatedTicket : ticket
                 ),
                 loading: false,
             }));
+
+            // Check if chat should be enabled (messages from Client/Reviewer/Manager >= 4)
+            const relevantComments = updatedTicket.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
+            if (relevantComments.length >= 4 && !updatedTicket.chatEnabled) {
+                // Enable chat by making an API call
+                api.put(`/ticket/${ticketId}/status`, { chatEnabled: true }).catch(err => {
+                    console.error("Failed to enable chat:", err);
+                });
+            }
+
             return res.data.comment;
         } catch (error) {
             console.error("Error adding reply:", error);
+            console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                url: `/ticket/${ticketId}/comment/${commentId}/reply`,
+                content
+            });
             set({
                 error: error.response?.data?.message || "Error adding reply",
                 loading: false,

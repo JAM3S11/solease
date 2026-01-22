@@ -133,7 +133,7 @@ export const getTickets = async (req, res) => {
     }
 };
 
-// Update ticket status (for automation or admin)
+// Update ticket status (for automation or admin purposes)
 export const updateTicketStatus = async (req, res) => {
     const { id } = req.params;
     const { status, isAutomated } = req.body;
@@ -146,7 +146,15 @@ export const updateTicketStatus = async (req, res) => {
                 success: false,
                 message: "Ticket not found",
             });
-        };
+        }
+
+        // Authorization check: Only Manager and Reviewer can update status
+        if (!["Manager", "Reviewer"].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized: You don't have permission to update ticket status",
+            });
+        }
 
         if(status){
             ticket.status = status;
@@ -174,7 +182,7 @@ export const updateTicketStatus = async (req, res) => {
     }
 };
 
-// Submit feedback/comment on resolved ticket
+// Submit feedback/comment on resolved or in progress ticket
 export const submitFeedback = async (req, res) => {
     const { id } = req.params;
     const { content } = req.body;
@@ -196,10 +204,10 @@ export const submitFeedback = async (req, res) => {
             });
         }
 
-        if(ticket.status !== "Resolved" && ticket.status !== "Closed"){
+        if(ticket.status !== "Resolved" && ticket.status !== "In Progress" && ticket.status !== "Closed"){
             return res.status(400).json({
                 success: false,
-                message: "Can only submit feedback on resolved tickets"
+                message: "Can only submit feedback on resolved, in progress, or closed tickets"
             });
         }
 
@@ -269,8 +277,12 @@ export const addReply = async (req, res) => {
 
         comment.commentCount += 1;
 
-        const totalReplies = ticket.comments.reduce((sum, c) => sum + c.commentCount, 0);
-        const hoursSinceCreation = (Date.now() - new Date(ticket.createdAt)) / (1000 * 60 * 60);
+        const totalReplies = ticket.comments.reduce(
+            (sum, c) => sum + c.commentCount, 0
+        );
+        const hoursSinceCreation = (
+            Date.now() - new Date(ticket.createdAt)
+        ) / (1000 * 60 * 60);
 
         if(totalReplies >= 4 && hoursSinceCreation >= 48){
             ticket.chatEnabled = true;

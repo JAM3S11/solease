@@ -14,6 +14,7 @@ const FeedbackComponent = () => {
   const {
     tickets,
     fetchTickets,
+    fetchSingleTicket,
     submitFeedback,
     addReply,
     loading,
@@ -27,15 +28,29 @@ const FeedbackComponent = () => {
   const [moderating, setModerating] = useState(null);
   const [interventionContent, setInterventionContent] = useState('');
 
-  useEffect(() => {
-    if (!tickets.length) fetchTickets();
-  }, [fetchTickets, tickets.length]);
 
-  const ticket = tickets.find(t => t._id === id);
+  useEffect(() => {
+    if (!tickets.length) {
+      fetchTickets();
+    } else if (!tickets.find(t => t?._id === id)) {
+      fetchSingleTicket(id);
+    }
+  }, [fetchTickets, fetchSingleTicket, tickets, id]);
+
+  // Polling for real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTickets();
+    }, 10000); // Fetch every 10 seconds
+    return () => clearInterval(interval);
+  }, [fetchTickets]);
+
+  const ticket = tickets.find(t => t?._id === id);
 
   // This checks if the user can provide a feedback
-  const canProvideFeedback = ticket && 
-    (ticket.status === 'Resolved' || ticket.status === 'In Progress');
+  const canProvideFeedback = ticket && (user?.role === 'Client'
+    ? (ticket.status === 'Resolved' || ticket.status === 'In Progress')
+    : (user?.role === 'Reviewer' || user?.role === 'Manager'));
 
   // This checks if the user can moderate (Reviewer/Manager roles)
   const canModerate = ['Reviewer', 'Manager'].includes(user?.role);
@@ -45,12 +60,18 @@ const FeedbackComponent = () => {
 
     try {
       if (!ticket.comments || ticket.comments.length === 0) {
-        // First message - submit as feedback
-        await submitFeedback(id, newMessage);
-        toast.success('Feedback submitted successfully');
+        if (user?.role === 'Client') {
+          // First message - submit as feedback
+          await submitFeedback(id, newMessage);
+          toast.success('Feedback submitted successfully');
+        } else {
+          toast.error('Only clients can submit initial feedback');
+          return;
+        }
       } else {
-        // Subsequent messages - add as reply to first comment
-        await addReply(id, ticket.comments[0]._id, newMessage);
+        // Subsequent messages - add as reply to the latest comment
+        const latestComment = ticket.comments[ticket.comments.length - 1];
+        await addReply(id, latestComment._id, newMessage);
         toast.success('Message sent successfully');
       }
       setNewMessage('');
@@ -73,9 +94,11 @@ const FeedbackComponent = () => {
   };
 
   const handleUnhide = async (commentId) => {
+    const code = prompt('Enter unhide code:');
+    if (!code) return;
     setModerating(commentId);
     try {
-      await unhideFeedback(id, commentId);
+      await unhideFeedback(id, commentId, code);
       toast.success('Comment unhidden successfully');
     } catch (error) {
       toast.error('Failed to unhide comment');
@@ -83,18 +106,21 @@ const FeedbackComponent = () => {
     setModerating(null);
   };
 
-  const handleIntervention = async () => {
-    if (!interventionContent.trim()) return;
-    setModerating('intervention');
-    try {
-      await managerIntervention(id, ticket.comments[0]?._id, interventionContent);
-      toast.success('Manager intervention added');
-      setInterventionContent('');
-    } catch (error) {
-      toast.error('Failed to add intervention');
-    }
-    setModerating(null);
-  };
+   const handleIntervention = async () => {
+     if (!interventionContent.trim()) return;
+     setModerating('intervention');
+     try {
+       const latestComment = ticket.comments[ticket.comments.length - 1];
+       await managerIntervention(id, latestComment?._id, interventionContent);
+       toast.success('Manager intervention added');
+       setInterventionContent('');
+     } catch (error) {
+       toast.error('Failed to add intervention');
+     }
+     setModerating(null);
+   };
+
+
 
   if (loading && !ticket) {
     return (
@@ -112,9 +138,39 @@ const FeedbackComponent = () => {
     );
   }
 
+  // Sort comments by createdAt
+  if (ticket.comments) {
+    ticket.comments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }
+
   // Count messages per user for chat conversion logic
-  const relevantMessages = ticket.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
+  const relevantMessages = ticket.comments ? ticket.comments.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) : [];
   const chatEnabled = relevantMessages.length >= 4;
+
+  // Collect all messages (comments and replies) from all tickets
+  const allMessages = [];
+  if (ticket.comments) {
+    ticket.comments.filter(comment => !comment.isHidden).forEach(comment => {
+      allMessages.push({
+        ...comment,
+        type: 'comment',
+        id: comment._id,
+        createdAt: comment.createdAt
+      });
+      if (comment.replies) {
+        comment.replies.forEach(reply => {
+          allMessages.push({
+            ...reply,
+            type: 'reply',
+            commentId: comment._id,
+            id: reply._id,
+            createdAt: reply.createdAt
+          });
+        });
+      }
+    });
+  }
+  allMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   return (
     <DashboardLayout>
@@ -135,12 +191,12 @@ const FeedbackComponent = () => {
             className="flex items-center justify-between"
           >
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                {chatEnabled ? 'Chat' : 'Feedback'} - Ticket #{ticket._id.slice(-6).toUpperCase()}
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">
-                {chatEnabled ? 'Real-time conversation enabled' : 'Provide feedback on this ticket'}
-              </p>
+               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                 {chatEnabled ? 'Chat' : 'Feedback'} - Ticket #{ticket._id.slice(-6).toUpperCase()}
+               </h1>
+               <p className="text-gray-500 dark:text-gray-400 mt-1">
+                 {user?.role === 'Client' ? (chatEnabled ? 'Real-time conversation enabled' : 'Provide feedback on this ticket') : 'Respond to client feedback'}
+               </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -215,114 +271,81 @@ const FeedbackComponent = () => {
           </div>
 
           {/* Messages Display */}
-          <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-            {ticket.comments && ticket.comments.length > 0 ? (
-              ticket.comments.map((comment, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-lg border ${
-                    comment.hidden ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <User size={16} className="text-gray-400" />
-                        <span className="font-medium text-gray-900 dark:text-white">{comment.user?.username || 'Unknown'}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">({comment.user?.role || 'User'})</span>
-                        {comment.aiGenerated && (
-                          <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase rounded">
-                            AI
-                          </span>
-                        )}
-                        {comment.hidden && (
-                          <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold uppercase rounded">
-                            Hidden
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{comment.content}</p>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Clock size={12} />
-                        {new Date(comment.createdAt || Date.now()).toLocaleString()}
-                      </div>
-
-                      {/* Replies */}
-                      {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-3 pl-4 border-l border-gray-300 dark:border-gray-600">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Replies:</p>
-                          {comment.replies.map((reply, rIdx) => (
-                            <div key={rIdx} className="mb-2 p-2 bg-white dark:bg-gray-800 rounded border">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{reply.user?.username || 'Unknown'}:</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  ({reply.user?.role || 'User'})
-                                </span>
-                                {reply.aiGenerated && (
-                                  <span className="px-1 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase rounded">
-                                    AI
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-700 dark:text-gray-300">{reply.content}</p>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {new Date(reply.createdAt || Date.now()).toLocaleString()}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+          <div className="space-y-2 mb-6 max-h-96 overflow-y-auto p-4">
+           {allMessages.length > 0 ? allMessages.map((message, idx) => {
+              const isSelf = message.user?._id === user?._id;
+              const prevMessage = idx > 0 ? allMessages[idx - 1] : null;
+              const showAvatar = !prevMessage || prevMessage.user?._id !== message.user?._id;
+              const isReply = message.type === 'reply';
+              return (
+                <div key={`${message.type}-${message.id}`} className={`flex ${isSelf ? 'justify-end' : 'justify-start'} mb-2 group`}>
+                  {!isSelf && showAvatar && (
+                    <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-2 flex-shrink-0">
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                        {message.user?.name?.charAt(0) || message.user?.username?.charAt(0) || '?'}
+                      </span>
                     </div>
-
-                    {/* Moderation Actions */}
-                    {canModerate && (
-                      <div className="flex gap-2 ml-4">
-                        {comment.hidden ? (
-                          <>
-                            <button
-                              onClick={() => handleUnhide(comment._id)}
-                              disabled={moderating === comment._id}
-                              className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded disabled:opacity-50"
-                              title="Unhide Comment"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                const code = prompt('Enter unhide code:');
-                                if (code) handleHide(comment._id, code);
-                              }}
-                              disabled={moderating === comment._id}
-                              className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded disabled:opacity-50"
-                              title="Approve for Manager"
-                            >
-                              <CheckCircle size={16} />
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              const code = prompt('Enter hide code:');
-                              if (code) handleHide(comment._id, code);
-                            }}
-                            disabled={moderating === comment._id}
-                            className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
-                            title="Hide Comment"
-                          >
-                            <EyeOff size={16} />
-                          </button>
-                        )}
+                  )}
+                  {!isSelf && !showAvatar && <div className="w-10"></div>}
+                  <div className={isSelf ? 'max-w-xs lg:max-w-md px-4 py-2 rounded-2xl bg-blue-500 text-white' : 'max-w-xs lg:max-w-md px-4 py-2 rounded-2xl bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}>
+                    {!isSelf && showAvatar && (
+                      <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        {message.user?.name || message.user?.username || 'Unknown'}
+                        {message.user?.role && ` (${message.user?.role})`}
+                        {message.aiGenerated && ' (AI)'}
                       </div>
                     )}
+                    <p className="text-sm">{message.content}</p>
+                    <div className="text-xs opacity-70 mt-1 flex items-center justify-between">
+                      <span>{new Date(message.createdAt || Date.now()).toLocaleString()}</span>
+                      <div className="flex gap-1">
+                        {canModerate && message.type === 'comment' && (
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                const code = prompt('Enter hide code: SOLEASEHIDE');
+                                if (code === 'SOLEASEHIDE') handleHide(message._id, code);
+                              }}
+                              disabled={moderating === message._id}
+                              className="p-1 text-red-400 hover:bg-red-600 rounded"
+                              title="Hide"
+                            >
+                              <EyeOff size={12} />
+                            </button>
+                            {message.isHidden && (
+                              <button
+                                onClick={() => {
+                                  const code = prompt('Enter unhide code: SOLEASEUNHIDE');
+                                  if (code === 'SOLEASEUNHIDE') handleUnhide(message._id, code);
+                                }}
+                                disabled={moderating === message._id}
+                                className="p-1 text-green-400 hover:bg-green-600 rounded"
+                                title="Unhide"
+                              >
+                                <Eye size={12} />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  {isSelf && showAvatar && (
+                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center ml-2 flex-shrink-0">
+                      <span className="text-xs font-bold text-white">
+                        {user?.name?.charAt(0) || user?.username?.charAt(0) || '?'}
+                      </span>
+                    </div>
+                  )}
+                  {isSelf && !showAvatar && <div className="w-10"></div>}
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
-                <p>No {chatEnabled ? 'messages' : 'feedback'} yet. {canProvideFeedback ? 'Start the conversation!' : 'Waiting for feedback...'}</p>
-              </div>
-            )}
+              );
+            }) : (
+             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+               <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
+                <p>No {chatEnabled ? 'messages' : 'feedback'} yet. {user?.role === 'Client' ? 'Start the conversation!' : 'Waiting for client feedback...'}</p>
+             </div>
+           )}
           </div>
 
           {/* Message Input */}
@@ -331,7 +354,7 @@ const FeedbackComponent = () => {
               <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={chatEnabled ? "Type your message..." : "Provide your feedback..."}
+                 placeholder={user?.role === 'Client' ? (chatEnabled ? "Type your message..." : "Provide your feedback...") : "Respond to client feedback..."}
                 className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 onKeyDown={(e) => {

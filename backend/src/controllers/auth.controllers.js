@@ -70,7 +70,8 @@ export const verifyEmail = async (req, res) => {
 
         if(!user){
             return res.status(400).json({ 
-                success: false, message: "Invalid or expired verification code" 
+                success: false, 
+                message: "Invalid or expired verification code" 
             });
         }
 
@@ -105,7 +106,9 @@ export const login = async (req, res) => {
     try {
         const user = await User.findOne({ username });
         if (!user) {
-			return res.status(400).json({ success: false, message: "Invalid credentials" });
+			return res.status(400).json({ 
+                success: false, 
+                message: "Invalid credentials" });
 		};
 
         if (user.status === "Rejected") {
@@ -118,7 +121,9 @@ export const login = async (req, res) => {
         //Check on the password validity
         const isPasswordValid = await bcryptjs.compare(password, user.password);
 		if (!isPasswordValid) {
-			return res.status(400).json({ success: false, message: "Invalid credentials" });
+			return res.status(400).json({ 
+                success: false, 
+                message: "Invalid credentials, please try again." });
 		}
 
         generateTokenAndSetCookie(res, user._id);
@@ -146,7 +151,9 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     res.clearCookie("token");
-	res.status(200).json({ success: true, message: "Logged out successfully" });
+	res.status(200).json({ 
+        success: true, 
+        message: "Logged out successfully" });
 }
 
 export const forgotPassword = async (req, res) => {
@@ -155,7 +162,9 @@ export const forgotPassword = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if(!user){
-            return res.status(400).json({ success: false, message: "User not found" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "User not found" });
         }
 
         //Generate a reset jwt token

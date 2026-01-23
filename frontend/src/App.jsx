@@ -330,12 +330,18 @@ const App = () => {
                <ReviewerTicketDetail />
              </ProtectedRoute>
            } />
-        <Route path="/reviewer-dashboard/ticket/:id/feedback"
-           element={
-             <ProtectedRoute allowedRoles={["Reviewer", "Manager"]}>
-               <FeedbackComponent />
-             </ProtectedRoute>
-           } />
+         <Route path="/reviewer-dashboard/ticket/:id"
+            element={
+              <ProtectedRoute allowedRoles={["Reviewer", "Manager"]}>
+                <ReviewerTicketDetail />
+              </ProtectedRoute>
+            } />
+         <Route path="/reviewer-dashboard/ticket/:id/feedback"
+            element={
+              <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
+                <FeedbackComponent />
+              </ProtectedRoute>
+            } />
         <Route path="/reviewer-dashboard/new-ticket"
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
@@ -343,41 +349,41 @@ const App = () => {
             </ProtectedRoute>
           } />
 
-        {/* CLIENT ROUTES */}
-        <Route path="/client-dashboard" 
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientDashboard />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/all-tickets" 
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientAllTicketPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/new-ticket"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientNewTicketPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/profile"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientProfilePage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/report"
+         {/* CLIENT ROUTES */}
+         <Route path="/client-dashboard/all-tickets"
            element={
              <ProtectedRoute allowedRoles={["Client"]}>
-               <ClientReportPage />
+               <ClientAllTicketPage />
              </ProtectedRoute>
            } />
-        <Route path="/client-dashboard/ticket/:id/feedback"
+         <Route path="/client-dashboard/new-ticket"
            element={
-             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
-               <FeedbackComponent />
+             <ProtectedRoute allowedRoles={["Client"]}>
+               <ClientNewTicketPage />
+             </ProtectedRoute>
+           } />
+         <Route path="/client-dashboard/profile"
+           element={
+             <ProtectedRoute allowedRoles={["Client"]}>
+               <ClientProfilePage />
+             </ProtectedRoute>
+           } />
+         <Route path="/client-dashboard/report"
+            element={
+              <ProtectedRoute allowedRoles={["Client"]}>
+                <ClientReportPage />
+              </ProtectedRoute>
+            } />
+         <Route path="/client-dashboard/ticket/:id/feedback"
+            element={
+              <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
+                <FeedbackComponent />
+              </ProtectedRoute>
+            } />
+         <Route path="/client-dashboard"
+           element={
+             <ProtectedRoute allowedRoles={["Client"]}>
+               <ClientDashboard />
              </ProtectedRoute>
            } />
       </Routes>

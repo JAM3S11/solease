@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 // Get all users in the system
 export const getAllUsers = async (req, res) => {
   try {
+    // The select part removes the highlighted regments in the User model
     const users = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
 
     // Return a response

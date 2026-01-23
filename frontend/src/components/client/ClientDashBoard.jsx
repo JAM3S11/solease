@@ -267,94 +267,130 @@ const ClientDashboard = () => {
               </div>
             </div>
 
-            {/* Latest Feedback Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 overflow-hidden"
-            >
-              <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
-                  Latest Conversation
-                </h2>
-                {latestFeedback && (
-                  <Link
-                    to={`/client-dashboard/ticket/${latestFeedback._id}/feedback`}
-                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    View Full Conversation
-                  </Link>
-                )}
-              </div>
+             {/* Latest Conversations Section */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.3 }}
+               className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 overflow-hidden"
+             >
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
+                    Recent Conversations
+                  </h2>
+                </div>
 
-              <div className="p-5">
-                {latestFeedback ? (
-                  <>
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {userName.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-gray-800 dark:text-white">{userName}</span>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">Client</span>
-                          {latestFeedback.comments?.some(c => c.replies?.some(r => r.aiGenerated)) && (
-                            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase rounded-full">
-                              AI Assisted
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                          {latestFeedback.comments[0].content}
-                        </p>
-                      </div>
-                    </div>
-                    {latestFeedback.comments[0].replies?.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-                          Recent Replies ({latestFeedback.comments[0].replies.length})
-                        </p>
-                        <div className="space-y-3">
-                          {latestFeedback.comments[0].replies.slice(0, 2).map((reply, index) => (
-                            <div key={index} className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 text-xs font-bold shrink-0">
-                                {reply.user?.username?.charAt(0).toUpperCase() || "U"}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm text-gray-700 dark:text-gray-200">{reply.user?.username || "Unknown"}</span>
-                                  <span className="text-xs text-gray-400">{reply.user?.role || "Support"}</span>
-                                  {reply.aiGenerated && (
-                                    <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase rounded">
-                                      AI
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                                  {reply.content}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="py-6 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                      <MessageCircle size={32} className="text-gray-400 dark:text-gray-500" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Feedback Yet</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                      Your active tickets will appear here once feedback is exchanged.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+               <div className="p-5 space-y-6">
+                 {(() => {
+                   // Collect all messages (comments and replies) from all tickets
+                   const allMessages = [];
+                   safeTickets.forEach(ticket => {
+                     ticket.comments?.forEach(comment => {
+                       if (!comment.isHidden) {
+                         allMessages.push({
+                           ...comment,
+                           type: 'comment',
+                           ticketId: ticket._id,
+                           ticketSubject: ticket.subject,
+                           createdAt: comment.createdAt
+                         });
+                         comment.replies?.forEach(reply => {
+                           allMessages.push({
+                             ...reply,
+                             type: 'reply',
+                             ticketId: ticket._id,
+                             ticketSubject: ticket.subject,
+                             createdAt: reply.createdAt
+                           });
+                         });
+                       }
+                     });
+                   });
+
+                   // Sort by createdAt descending
+                   allMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                   // Group by role and take latest 2 per role
+                   const roleGroups = { Client: [], Reviewer: [], Manager: [] };
+                   allMessages.forEach(msg => {
+                     const role = msg.user?.role || 'Unknown';
+                     if (roleGroups[role] && roleGroups[role].length < 2) {
+                       roleGroups[role].push(msg);
+                     }
+                   });
+
+                   const hasMessages = Object.values(roleGroups).some(group => group.length > 0);
+
+                   return hasMessages ? (
+                     <>
+                       {['Client', 'Reviewer', 'Manager'].map(role => (
+                         roleGroups[role].length > 0 && (
+                           <div key={role} className="space-y-3">
+                             <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                               <span className={`w-2 h-2 rounded-full ${
+                                 role === 'Client' ? 'bg-blue-500' :
+                                 role === 'Reviewer' ? 'bg-green-500' : 'bg-purple-500'
+                               }`} />
+                               {role} Conversations
+                             </h3>
+                             <div className="space-y-3">
+                               {roleGroups[role].map((msg, idx) => (
+                                 <Link
+                                   key={`${role}-${idx}`}
+                                   to={`/client-dashboard/ticket/${msg.ticketId}/feedback`}
+                                   className="block p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                 >
+                                   <div className="flex items-start gap-3">
+                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
+                                       role === 'Client' ? 'bg-blue-500' :
+                                       role === 'Reviewer' ? 'bg-green-500' : 'bg-purple-500'
+                                     }`}>
+                                       {msg.user?.name?.charAt(0) || msg.user?.username?.charAt(0) || '?'}
+                                     </div>
+                                     <div className="flex-1 min-w-0">
+                                       <div className="flex items-center gap-2 mb-1">
+                                         <span className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">
+                                           {msg.user?.name || msg.user?.username || 'Unknown'}
+                                         </span>
+                                         <span className="text-xs text-gray-400 bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                                           {msg.ticketSubject}
+                                         </span>
+                                         {msg.aiGenerated && (
+                                           <span className="px-1 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase rounded">
+                                             AI
+                                           </span>
+                                         )}
+                                       </div>
+                                       <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2">
+                                         {msg.type === 'reply' && '↳ '}{msg.content}
+                                       </p>
+                                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                         {new Date(msg.createdAt).toLocaleString()}
+                                       </p>
+                                     </div>
+                                   </div>
+                                 </Link>
+                               ))}
+                             </div>
+                           </div>
+                         )
+                       ))}
+                     </>
+                   ) : (
+                     <div className="py-6 text-center">
+                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                         <MessageCircle size={32} className="text-gray-400 dark:text-gray-500" />
+                       </div>
+                       <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Conversations Yet</h3>
+                       <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                         Your active tickets will show recent conversations here once feedback is exchanged.
+                       </p>
+                     </div>
+                   );
+                 })()}
+               </div>
+             </motion.div>
           </motion.div>
         )}
       </div>

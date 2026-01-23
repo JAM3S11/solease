@@ -20,6 +20,29 @@ const useTicketStore = create((set) => ({
             set({ error: error.message || "Error fetching tickets", loading: false });
         }
     },
+
+    // Fetch single ticket
+    fetchSingleTicket: async (id) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await api.get("/ticket/get-ticket");
+            const ticket = res.data.tickets.find(t => t._id === id);
+            if (ticket) {
+                set((state) => ({
+                    tickets: [...state.tickets.filter(t => t._id !== id), ticket],
+                    loading: false
+                }));
+                return ticket;
+            } else {
+                set({ error: "Ticket not found", loading: false });
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching single ticket:", error);
+            set({ error: error.message || "Error fetching ticket", loading: false });
+            return null;
+        }
+    },
     
     // Create ticket
     createTicket: async (ticketData) => {
@@ -82,15 +105,6 @@ const useTicketStore = create((set) => ({
                 loading: false,
             }));
 
-            // Check if chat should be enabled (messages from Client/Reviewer/Manager > 4)
-            const relevantComments = updatedTicket.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
-            if (relevantComments.length > 4 && !updatedTicket.chatEnabled) {
-                // Enable chat asynchronously
-                setTimeout(() => {
-                    updateTicket(ticketId, { chatEnabled: true });
-                }, 0);
-            }
-
             return res.data.ticket;
         } catch (error) {
             console.log("Error submitting feedback:", error);
@@ -121,15 +135,6 @@ const useTicketStore = create((set) => ({
                 ),
                 loading: false,
             }));
-
-            // Check if chat should be enabled (messages from Client/Reviewer/Manager >= 4)
-            const relevantComments = updatedTicket.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
-            if (relevantComments.length >= 4 && !updatedTicket.chatEnabled) {
-                // Enable chat by making an API call
-                api.put(`/ticket/${ticketId}/status`, { chatEnabled: true }).catch(err => {
-                    console.error("Failed to enable chat:", err);
-                });
-            }
 
             return res.data.comment;
         } catch (error) {
@@ -214,10 +219,10 @@ const useTicketStore = create((set) => ({
     },
     
     // Unhide feedback (Reviewer only)
-    unhideFeedback: async (ticketId, commentId) => {
+    unhideFeedback: async (ticketId, commentId, unhideCode) => {
         set({ loading: true, error: null });
         try {
-            const res = await api.put(`/ticket/${ticketId}/comment/${commentId}/unhide`);
+            const res = await api.put(`/ticket/${ticketId}/comment/${commentId}/unhide`, { unhideCode });
             set((state) => ({
                 tickets: state.tickets.map((ticket) =>
                     ticket._id === ticketId ? res.data.ticket : ticket

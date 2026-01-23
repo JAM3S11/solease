@@ -1,7 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Paperclip, Download, Image as ImageIcon, FileText, Ticket, MapPin, AlertCircle, Clock, Calendar, Tag, ExternalLink } from "lucide-react";
+import useTicketStore from "../../store/ticketStore";
 
 const SelectedTicketModal = ({ ticket, onClose }) => {
+  const { fetchTickets } = useTicketStore();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTickets()
+    }, 10000) // Fetch every 10 seconds
+    return () => clearInterval(interval)
+  }, [fetchTickets])
+
   if (!ticket) return null;
 
   return (
@@ -85,46 +95,105 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
             />
           </div>
 
-          {/* Attachments */}
-          {ticket.attachments && ticket.attachments.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Paperclip size={16} className="text-gray-500 dark:text-gray-400" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                  Attachments ({ticket.attachments.length})
-                </p>
-              </div>
-              <div className="space-y-2">
-                {ticket.attachments.map((attachment, index) => (
-                  <a
-                    key={index}
-                    href={`http://localhost:5001/uploads/${attachment.filename}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download={attachment.filename}
-                    className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all group"
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                      {attachment.mimetype?.startsWith("image/") ? (
-                        <ImageIcon size={20} className="text-blue-600 dark:text-blue-400" />
-                      ) : (
-                        <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+           {/* Attachments */}
+           {ticket.attachments && ticket.attachments.length > 0 && (
+             <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                 <Paperclip size={16} className="text-gray-500 dark:text-gray-400" />
+                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                   Attachments ({ticket.attachments.length})
+                 </p>
+               </div>
+               <div className="space-y-2">
+                 {ticket.attachments.map((attachment, index) => (
+                   <a
+                     key={index}
+                     href={`http://localhost:5001/uploads/${attachment.filename}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     download={attachment.filename}
+                     className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all group"
+                   >
+                     <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                       {attachment.mimetype?.startsWith("image/") ? (
+                         <ImageIcon size={20} className="text-blue-600 dark:text-blue-400" />
+                       ) : (
+                         <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+                       )}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                         {attachment.filename}
+                       </p>
+                       <p className="text-xs text-gray-500 dark:text-gray-400">
+                         {(attachment.size / 1024).toFixed(1)} KB
+                       </p>
+                     </div>
+                     <Download size={18} className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                   </a>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           {/* Comments/Feedback */}
+           {ticket.comments && ticket.comments.length > 0 && (
+             <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Tag size={16} className="text-gray-500 dark:text-gray-400" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Feedback & Comments ({ticket.comments.filter(comment => !comment.isHidden && comment.user?.role === 'Client').length})
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {ticket.comments.filter(comment => !comment.hidden).map((comment, index) => (
+                    <div key={index} className="p-4 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                            {comment.user?.username?.charAt(0).toUpperCase() || '?'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {comment.user?.name || comment.user?.username || 'Unknown User'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                              year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {comment.content}
+                      </p>
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="mt-3 space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                          {comment.replies.map((reply, rIndex) => (
+                            <div key={rIndex} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-600">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                   {reply.user?.name || reply.user?.username || 'Unknown'} replied:
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  {new Date(reply.createdAt).toLocaleDateString(undefined, {
+                                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                {reply.content}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {attachment.filename}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {(attachment.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
-                    <Download size={18} className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+                 ))}
+               </div>
+             </div>
+           )}
         </div>
 
         {/* Footer */}

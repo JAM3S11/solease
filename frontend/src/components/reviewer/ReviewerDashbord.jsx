@@ -197,41 +197,41 @@ const ReviewerDashbord = () => {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                          {ticket.user?.username || 'N/A'}
+                          {ticket.user?.name || ticket.user?.username || 'N/A'}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                         </td>
-                         <td className="px-4 py-4 text-center">
-                           {ticket.comments && ticket.comments.length > 0 ? (
-                             <Link
-                               to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
-                               className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                               title="View feedback"
-                             >
-                               <Eye size={16} className="text-blue-600 dark:text-blue-400" />
-                               <span className="text-xs text-gray-400">{ticket.comments.length}</span>
-                             </Link>
-                           ) : (ticket.status === 'In Progress' || ticket.status === 'Resolved') ? (
-                             <Link
-                               to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
-                               className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                               title="Start feedback conversation"
-                             >
-                               <MessageCircle size={16} className="text-green-600 dark:text-green-400" />
-                             </Link>
-                           ) : (
-                             <span className="text-gray-400">—</span>
-                           )}
+                          <td className="px-4 py-4 text-center">
+                            {ticket.comments && ticket.comments.length > 0 ? (
+                              <Link
+                                to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                                className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                title="View ticket with feedback"
+                              >
+                                <Eye size={16} className="text-blue-600 dark:text-blue-400" />
+                                <span className="text-xs text-gray-400">{ticket.comments.length}</span>
+                              </Link>
+                            ) : (ticket.status === 'In Progress' || ticket.status === 'Resolved') ? (
+                              <Link
+                                to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                                className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                                title="View ticket details"
+                              >
+                                <MessageCircle size={16} className="text-green-600 dark:text-green-400" />
+                              </Link>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
+                         <td className="px-4 py-4 text-right">
+                           <Link
+                             to={`/reviewer-dashboard/assigned-ticket`}
+                             className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                           >
+                             <ArrowRight size={18} />
+                           </Link>
                          </td>
-                        <td className="px-4 py-4 text-right">
-                          <Link
-                            to={`/reviewer-dashboard/assigned-ticket`}
-                            className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                          >
-                            <ArrowRight size={18} />
-                          </Link>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -240,7 +240,7 @@ const ReviewerDashbord = () => {
 
               {/* View All Footer */}
               <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 text-center">
-                <Link to="/itsupport-dashboard/assigned-ticket" className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                 <Link to="/reviewer-dashboard/assigned-ticket" className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">
                   View All Assigned Tickets
                 </Link>
               </div>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Eye, EyeOff, CheckCircle, MessageCircle, AlertTriangle, 
-  MapPin, Tag, Info, ChevronDown, X, ShieldAlert 
+import {
+  Eye, EyeOff, CheckCircle, MessageCircle, AlertTriangle,
+  MapPin, Tag, Info, ChevronDown, X, ShieldAlert, User, Clock, Send
 } from 'lucide-react'
 import { 
   Listbox, ListboxButton, ListboxOption, ListboxOptions, 
@@ -20,9 +20,9 @@ const ReviewerTicketDetail = () => {
   const feedbackRef = useRef(null)
   
   const { user } = useAuthenticationStore()
-  const { 
-    tickets, fetchTickets, hideFeedback, unhideFeedback, 
-    updateTicket, managerIntervention, loading 
+  const {
+    tickets, fetchTickets, hideFeedback, unhideFeedback,
+    updateTicket, managerIntervention, addReply, editReply, deleteReply, loading
   } = useTicketStore()
 
   // State
@@ -30,16 +30,31 @@ const ReviewerTicketDetail = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [interventionContent, setInterventionContent] = useState('')
   const [showChat, setShowChat] = useState(false)
+  const [quickReplies, setQuickReplies] = useState({})
+  const [replyingTo, setReplyingTo] = useState(null) // { type: 'comment' | 'reply', messageId: string, commentId: string, content: string, user: string }
+  const [editing, setEditing] = useState(null) // { type: 'comment' | 'reply', id: string, content: string }
+  const [newMessage, setNewMessage] = useState('')
   
   // Custom Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalAction, setModalAction] = useState({ type: '', commentId: '' })
+  const [hideCode, setHideCode] = useState('')
   const [unhideCode, setUnhideCode] = useState('')
 
   // FIX: Safe search prevents "Cannot read properties of undefined (reading '_id')"
   const ticket = useMemo(() => {
     return tickets.find(t => t?._id === id)
   }, [tickets, id])
+
+  // This checks if the user can moderate (Reviewer/Manager roles)
+  const canModerate = ['Reviewer', 'Manager'].includes(user?.role);
+
+  // This checks if the user can provide a feedback
+  const canProvideFeedback = ['Reviewer', 'Manager'].includes(user?.role);
+
+  // Count messages per user for chat conversion logic
+  const relevantMessages = ticket?.comments?.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) || [];
+  const chatEnabled = relevantMessages.length >= 4;
 
   useEffect(() => {
     if (!tickets.length) fetchTickets()
@@ -50,11 +65,19 @@ const ReviewerTicketDetail = () => {
     if (ticket?.status === 'Open' && user?.role === 'Reviewer') {
       const timer = setTimeout(() => {
         handleStatusChange('In Progress')
-        toast.info('AI: Status updated due to inactivity', { icon: '🤖' })
+        toast.info('AI: Status updated due to inactivity')
       }, 5 * 60 * 1000)
       return () => clearTimeout(timer)
     }
   }, [ticket?.status, user?.role])
+
+  // Polling for real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTickets()
+    }, 10000) // Fetch every 10 seconds
+    return () => clearInterval(interval)
+  }, [fetchTickets])
 
   const handleStatusChange = useCallback(async (newStatus) => {
     if (!ticket || newStatus === ticket.status) return
@@ -72,6 +95,7 @@ const ReviewerTicketDetail = () => {
   // Moderation Handlers
   const openModerationModal = (type, commentId) => {
     setModalAction({ type, commentId })
+    setHideCode('')
     setUnhideCode('')
     setIsModalOpen(true)
   }
@@ -81,13 +105,13 @@ const ReviewerTicketDetail = () => {
     setModerating(commentId)
     try {
       if (type === 'hide') {
-        await hideFeedback(id, commentId, unhideCode)
+        await hideFeedback(id, commentId, hideCode)
         toast.success('Comment hidden successfully')
       } else {
-        // This calls the unhideFeedback function from your store
-        await unhideFeedback(id, commentId)
+        await unhideFeedback(id, commentId, unhideCode)
         toast.success('Comment is now visible to the user')
       }
+      await fetchTickets() // Ensure immediate UI update
       setIsModalOpen(false)
     } catch (error) {
       toast.error(`Failed to ${type} comment`)
@@ -96,19 +120,117 @@ const ReviewerTicketDetail = () => {
     }
   }
 
-  const handleIntervention = async () => {
-    if (!interventionContent.trim() || !ticket?.comments?.[0]) return
-    setModerating('intervention')
-    try {
-      await managerIntervention(id, ticket.comments[0]._id, interventionContent)
-      toast.success('Manager intervention added')
-      setInterventionContent('')
-    } catch (error) {
-      toast.error('Failed to add intervention')
-    } finally {
-      setModerating(null)
+   const handleIntervention = async () => {
+     if (!interventionContent.trim() || !ticket?.comments?.[0]) return
+     setModerating('intervention')
+     try {
+       await managerIntervention(id, ticket.comments[0]._id, interventionContent)
+       toast.success('Manager intervention added')
+       setInterventionContent('')
+     } catch (error) {
+       toast.error('Failed to add intervention')
+     } finally {
+       setModerating(null)
+     }
+   }
+
+   const handleQuickReply = async (commentId) => {
+     const content = quickReplies[commentId]?.trim()
+     if (!content) return
+     setModerating(commentId)
+     try {
+       await addReply(id, commentId, content)
+       toast.success('Reply sent successfully')
+       setQuickReplies(prev => ({ ...prev, [commentId]: '' }))
+       setReplyingTo(null)
+       await fetchTickets()
+     } catch (error) {
+       toast.error('Failed to send reply')
+     } finally {
+       setModerating(null)
+     }
+   }
+
+   const startReply = (type, messageId, commentId, content, user) => {
+     setReplyingTo({ type, messageId, commentId, content, user })
+   }
+
+   const cancelReply = () => {
+     if (replyingTo) {
+       setQuickReplies(prev => ({ ...prev, [replyingTo.commentId]: '' }))
+     }
+     setReplyingTo(null)
+   }
+
+   const startEdit = (type, id, content) => {
+     setEditing({ type, id, content })
+   }
+
+   const saveEdit = async () => {
+     if (!editing) return
+     const newContent = editing.content.trim()
+     if (!newContent) return
+     setModerating(editing.id)
+     try {
+       if (editing.type === 'reply') {
+         // Find the comment and reply
+         const comment = ticket.comments.find(c => c.replies.some(r => r._id === editing.id))
+         if (comment) {
+           await editReply(id, comment._id, editing.id, newContent)
+         }
+       }
+       // Comments are not editable in this setup
+       toast.success('Message updated')
+       setEditing(null)
+       await fetchTickets()
+     } catch (error) {
+       toast.error('Failed to update message')
+     } finally {
+       setModerating(null)
+     }
+   }
+
+    const handleDelete = async (type, messageId) => {
+      if (!confirm('Are you sure you want to delete this message?')) return
+      setModerating(messageId)
+      try {
+        if (type === 'reply') {
+          // Find the comment
+          const comment = ticket.comments.find(c => c.replies.some(r => r._id === messageId))
+          if (comment) {
+            await deleteReply(id, comment._id, messageId)
+          }
+        }
+        toast.success('Message deleted')
+        await fetchTickets()
+      } catch (error) {
+        toast.error('Failed to delete message')
+      } finally {
+        setModerating(null)
+      }
     }
-  }
+
+    const handleSubmitMessage = async () => {
+      if (!newMessage.trim()) return
+
+      try {
+        if (!ticket.comments || ticket.comments.length === 0) {
+          // First message - submit as feedback (but reviewer might not)
+          toast.error('No comments to reply to')
+          return
+        } else {
+          // Add as reply to the latest comment
+          const latestComment = ticket.comments[ticket.comments.length - 1]
+          await addReply(id, latestComment._id, newMessage)
+          toast.success('Message sent successfully')
+        }
+        setNewMessage('')
+      } catch (error) {
+        console.error('Error sending message:', error)
+        const errorMessage = error.response?.data?.message || 'Failed to send message'
+        toast.error(errorMessage)
+      }
+    }
 
   if (loading && !ticket) {
     return <DashboardLayout><div className="p-8 text-center dark:text-white">Loading ticket...</div></DashboardLayout>
@@ -151,79 +273,103 @@ const ReviewerTicketDetail = () => {
                 </div>
              </Listbox>
           </div>
-        </div>
+         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Ticket Content */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Info size={18} className="text-blue-500" /> Description
-              </h3>
-              <div className="space-y-4">
-                <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg leading-tight">{ticket.subject}</p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{ticket.description}</p>
-              </div>
-            </motion.div>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           <div className="lg:col-span-2 space-y-6">
+             {/* Ticket Content */}
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                 <Info size={18} className="text-blue-500" /> Description
+               </h3>
+               <div className="space-y-4">
+                 <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg leading-tight">{ticket.subject}</p>
+                 <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{ticket.description}</p>
+               </div>
+             </motion.div>
 
-            {/* Feedback Log - Where Hiding/Unhiding happens */}
-            <div ref={feedbackRef} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Interaction Log</h3>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-bold text-gray-500">
-                  {ticket.comments?.length || 0} Total
-                </span>
-              </div>
+             {/* Feedback Log - Where Hiding/Unhiding happens */}
+             <div ref={feedbackRef} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Interaction Log</h3>
+                  <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-bold text-gray-500">
+                    {ticket.comments?.filter(c => c.user?.role === 'Client').length || 0} Total
+                  </span>
+               </div>
 
-              <div className="space-y-4">
-                {ticket.comments?.map((comment, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`p-4 rounded-2xl border transition-all ${
-                      comment.hidden 
-                        ? 'bg-gray-50 dark:bg-gray-900/40 border-dashed border-gray-200 dark:border-gray-700 opacity-80' 
-                        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex gap-3">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold ${comment.hidden ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
-                          {comment.user?.username?.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`font-bold text-sm ${comment.hidden ? 'text-gray-400' : 'dark:text-white'}`}>{comment.user?.username}</span>
-                            {comment.hidden && <span className="text-[10px] bg-gray-200 dark:bg-gray-700 text-gray-500 px-2 py-0.5 rounded font-black uppercase">Hidden</span>}
-                          </div>
-                          <p className={`text-sm mt-1 ${comment.hidden ? 'text-gray-400 italic line-through' : 'text-gray-600 dark:text-gray-300'}`}>
-                            {comment.content}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Action Buttons: Reviewers can always see the toggle */}
-                      <button 
-                        onClick={() => openModerationModal(comment.hidden ? 'unhide' : 'hide', comment._id)}
-                        className={`p-2 rounded-xl transition-all hover:scale-110 ${
-                          comment.hidden 
-                            ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20' 
-                            : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                        }`}
-                        title={comment.hidden ? "Restore Comment" : "Hide Comment"}
-                      >
-                        {comment.hidden ? <Eye size={20} /> : <EyeOff size={20} />}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+               <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                 {ticket.comments?.map((comment, idx) =>
+                   <div
+                     key={idx}
+                      className={`p-4 rounded-lg border ${
+                        comment.isHidden ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+                      }`}
+                   >
+                     <div className="flex items-start justify-between">
+                       <div className="flex-1">
+                         <div className="flex items-center gap-2 mb-2">
+                           <User size={16} className="text-gray-400" />
+                           <span className="font-medium text-gray-900 dark:text-white">{comment.user?.name || comment.user?.username || 'Unknown'}</span>
+                           <span className="text-xs text-gray-500 dark:text-gray-400">({comment.user?.role || 'User'})</span>
+                           {comment.aiGenerated && (
+                             <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 text-xs font-bold uppercase rounded">
+                               AI
+                             </span>
+                           )}
+                            {comment.isHidden && (
+                              <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold uppercase rounded">
+                                Hidden
+                              </span>
+                            )}
+                         </div>
+                         <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{comment.content}</p>
+                         <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                           <Clock size={12} />
+                           {new Date(comment.createdAt || Date.now()).toLocaleString()}
+                         </div>
+                         {comment.replies && comment.replies.length > 0 && (
+                           <div className="mt-4 space-y-2">
+                             {comment.replies.map(reply =>
+                               <div key={reply._id} className="ml-4 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                                  <p className='text-sm text-gray-900'>{reply.user?.name || reply.user?.username || 'Unknown'}</p>
+                                 <p className="text-[11px] text-gray-700 dark:text-gray-300">{reply.content}</p>
+                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                   {new Date(reply.createdAt || Date.now()).toLocaleString()}
+                                 </div>
+                               </div>
+                             )}
+                           </div>
+                         )}
+                       </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+                       {/* Moderation Actions */}
+                       {canModerate && (
+                         <div className="flex gap-2 ml-4">
+                            <button
+                              onClick={() => openModerationModal(comment.isHidden ? 'unhide' : 'hide', comment._id)}
+                              disabled={moderating === comment._id}
+                              className={`p-1 rounded disabled:opacity-50 ${
+                                comment.isHidden
+                                  ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20'
+                                  : 'text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20'
+                              }`}
+                              title={comment.isHidden ? 'Unhide Comment' : 'Hide Comment'}
+                            >
+                              {comment.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+           </div>
+
+           {/* Sidebar */}
+           <div className="space-y-6">
              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <h4 className="font-bold mb-4 text-sm dark:text-white flex items-center gap-2 uppercase tracking-widest text-xs opacity-50">Details</h4>
+                <h4 className="font-bold mb-4 text-sm dark:text-white flex items-center gap-2 uppercase tracking-widest opacity-50">Details</h4>
                 <div className="space-y-4">
                    <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-400 font-bold uppercase">Priority</span>
@@ -239,9 +385,73 @@ const ReviewerTicketDetail = () => {
                      <MessageCircle size={18} /> Internal Chat
                    </button>
                 </div>
+
+               {/* Message Input */}
+               {canProvideFeedback && (
+                 <div className="mt-6">
+                   <textarea
+                     value={newMessage}
+                     onChange={(e) => setNewMessage(e.target.value)}
+                     placeholder="Add a comment..."
+                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     rows={3}
+                     onKeyDown={(e) => {
+                       if (e.key === 'Enter' && !e.shiftKey) {
+                         e.preventDefault();
+                         handleSubmitMessage();
+                       }
+                     }}
+                   />
+                   <button
+                     onClick={handleSubmitMessage}
+                     disabled={loading || !newMessage.trim()}
+                     className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                   >
+                     <Send size={16} />
+                     Send
+                   </button>
+                 </div>
+               )}
              </div>
-          </div>
-        </div>
+           </div>
+         </div>
+
+        {/* Internal Chat Modal */}
+        <Transition show={showChat} as={React.Fragment}>
+          <Dialog as="div" className="relative z-[100]" onClose={() => setShowChat(false)}>
+            <TransitionChild as={React.Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
+              <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md" />
+            </TransitionChild>
+
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-[2rem] bg-white dark:bg-gray-800 p-8 text-left align-middle shadow-2xl transition-all border border-white/10">
+                  <DialogTitle as="h3" className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                    <MessageCircle className="text-blue-500" />
+                    Internal Chat
+                  </DialogTitle>
+
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Use this space for internal communication about this ticket between reviewers and managers.
+                    </p>
+                    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+                        Chat functionality coming soon...
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex gap-3">
+                    <button onClick={() => setShowChat(false)} className="flex-1 py-3 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">
+                      Close
+                    </button>
+                  </div>
+                </DialogPanel>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
 
         {/* REUSABLE DIALOG MODAL */}
         <Transition show={isModalOpen} as={React.Fragment}>
@@ -259,34 +469,43 @@ const ReviewerTicketDetail = () => {
                   </DialogTitle>
                   
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                      {modalAction.type === 'hide' 
-                        ? 'This will remove the comment from the public feed. You must provide a moderation reason below.' 
-                        : 'This will restore the comment. It will become visible to the user and other participants immediately.'}
-                    </p>
-                    {modalAction.type === 'hide' && (
-                      <input
-                        autoFocus
-                        type="text"
-                        value={unhideCode}
-                        onChange={(e) => setUnhideCode(e.target.value)}
-                        placeholder="Reason (e.g., Profanity, Spam)"
-                        className="mt-4 w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                      />
-                    )}
+                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                       {modalAction.type === 'hide'
+                         ? 'This will remove the comment from the public feed. You must provide the hide code "SOLEASEHIDE".'
+                         : 'This will restore the comment. You must provide the unhide code "SOLEASEUNHIDE".'}
+                     </p>
+                     {modalAction.type === 'hide' ? (
+                       <input
+                         autoFocus
+                         type="text"
+                         value={hideCode}
+                         onChange={(e) => setHideCode(e.target.value)}
+                         placeholder="Enter hide code: SOLEASEHIDE"
+                         className="mt-4 w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                       />
+                     ) : (
+                       <input
+                         autoFocus
+                         type="text"
+                         value={unhideCode}
+                         onChange={(e) => setUnhideCode(e.target.value)}
+                         placeholder="Enter unhide code: SOLEASEUNHIDE"
+                         className="mt-4 w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                       />
+                     )}
                   </div>
 
                   <div className="mt-8 flex gap-3">
                     <button onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">
                       Nevermind
                     </button>
-                    <button
-                      onClick={submitModeration}
-                      disabled={moderating || (modalAction.type === 'hide' && !unhideCode)}
-                      className={`flex-1 py-3 text-sm font-black text-white rounded-2xl shadow-xl transition-all ${
-                        modalAction.type === 'hide' ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30' : 'bg-green-600 hover:bg-green-700 shadow-green-500/30'
-                      } disabled:opacity-30`}
-                    >
+                     <button
+                       onClick={submitModeration}
+                       disabled={moderating || (modalAction.type === 'hide' ? !hideCode : !unhideCode)}
+                       className={`flex-1 py-3 text-sm font-black text-white rounded-2xl shadow-xl transition-all ${
+                         modalAction.type === 'hide' ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30' : 'bg-green-600 hover:bg-green-700 shadow-green-500/30'
+                       } disabled:opacity-30`}
+                     >
                       {moderating ? 'Syncing...' : 'Confirm Action'}
                     </button>
                   </div>
@@ -294,9 +513,9 @@ const ReviewerTicketDetail = () => {
               </div>
             </div>
           </Dialog>
-        </Transition>
-      </div>
-    </DashboardLayout>
+          </Transition>
+        </div>
+      </DashboardLayout>
   )
 }
 

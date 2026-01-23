@@ -116,7 +116,9 @@ export const getTickets = async (req, res) => {
         };
 
         const tickets = await Ticket.find(query)
-        .populate("user", "username role")
+        .populate("user", "username name role")
+        .populate("comments.user", "username name role")
+        .populate("comments.replies.user", "username name role")
         .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments")
         .sort(sort);
 
@@ -136,7 +138,7 @@ export const getTickets = async (req, res) => {
 // Update ticket status (for automation or admin purposes)
 export const updateTicketStatus = async (req, res) => {
     const { id } = req.params;
-    const { status, isAutomated } = req.body;
+    const { status, isAutomated, chatEnabled } = req.body;
 
     try {
         const ticket = await Ticket.findById(id);
@@ -164,6 +166,10 @@ export const updateTicketStatus = async (req, res) => {
             ticket.isAutomated = isAutomated;
             ticket.autoResolvedAt = new Date();
             ticket.resolutionMethod = "Auto";
+        }
+
+        if(typeof chatEnabled === 'boolean'){
+            ticket.chatEnabled = chatEnabled;
         }
 
         await ticket.save();
@@ -433,6 +439,13 @@ export const hideFeedback = async (req, res) => {
             });
         }
 
+        if(unhideCode !== "SOLEASEHIDE"){
+            return res.status(403).json({
+                success: false,
+                message: "Invalid hide code"
+            });
+        }
+
         const ticket = await Ticket.findById(ticketId);
 
         if(!ticket){
@@ -450,8 +463,15 @@ export const hideFeedback = async (req, res) => {
             });
         }
 
+        if(comment.isHidden){
+            return res.status(400).json({
+                success: false,
+                message: "Comment is already hidden"
+            });
+        }
+
         comment.isHidden = true;
-        comment.unhideCode = unhideCode || "SOLEASURENHIDE";
+        comment.unhideCode = "SOLEASEHIDE";
         comment.approvedForManager = false;
 
         await ticket.save();
@@ -473,12 +493,20 @@ export const hideFeedback = async (req, res) => {
 // Unhide feedback (Reviewer only)
 export const unhideFeedback = async (req, res) => {
     const { ticketId, commentId } = req.params;
+    const { unhideCode } = req.body;
 
     try {
         if(req.user.role !== "Reviewer"){
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to unhide feedback"
+            });
+        }
+
+        if(unhideCode !== "SOLEASEUNHIDE"){
+            return res.status(403).json({
+                success: false,
+                message: "Invalid unhide code"
             });
         }
 
@@ -496,6 +524,13 @@ export const unhideFeedback = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
+            });
+        }
+
+        if(!comment.isHidden){
+            return res.status(400).json({
+                success: false,
+                message: "Comment is not hidden"
             });
         }
 

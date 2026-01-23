@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Ticket, Search, ArrowRight } from 'lucide-react'
+import { Ticket, Search, ArrowRight, Clock, CheckCircle, MessageCircle } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import { Link } from 'react-router-dom'
@@ -18,6 +18,26 @@ const ReviewerAssignedTickets = () => {
   const safeTickets = Array.isArray(tickets) ? tickets : []
 
   const assignedTickets = safeTickets.filter(t => t.status !== 'Closed')
+
+  // Stats
+  const stats = {
+    total: assignedTickets.length,
+    open: assignedTickets.filter(t => t.status === 'Open').length,
+    inProgress: assignedTickets.filter(t => t.status === 'In Progress').length,
+    resolved: assignedTickets.filter(t => t.status === 'Resolved').length,
+    pendingFeedback: assignedTickets.filter(t => t.status === 'Resolved' && t.comments && t.comments.length > 0 && t.comments.some(c => !c.hidden)).length
+  }
+
+  const getColorClasses = (color) => {
+    const maps = {
+      blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+      orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
+      green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+      purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+      indigo: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400',
+    }
+    return maps[color] || maps.blue
+  }
 
   const displayTickets = assignedTickets
     .filter(t => t.subject?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -40,6 +60,35 @@ const ReviewerAssignedTickets = () => {
             Manage and moderate your assigned support tickets.
           </p>
         </div>
+
+        {/* Stats Grid */}
+        {!loading && !error && assignedTickets.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {[
+              { label: 'Total Assigned', val: stats.total, icon: Ticket, color: 'blue' },
+              { label: 'Open Tickets', val: stats.open, icon: Clock, color: 'orange' },
+              { label: 'In Progress', val: stats.inProgress, icon: Clock, color: 'indigo' },
+              { label: 'Resolved', val: stats.resolved, icon: CheckCircle, color: 'green' },
+              { label: 'Pending Feedback Review', val: stats.pendingFeedback, icon: MessageCircle, color: 'purple' },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4"
+              >
+                <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
+                  <stat.icon size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Search */}
         <div className="mb-6 flex justify-end">
@@ -129,7 +178,7 @@ const ReviewerAssignedTickets = () => {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                          {ticket.user?.username || 'N/A'}
+                          {ticket.user?.name || ticket.user?.username || 'N/A'}
                         </td>
                         <td className="px-4 py-4 text-center">
                           {ticket.comments && ticket.comments.length > 0 ? (

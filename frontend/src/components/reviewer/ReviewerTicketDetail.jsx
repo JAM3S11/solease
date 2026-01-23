@@ -305,7 +305,7 @@ const ReviewerTicketDetail = () => {
           {/* Back Button */}
           <div className="flex items-center gap-2 mb-8">
             <button
-              onClick={() => navigate('/reviewer/dashboard')}
+              onClick={() => navigate('/reviewer-dashboard')}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <ChevronDown size={16} className="rotate-90" />
@@ -332,7 +332,7 @@ const ReviewerTicketDetail = () => {
 
               <div className="space-y-3">
                 <button
-                  onClick={() => navigate('/reviewer/dashboard')}
+                  onClick={() => navigate('/reviewer-dashboard')}
                   className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <ChevronDown size={16} className="rotate-90" />
@@ -367,7 +367,7 @@ const ReviewerTicketDetail = () => {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <button
-              onClick={() => navigate('/reviewer/dashboard')}
+              onClick={() => navigate('/reviewer-dashboard')}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               <ChevronDown size={16} className="rotate-90" />

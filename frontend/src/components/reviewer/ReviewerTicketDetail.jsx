@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Eye, EyeOff, CheckCircle, MessageCircle, AlertTriangle,
-  MapPin, Tag, Info, ChevronDown, X, ShieldAlert, User, Clock, Send, ThumbsUp
+  MapPin, Tag, Info, ChevronDown, X, ShieldAlert, User, Clock, Send, ThumbsUp, Bot
 } from 'lucide-react'
 import { 
   Listbox, ListboxButton, ListboxOption, ListboxOptions, 
@@ -182,8 +182,181 @@ const ReviewerTicketDetail = () => {
     }
   }
 
-  if (loading) return <DashboardLayout><div className="p-8 text-center dark:text-white">Loading...</div></DashboardLayout>
-  if (!ticket) return <DashboardLayout><div className="p-8 text-center text-red-600">Ticket not found</div></DashboardLayout>
+  if (loading) return (
+    <DashboardLayout>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-20">
+          {/* Loading Header Skeleton */}
+          <div className="mb-8 animate-pulse">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="w-64 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg mb-2"></div>
+                <div className="w-48 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+              <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-lg">
+                <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="w-24 h-8 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading Content Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Description Skeleton */}
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-32 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border-l-4 border-blue-500">
+                    <div className="w-full h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                    <div className="w-3/4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Interaction Log Skeleton */}
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-40 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                </div>
+                <div className="space-y-8">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        <div className="w-0.5 h-16 bg-gray-200 dark:bg-gray-700 rounded-full mt-2"></div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-600 shadow-sm">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                              <div className="w-12 h-3 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            </div>
+                            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                          </div>
+                          <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                          <div className="w-3/4 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                          <div className="flex justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-600">
+                            <div className="w-12 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="w-24 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Skeleton */}
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
+                <div className="space-y-5">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                      <div className="flex justify-between items-center">
+                        <div className="w-16 h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="w-full h-10 bg-gray-200 dark:bg-gray-700 rounded-xl mt-6"></div>
+                </div>
+                <div className="mt-6 space-y-3">
+                  <div className="w-full h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading Spinner Overlay */}
+          <div className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-100 dark:border-gray-700"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">Loading Ticket Details...</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Please wait while we fetch the information</div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+
+  if (!ticket) return (
+    <DashboardLayout>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-20">
+          {/* Back Button */}
+          <div className="flex items-center gap-2 mb-8">
+            <button
+              onClick={() => navigate('/reviewer/dashboard')}
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              <ChevronDown size={16} className="rotate-90" />
+              Back to Dashboard
+            </button>
+          </div>
+
+          {/* Not Found Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md mx-auto text-center"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 shadow-lg">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle size={40} className="text-red-600 dark:text-red-400" />
+                </div>
+                <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Ticket Not Found</h1>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                  The ticket you're looking for doesn't exist or has been removed. It might have been deleted or you may have followed an incorrect link.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate('/reviewer/dashboard')}
+                  className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ChevronDown size={16} className="rotate-90" />
+                  Return to Dashboard
+                </button>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  If you believe this is an error, please contact support.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </DashboardLayout>
+  )
 
   return (
     <DashboardLayout>

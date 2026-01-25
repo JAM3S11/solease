@@ -80,7 +80,7 @@ const AdminSettingPage = () => {
         animate="visible"
         className='p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto'
       >
-        {/* Header */}
+        {/* Header
         <motion.div variants={itemVariants} className='flex flex-col items-start space-y-1 mb-8'>
           <h2 className='text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100'>
             Profile
@@ -90,7 +90,7 @@ const AdminSettingPage = () => {
           </p>
         </motion.div>
 
-        {/* User Card */}
+        /// User Card
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -2 }}
@@ -102,7 +102,7 @@ const AdminSettingPage = () => {
           <p className='text-xs font-bold text-blue-500 mt-1 tracking-wider'>
             CLIENT ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
           </p>
-        </motion.div>
+        </motion.div> */}
 
         {/* Profile Settings */}
         <ProfileSettings

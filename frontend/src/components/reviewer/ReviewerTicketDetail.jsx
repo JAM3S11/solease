@@ -182,7 +182,7 @@ const ReviewerTicketDetail = () => {
     }
   }
 
-  if (loading) return (
+  if (loading & !ticket) return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-20">
@@ -615,7 +615,7 @@ const ReviewerTicketDetail = () => {
                   </div>
                   <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
                      <span className="text-xs text-gray-500 font-bold uppercase">Location</span>
-                     <span className="text-xs font-bold dark:text-gray-300 flex items-center gap-1"><MapPin size={12} className="text-gray-400" /> {ticket.location}</span>
+                     <span className="text-xs font-medium dark:text-gray-300 flex items-center gap-1"><MapPin size={12} className="text-gray-400" /> {ticket.location}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
                      <span className="text-xs text-gray-500 font-bold uppercase">Last Updated</span>

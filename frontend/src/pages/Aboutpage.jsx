@@ -26,7 +26,7 @@ const Aboutpage = () => {
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="inline-block px-4 py-1.5 mb-6 border border-blue-500/20 bg-blue-500/10 rounded-full animate-bounce duration-700"
+            className="inline-block px-4 py-1.5 mb-6 border border-blue-500/20 bg-blue-500/10 rounded-full animate-bounce duration-900"
           >
             <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
               Universal Support Engine

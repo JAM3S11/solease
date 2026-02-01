@@ -13,7 +13,7 @@ const DashboardLayout = ({ children }) => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="solease-ui-theme">
       <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full overflow-hidden bg-sidebar">
+        <div className="flex h-screen w-full overflow-hidden bg-background">
           <AppSidebar userRole={user?.role} />
 
           <SidebarInset className="flex flex-col flex-1 min-w-0 h-full bg-background m-0 peer-data-[variant=inset]:m-0 rounded-none peer-data-[variant=inset]:rounded-none shadow-none border-none">

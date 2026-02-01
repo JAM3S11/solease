@@ -156,7 +156,7 @@ export function AppSidebar({ userRole }) {
   };
 
   return (
-    <Sidebar variant="inset" collapsible="icon" className="sticky top-0 h-screen">
+    <Sidebar variant="default" collapsible="icon" className="sticky top-0 h-screen bg-sidebar dark:bg-background border-r transition-colors duration-300">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

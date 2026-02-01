@@ -16,10 +16,10 @@ const DashboardLayout = ({ children }) => {
         <div className="flex h-screen w-full overflow-hidden bg-background">
           <AppSidebar userRole={user?.role} />
 
-          <SidebarInset className="flex flex-col flex-1 min-w-0 h-full bg-background m-0 peer-data-[variant=inset]:m-0 rounded-none peer-data-[variant=inset]:rounded-none shadow-none border-none">
-            <header className="flex h-14 shrink-0 items-center gap-2 px-4 border-b border-sidebar-border/50 bg-background">
+          <SidebarInset className="flex flex-col flex-1 min-w-0 h-full m-0 rounded-none shadow-none border-none overflow-hidden">
+            <header className="flex h-14 shrink-0 items-center gap-2 px-4 border-b border-border/50 bg-background/95 backdrop-blur">
               <SidebarTrigger className="-ml-1" />
-              <div className="h-4 w-[1px] bg-sidebar-border mx-2" />
+              <div className="h-4 w-[1px] bg-border mx-2" />
               <div className="flex-1">
                 <DynamicBreadcrumb />
               </div>

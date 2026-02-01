@@ -1,6 +1,6 @@
 // frontend/src/store/adminStore.js
 import { create } from "zustand";
-import api from "../lib/utils";
+import api from "../lib/axios";
 
 const useAdminStore = create((set) => ({
   users: [],

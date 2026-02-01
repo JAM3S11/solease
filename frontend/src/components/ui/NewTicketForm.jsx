@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { MapPin, Tag, Info, AlertTriangle, Send, ChevronDown, Check, Upload, X, File } from "lucide-react";
 import { motion } from "framer-motion";
-import api from "../../lib/utils";
+import api from "../../lib/axios";
 
 const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', tickets = [] }) => {
   const { user } = useAuthenticationStore();

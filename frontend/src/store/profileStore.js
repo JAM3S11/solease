@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import api from "../lib/utils.js";
+import api from "../lib/axios.js";
 import { useAuthenticationStore } from "../store/authStore.js";
 
 export const useProfileStore = create((set) => ({

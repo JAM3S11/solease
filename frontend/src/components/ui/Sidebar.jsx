@@ -1,218 +1,205 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+// components/Sidebar.jsx
+import React from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-  Home,
-  Users,
-  Ticket,
-  Settings,
-  LogOut,
-  Menu,
-  LucideChartSpline,
-  ChevronDown,
-  ChevronUp,
+  Home, Users, Ticket, Settings, LogOut,
+  LucideChartSpline, ChevronDown
 } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarSeparator,
+  useSidebar,
+} from "./shadcn-sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
+import { cn } from "../../lib/utils";
 
-const Sidebar = ({ userRole }) => {
-  const [openMenus, setOpenMenus] = useState({});
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const MENU_CONFIG = {
+  Manager: {
+    top: [
+      { name: "Dashboard", icon: Home, path: "/admin-dashboard" },
+      { name: "Users", icon: Users, submenu: [{ name: "All Users", path: "/admin-dashboard/users" }] },
+      { 
+        name: "Tickets", 
+        icon: Ticket, 
+        submenu: [
+          { name: "All Tickets", path: "/admin-dashboard/admin-tickets" },
+          { name: "Pending", path: "/admin-dashboard/admin-pending-tickets" },
+          { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
+        ] 
+      },
+      { name: "Reports", icon: LucideChartSpline, path: "/admin-dashboard/admin-reports" },
+    ],
+    bottom: [
+      { name: "Settings", icon: Settings, path: "/admin-dashboard/admin-settings" },
+    ],
+  },
+  Reviewer: {
+    top: [
+      { name: "Dashboard", icon: Home, path: "/reviewer-dashboard" },
+      { 
+        name: "Tickets", 
+        icon: Ticket, 
+        submenu: [
+          { name: "New Ticket", path: "/reviewer-dashboard/new-ticket" },
+          { name: "Assigned", path: "/reviewer-dashboard/assigned-ticket" },
+        ]
+      },
+      { name: "Report", icon: LucideChartSpline, path: "/reviewer-dashboard/report" },
+    ],
+    bottom: [
+      { name: "Settings", icon: Settings, path: "/reviewer-dashboard/settings" },
+    ],
+  },
+  Client: {
+    top: [
+      { name: "Dashboard", icon: Home, path: "/client-dashboard" },
+      { 
+        name: "My Tickets", 
+        icon: Ticket, 
+        submenu: [
+          { name: "All Tickets", path: "/client-dashboard/all-tickets" },
+          { name: "New Ticket", path: "/client-dashboard/new-ticket" },
+        ]
+      },
+      { name: "Report", icon: LucideChartSpline, path: "/client-dashboard/report" },
+    ],
+    bottom: [
+      { name: "Profile", icon: Users, path: "/client-dashboard/profile" },
+    ],
+  },
+};
 
+export function AppSidebar({ userRole }) {
   const { logout } = useAuthenticationStore();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) setIsCollapsed(true);
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const location = useLocation();
+  const { state } = useSidebar();
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("We shall miss you..", { duration: 2000, icon: "😭" });
+      toast.success("See you later!", { duration: 2000 });
       navigate("/auth/login");
     } catch (err) {
-      console.error("Logout failed", err);
+      toast.error("Logout failed");
     }
   };
 
-  const toggleMenu = (menuName) => {
-    if (isCollapsed) return;
-    setOpenMenus((prev) => ({
-      ...prev,
-      [menuName]: !prev[menuName],
-    }));
+  const currentMenu = MENU_CONFIG[userRole] || { top: [], bottom: [] };
+
+  const isRouteActive = (path, submenu) => {
+    if (path) return location.pathname === path;
+    if (submenu) return submenu.some(sub => location.pathname === sub.path);
+    return false;
   };
 
-  const menuItems = {
-    Manager: {
-      top: [
-        { name: "Dashboard", icon: <Home />, path: "/admin-dashboard" },
-        { name: "Users", icon: <Users />, submenu: [{ name: "All Users", path: "/admin-dashboard/users" }] },
-        { 
-          name: "Tickets", 
-          icon: <Ticket />, 
-          submenu: [
-            { name: "All Tickets", path: "/admin-dashboard/admin-tickets" },
-            { name: "Pending", path: "/admin-dashboard/admin-pending-tickets" },
-            { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
-          ] 
-        },
-        { name: "Reports", icon: <LucideChartSpline />, path: "/admin-dashboard/admin-reports" },
-      ],
-      bottom: [
-        { name: "Settings", icon: <Settings />, path: "/admin-dashboard/admin-settings" },
-        { name: "Logout", icon: <LogOut />, action: handleLogout },
-      ],
-    },
-    Reviewer: {
-        top: [
-          { name: "Dashboard", icon: <Home />, path: "/reviewer-dashboard" },
-          { name: "Tickets", icon: <Ticket />, submenu: [
-              {name: "New Ticket", path: "/reviewer-dashboard/new-ticket"},
-              {name: "Assigned", path: "/reviewer-dashboard/assigned-ticket"},
-          ]},
-          { name: "Report", icon: <LucideChartSpline />, path: "/reviewer-dashboard/report" },
-        ],
-        bottom: [
-          { name: "Settings", icon: <Settings />, path: "/reviewer-dashboard/settings" },
-          { name: "Logout", icon: <LogOut />, action: handleLogout },
-        ],
-    },
-    Client: {
-      top: [
-        { name: "Dashboard", icon: <Home />, path: "/client-dashboard" },
-        { name: "My Tickets", icon: <Ticket />, submenu: [
-            { name: "All Tickets", path: "/client-dashboard/all-tickets" },
-            { name: "New Ticket", path: "/client-dashboard/new-ticket" },
-        ]},
-        { name: "Report", icon: <LucideChartSpline />, path: "/client-dashboard/report" },
-      ],
-      bottom: [
-        { name: "Profile", icon: <Users />, path: "/client-dashboard/profile" },
-        { name: "Logout", icon: <LogOut />, action: handleLogout }
-      ],
-    },
-  };
-
-  const renderItem = (item) => {
-    const isActiveLink = (path) => window.location.pathname === path;
-    const iconSize = isCollapsed ? 24 : 22;
-    const baseItemClasses = `group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 w-full font-medium ${
-      isCollapsed ? "justify-center px-0" : "hover:bg-slate-800/50"
-    }`;
-    const activeClasses = "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/20";
-    const nonActiveClasses = "text-slate-400 hover:text-white";
-
-    const Tooltip = ({ text }) => (
-      isCollapsed && (
-        <div className="absolute left-16 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bg-slate-900 text-cyan-400 text-xs py-2 px-3 rounded-lg border border-slate-700 whitespace-nowrap z-[100] shadow-xl pointer-events-none">
-          {text}
-        </div>
-      )
-    );
+  const NavItem = ({ item }) => {
+    const Icon = item.icon;
+    const isActive = isRouteActive(item.path, item.submenu);
 
     if (item.submenu) {
-      const isAnySubActive = item.submenu.some(sub => isActiveLink(sub.path));
       return (
-        <div key={item.name} className="mb-1">
-          <button
-            onClick={() => toggleMenu(item.name)}
-            className={`${baseItemClasses} ${!isCollapsed && isAnySubActive ? "text-cyan-400" : nonActiveClasses}`}
-          >
-            <div className="flex items-center gap-3">
-              {React.cloneElement(item.icon, { size: iconSize })}
-              {!isCollapsed && <span>{item.name}</span>}
-            </div>
-            {!isCollapsed && (openMenus[item.name] ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
-            <Tooltip text={item.name} />
-          </button>
-          
-          {openMenus[item.name] && !isCollapsed && (
-            <div className="flex flex-col mt-1 ml-6 border-l border-slate-700 pl-4 space-y-1">
-              {item.submenu.map((sub) => (
-                <NavLink
-                  key={sub.name}
-                  to={sub.path}
-                  className={({ isActive }) =>
-                    `text-sm py-2 transition-colors ${isActive ? "text-cyan-400 font-bold" : "text-slate-500 hover:text-slate-300"}`
-                  }
-                >
-                  {sub.name}
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    if (item.action) {
-      return (
-        <button key={item.name} 
-          onClick={item.action} 
-          className={`${baseItemClasses} text-red-400 hover:bg-red-500/10`}>
-          {React.cloneElement(item.icon, { size: iconSize })}
-          {!isCollapsed && <span>{item.name}</span>}
-          <Tooltip text={item.name} />
-        </button>
+        <Collapsible key={item.name} asChild defaultOpen={isActive} className="group/collapsible">
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.name}>
+                <Icon className={cn("size-4", isActive && "text-primary")} />
+                <span className="font-medium">{item.name}</span>
+                <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {item.submenu.map((sub) => (
+                  <SidebarMenuSubItem key={sub.name}>
+                    <SidebarMenuSubButton asChild isActive={location.pathname === sub.path}>
+                      <NavLink to={sub.path}>
+                        <span>{sub.name}</span>
+                      </NavLink>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
       );
     }
 
     return (
-      <NavLink
-        key={item.name}
-        to={item.path}
-        className={({ isActive }) => `${baseItemClasses} ${isActive ? activeClasses : nonActiveClasses}`}
-      >
-        {React.cloneElement(item.icon, { size: iconSize })}
-        {!isCollapsed && <span>{item.name}</span>}
-        <Tooltip text={item.name} />
-      </NavLink>
+      <SidebarMenuItem key={item.name}>
+        <SidebarMenuButton 
+          asChild 
+          tooltip={item.name}
+          isActive={location.pathname === item.path}
+        >
+          <NavLink to={item.path}>
+            <Icon className="size-4" />
+            <span className="font-medium">{item.name}</span>
+          </NavLink>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     );
   };
 
   return (
-    <aside
-      className={`bg-[#020617] text-gray-200 h-screen sticky top-0 p-4 flex flex-col transition-all duration-300 ease-in-out border-r border-white/5 overflow-hidden ${
-        isCollapsed ? "w-20" : "w-64"
-      }`}
-    >
-      {/* FIXED HEADER */}
-      <div className={`flex items-center mb-6 mt-2 shrink-0 ${isCollapsed ? "justify-center" : "justify-between px-2"}`}>
-        {!isCollapsed && (
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-slate-900 rounded-lg border border-slate-800">
-              <img src="/solease.svg" alt="Logo" className="h-6 w-6" />
-            </div>
-            <h2 className="text-lg font-black tracking-tighter text-white">SOLEASE</h2>
-          </div>
-        )}
-        <button
-          className="p-2 rounded-xl hover:bg-slate-800 transition-colors"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          <Menu size={20} className="text-slate-400" />
-        </button>
-      </div>
+    <Sidebar variant="inset" collapsible="icon" className="sticky top-0 h-screen">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <div className="flex items-center gap-3">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <img src="/solease.svg" alt="Logo" className="size-5 brightness-200" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-bold">SOLEASE</span>
+                  <span className="truncate text-xs text-muted-foreground">{userRole}</span>
+                </div>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-      {/* SCROLLABLE MENUITEMS*/}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-1">
-        <div className="flex flex-col gap-2">
-          {menuItems[userRole]?.top.map((item) => renderItem(item))}
-        </div>
-      </nav>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {currentMenu.top.map((item) => <NavItem key={item.name} item={item} />)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      {/* FIXED BOTTOM */}
-      <div className="flex flex-col gap-2 pt-6 mt-4 border-t border-white/5 shrink-0 mb-2">
-        {menuItems[userRole]?.bottom.map((item) => renderItem(item))}
-      </div>
-    </aside>
+      <SidebarFooter>
+        <SidebarMenu>
+          {currentMenu.bottom.map((item) => <NavItem key={item.name} item={item} />)}
+          <SidebarSeparator className="mx-0 my-2" />
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              onClick={handleLogout}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="size-4" />
+              <span className="font-medium">Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
-};
-
-export default Sidebar;
+}

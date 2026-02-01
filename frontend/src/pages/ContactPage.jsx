@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "../lib/utils.js";
+import api from "../lib/axios.js";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion"; 

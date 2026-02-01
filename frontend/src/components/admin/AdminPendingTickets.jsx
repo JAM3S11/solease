@@ -2,7 +2,7 @@ import React, { useEffect, useState, Fragment } from 'react'
 import DashboardLayout from '../ui/DashboardLayout'
 import useTicketStore from '../../store/ticketStore';
 import { Inbox, ChevronDown, Check } from 'lucide-react';
-import api from '../../lib/utils';
+import api from '../../lib/axios';
 import { useNavigate } from 'react-router';
 import TicketDetailModal from '../ui/TicketDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';

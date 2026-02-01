@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import api from "../lib/utils.js";
+import api from "../lib/axios.js";
 
 
 export const useAuthenticationStore = create((set) => ({

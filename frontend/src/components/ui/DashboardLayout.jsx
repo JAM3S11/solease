@@ -1,20 +1,38 @@
+// components/DashboardLayout.jsx
 import React from "react";
-import Sidebar from "./Sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "./shadcn-sidebar";
+import { AppSidebar } from "./Sidebar";
+import { ThemeProvider } from "./theme-provider";
+import { ThemeToggle } from "./theme-toggle";
+import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
 
 const DashboardLayout = ({ children }) => {
   const { user } = useAuthenticationStore();
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Sidebar changes based on user role */}
-      <Sidebar userRole={user?.role} />
-      
-      {/* Main dashboard content */}
-      <div className="flex-1 overflow-y-auto">
-        {children}
-      </div>
-    </div>
+    <ThemeProvider defaultTheme="system" storageKey="solease-ui-theme">
+      <SidebarProvider defaultOpen={true}>
+        <div className="flex h-screen w-full overflow-hidden bg-sidebar">
+          <AppSidebar userRole={user?.role} />
+
+          <SidebarInset className="flex flex-col flex-1 min-w-0 h-full bg-background m-0 peer-data-[variant=inset]:m-0 rounded-none peer-data-[variant=inset]:rounded-none shadow-none border-none">
+            <header className="flex h-14 shrink-0 items-center gap-2 px-4 border-b border-sidebar-border/50 bg-background">
+              <SidebarTrigger className="-ml-1" />
+              <div className="h-4 w-[1px] bg-sidebar-border mx-2" />
+              <div className="flex-1">
+                <DynamicBreadcrumb />
+              </div>
+              <ThemeToggle />
+            </header>
+            
+            <main className="flex-1 overflow-y-auto p-6">
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 };
 

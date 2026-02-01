@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,10 +9,22 @@ import {
   BreadcrumbSeparator,
 } from "./breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
+import toast from "react-hot-toast";
 
 export function DynamicBreadcrumb() {
   const location = useLocation();
-  const { user } = useAuthenticationStore();
+  const { user, logout } = useAuthenticationStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try{
+      await logout();
+      toast.success("See you later!", { duration: 2000 });
+      navigate("/auth/login");
+    } catch (err) {
+      toast.error("Logout failed!", { duration: 1000 })
+    }
+  }
 
   // Generate breadcrumb items from URL path
   const generateBreadcrumbItems = () => {
@@ -22,7 +34,7 @@ export function DynamicBreadcrumb() {
     // Always start with Home
     items.push({
       label: "Home",
-      href: "/"
+      isLogout: true,
     });
 
     // If on dashboard, add appropriate dashboard entry
@@ -91,7 +103,11 @@ export function DynamicBreadcrumb() {
         {breadcrumbItems.map((item, index) => (
           <React.Fragment key={item.href}>
             <BreadcrumbItem>
-              {item.isLast ? (
+              {item.isLogout ? (
+                <BreadcrumbLink onClick={handleLogout} className="hover:text-pretty transition-colors cursor-pointer" >
+                  {item.label}
+                </BreadcrumbLink>
+              ) : item.isLast ? (
                 <BreadcrumbPage className="font-medium">
                   {item.label}
                 </BreadcrumbPage>

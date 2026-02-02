@@ -2,7 +2,7 @@
 
 ![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-01-13%20183119.png) <!-- Placeholder image -->
 
-**SolEase** is a comprehensive, role-based IT service management platform designed to be a reliable ticket service solution for organizations of all types and sizes. Whether you're a private enterprise, public institution, non-profit or any organization requiring structured support operations, SolEase will provide a robust and scalable platform to streamline your support workflows. **Note**: IT Support and Service Desk roles shall be removed from the system in future updates, enabling teams to log issues, triage requests, collaborate effectively and monitor performance through dedicated dashboards for Managers and Clients.
+**SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with AI-powered automation capabilities being developed to enhance ticket processing efficiency.
 
 ---
 
@@ -33,14 +33,17 @@
 
 ### Core Functionality
 -   **Universal Applicability**: Designed for any organization—from private enterprises to public services, educational institutions, healthcare facilities, and non-profits. SolEase adapts to your organization's unique support needs with flexible configuration options.
--   **AI-Powered Ticket Automation** (Under Development): The system is actively developing AI automation capabilities that can handle all tasks traditionally performed by IT Support and Service Desk roles, or Managers can choose to handle these tasks manually for full control.
--   **Role-Based Dashboards**: Tailored interfaces for Managers and Clients with role-specific features and permissions. **Note**: IT Support and Service Desk roles shall be removed from the system in upcoming updates to streamline operations.
+-   **Production-Ready**: Fully functional and ready for deployment with complete user management, authentication, ticket lifecycle management, and analytics.
+-   **Role-Based Dashboards**: Tailored interfaces for Clients, Reviewers and Managers with role-specific features and permissions.
+-   **AI-Ready Architecture**: Foundation for AI-powered ticket automation with `triggerAIResponse` functionality, automated ticket resolution tracking, and comprehensive audit trails.
 
 ### Ticket Management
--   **Full Ticket Lifecycle**: Comprehensive ticket management from creation to resolution, including status tracking, priority assignment, and detailed history logging.
--   **Advanced Filtering & Search**: Powerful search and filtering capabilities to quickly locate tickets by status, priority, category, date range, and assignee.
--   **Ticket Categories & Priorities**: Organize tickets with customizable categories and priority levels (Low, Medium, High, Urgent) for effective triage.
--   **Bulk Operations**: Managers can perform bulk actions on multiple tickets simultaneously for efficient workflow management.
+-   **Full Ticket Lifecycle**: Complete ticket management from creation to resolution, including status tracking (Open, In Progress, Resolved, Closed), priority assignment (Low, Medium, High, Critical), and detailed history logging.
+-   **Issue Categorization**: Intelligent categorization system supporting Hardware, Software, Network, Account Access, and Other issues with auto-detection capabilities.
+-   **Advanced Filtering & Search**: Powerful search and filtering capabilities to quickly locate tickets by status, priority, category, date range, assignee, and keywords.
+-   **Comment & Reply System**: Threaded communication with role-based visibility, AI-generated response tracking, and comprehensive audit trails.
+-   **File Attachments**: Support for file uploads with secure storage and download functionality.
+-   **Feedback System**: Client feedback collection for resolved tickets with satisfaction tracking.
 
 ### Security & Authentication
 -   **Secure Authentication**: JWT-based authentication with HTTP-only cookies for enhanced security and automatic session management.
@@ -49,31 +52,38 @@
 -   **Session Management**: Automatic session restoration and secure logout functionality.
 
 ### User Management
--   **Comprehensive User Management**: Admins can manage user roles, statuses, and permissions with granular control.
+-   **Comprehensive User Management**: Managers can manage user roles, statuses, and permissions with granular control.
 -   **Account Approval Workflow**: New user accounts require Manager approval before becoming active, ensuring controlled access.
 -   **User Status Tracking**: Monitor user account statuses (Pending, Approved, Rejected) with audit trails.
+-   **Profile Management**: Users can update their profile information, change passwords, and manage email preferences.
+-   **Role-Based Access Control**: Secure access control with Client, Reviewer, and Manager roles, each with specific permissions and dashboard views.
 
 ### Analytics & Reporting
--   **Real-time Analytics**: Visualize performance metrics with integrated charts and dashboards (expanding to all roles in future updates).
--   **Data Export**: Easily export ticket data to CSV format for external analysis and reporting.
--   **Performance Metrics**: Track key performance indicators including resolution times, ticket volumes, and user satisfaction metrics.
+-   **Real-time Analytics**: Comprehensive performance metrics with interactive charts and dashboards for all user roles.
+-   **Data Export**: Export ticket data to CSV format for external analysis and reporting.
+-   **Performance Metrics**: Track key performance indicators including resolution rates, ticket volumes, response times, and user satisfaction scores.
+-   **Activity Monitoring**: Real-time monitoring of user activities, ticket assignments, and system performance.
+-   **Visual Analytics**: Beautiful charts and graphs using Recharts and MUI X-Charts for data visualization.
 
 ### Communication
 -   **Email Notifications**: Automated emails for critical events including signup confirmations, email verification, password resets, and ticket updates.
 -   **Notification Preferences**: Configurable notification settings to match user preferences and organizational policies.
 
 ### Additional Features
--   **Responsive Design**: Fully responsive interface that works seamlessly across desktop, tablet, and mobile devices.
--   **Dark/Light Theme Support**: User preference-based theming for comfortable viewing in different environments.
--   **Offline Capability**: Core functionality remains accessible during network interruptions with automatic synchronization.
--   **Audit Logging**: Comprehensive logging of all system activities for compliance and troubleshooting.
+-   **Modern Responsive Design**: Fully responsive interface built with React 19 and Tailwind CSS that works seamlessly across desktop, tablet, and mobile devices.
+-   **Dark/Light Theme Support**: User preference-based theming with smooth transitions and persistent settings.
+-   **Rich UI Components**: Modern interface using Radix UI components, DaisyUI, Framer Motion animations, and Lucide React icons.
+-   **Advanced Navigation**: Breadcrumb navigation, sidebar menus, and intuitive routing with React Router 7.
+-   **Legal Pages**: Complete Terms of Service and Privacy Policy pages for compliance.
+-   **Contact System**: Integrated contact form for general inquiries and support requests.
+-   **Comprehensive Audit Logging**: Complete logging of all system activities, AI actions, and user interactions for compliance and troubleshooting.
 
 ---
 
 ## 🛠️ Technology Stack
 
--   **Frontend**: React 19, Vite, TailwindCSS, DaisyUI, Zustand, React Router, Framer Motion, MUI X Charts, Axios.
--   **Backend**: Node.js, Express 5, MongoDB, Mongoose, JWT, Nodemailer, bcrypt, crypto.
+-   **Frontend**: React 19, Vite, TailwindCSS, DaisyUI, Zustand, React Router 7, Framer Motion, MUI X Charts, Radix UI, Axios, Recharts.
+-   **Backend**: Node.js, Express 5, MongoDB, Mongoose, JWT, Nodemailer, bcryptjs, Mailtrap, Multer, Redis (for AI processing), Rate limiting with Upstash.
 
 ---
 
@@ -267,22 +277,18 @@ The frontend is structured by feature and role:
 
 ## 🎭 Roles & Features
 
-**Important**: IT Support and Service Desk roles shall be removed from the system in upcoming updates. The platform is undergoing advancement of ticket automation with AI, where Managers can either perform all tasks traditionally handled by IT Support and Service Desk, or these processes can be fully automated through AI.
+The platform supports a comprehensive role-based system with clear responsibilities and permissions:
 
--   **Manager**: Full administrative access. Can view analytics, manage all users and tickets, assign tasks, and configure system settings. Managers can perform all tasks that were previously handled by IT Support and Service Desk, or leverage AI automation to handle these processes automatically.
--   **Client**: End-users. Can create new tickets, view their own tickets, and track their status.
+-   **Manager**: Full administrative access. Can manage all users, view system analytics, configure settings, oversee all tickets, perform user approvals, and have complete system oversight. Managers can also override AI decisions and manage automation settings.
+-   **Reviewer**: Handles assigned tickets, manages ticket resolution workflow, provides technical solutions, and communicates with clients. Reviewers can update ticket status, add comments, and manage attachments.
+-   **Client**: End-users who create tickets, view their own tickets, track status, submit feedback, and communicate with support staff. Clients can update their profiles and manage their support requests.
+-   **Pending**: Initial status for new users awaiting Manager approval before gaining full system access.
 
 ---
 
 ## 🎫 Ticket Lifecycle
 
-1.  **Creation**: A user (Client or Manager) creates a ticket.
-2.  **Listing**: Tickets are displayed based on role-specific permissions.
-3.  **Management**: Managers can either handle ticket assignment, updates, and resolution directly, or leverage AI automation to process these tasks automatically.
-4.  **Updates**: Managers work on tickets and update their status (e.g., "In Progress"), or AI automation handles updates based on predefined rules and intelligent analysis.
-5.  **Resolution**: The ticket is marked as "Resolved" or "Closed" once the issue is fixed, either manually by Managers or automatically through AI automation.
-
-**Note**: With the removal of IT Support and Service Desk roles, ticket management is streamlined to direct Manager-Client interactions, with the option for AI-powered automation handling all tasks traditionally performed by IT Support and Service Desk.
+1.  **Creation**: Clients or Managers create tickets with title
 
 ---
 
@@ -1088,11 +1094,14 @@ If you have questions not covered here, please check our GitHub issues or create
 
 This project is actively under development. Stay tuned for more features and enhancements, including:
 
--   Advanced AI-powered ticket automation to handle all IT Support and Service Desk tasks automatically.
--   Real-time notifications for ticket assignments and status changes via SMS.
--   Comprehensive reporting dashboards for all user roles.
--   AI-powered chatbot for automated support and ticket triaging.
--   And much more!
+-   **Advanced AI Integration**: Full implementation of natural language processing for automated ticket categorization, intelligent routing, and solution suggestions.
+-   **Real-time Notifications**: SMS and push notifications for ticket assignments and status changes.
+-   **Enhanced Analytics**: Advanced reporting dashboards with predictive analytics and trend analysis.
+-   **AI Chatbot**: Intelligent support bot for automated ticket triaging and initial assistance.
+-   **Mobile Applications**: Native iOS and Android apps for on-the-go ticket management.
+-   **Integration Platform**: APIs and webhooks for integration with third-party tools like Slack, Microsoft Teams, and JIRA.
+-   **Advanced Automation**: Workflow automation with custom rules and triggers.
+-   **Knowledge Base**: Integrated help center and self-service portal.
 
 ---
 
@@ -1106,22 +1115,37 @@ The MIT License allows for free use, modification, and distribution of the softw
 
 ## 📝 Changelog
 
-### [Unreleased] - Under maintainance and development
-- AI-powered ticket automation (in development)
-- Real-time notifications via SMS
-- Enhanced analytics dashboards
-- AI chatbot for support triaging
+### [v1.2.0] - 2025-02-02 (Current)
+- Enhanced UI with Radix UI components and shadcn integration
+- Improved theme support with consistent dark/light mode
+- Advanced breadcrumb navigation system
+- Privacy Policy and Terms of Service pages added
+- Sidebar background and visual improvements
+- Enhanced admin dashboard with better analytics
+- Improved Reviewer navigation and workflow
+- Production-ready deployment configuration
+
+### [v1.1.0] - 2025-01-15
+- AI-ready architecture with `triggerAIResponse` functionality
+- Comprehensive automation history tracking
+- AI-generated comment/reply system
+- Enhanced ticket categorization with auto-detection
+- File attachment support for tickets
+- Feedback system for client satisfaction
+- Real-time activity monitoring
+- Advanced search and filtering capabilities
 
 ### [v1.0.0] - 2025-10-24
 - Initial release of SOLEASE platform
-- Role-based access control (Manager, Client)
+- Role-based access control (Client, Reviewer, Manager)
 - Full ticket lifecycle management
 - JWT authentication with email verification
 - Responsive React frontend with TailwindCSS
 - RESTful API with Express.js backend
 - MongoDB database integration
-- Email notifications for key events
+- Email notifications via Mailtrap
 - CSV data export functionality
+- User approval workflow system
 
 ---
 

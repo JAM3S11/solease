@@ -86,8 +86,8 @@ const Footer = () => {
         <div className="border-t border-gray-300/5 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] font-bold uppercase tracking-wide text-gray-600">
           <p>&copy; {new Date().getFullYear()} SOLEASE. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-gray-500 transition">Privacy Policy</a>
-            <a href="#" className="hover:text-gray-500 transition">Terms of Service</a>
+            <a href="/privacy-policy" className="hover:text-gray-500 transition">Privacy Policy</a>
+            <a href="/terms-of-service" className="hover:text-gray-500 transition">Terms of Service</a>
           </div>
         </div>
       </div>

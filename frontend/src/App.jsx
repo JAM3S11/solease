@@ -5,6 +5,8 @@ import Homepage from "./pages/Homepage";
 import Aboutpage from "./pages/Aboutpage";
 import ServicePage from "./pages/ServicePage";
 import ContactPage from "./pages/ContactPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import Header from "./common/Header";
 import Footer from "./common/Footer";
 import SignUpForm from "./components/SignUpForm";
@@ -386,7 +388,11 @@ const App = () => {
                <ClientDashboard />
              </ProtectedRoute>
            } />
-      </Routes>
+
+         {/* Static Pages */}
+         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+         <Route path="/terms-of-service" element={<TermsOfService />} />
+       </Routes>
 
       {!hideLayout && <Footer />}
     </div>

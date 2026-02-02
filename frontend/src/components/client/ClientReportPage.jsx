@@ -4,8 +4,8 @@ import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
-import { ArrowRight, Ticket, Clock, CheckCircle, TrendingUp, Activity } from "lucide-react"; 
-import { Link } from "react-router-dom"; 
+import { Ticket, Clock, CheckCircle, TrendingUp, Activity } from "lucide-react"; 
+import { Link } from "react-router";
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
 const SUCCESS_STATUSES = ['Closed', 'Resolved'];
@@ -78,175 +78,174 @@ const calculateMonthlyResolutionTimeData = (tickets) => {
     return { data, months: periods.map(p => p.label) };
 }
 
-const PerformanceCard = ({ title, value, change, isPositiveBetter, icon: Icon, gradient }) => {
-    const isPositive = change.includes('+');
-    const colorClass = isPositive ? (isPositiveBetter ? 'text-emerald-300' : 'text-rose-300') : (isPositiveBetter ? 'text-rose-300' : 'text-emerald-300');
-
-    return (
-        <motion.div 
-            whileHover={{ scale: 1.02, y: -5 }}
-            className={`relative overflow-hidden p-6 rounded-3xl shadow-2xl border border-white/20 ${gradient} text-white flex-1 min-w-[280px]`}
-        >
-            <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-            <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                    <span className="p-3 bg-white/20 backdrop-blur-lg rounded-2xl">
-                        {Icon && <Icon size={24} />}
-                    </span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-lg bg-black/20 ${colorClass}`}>
-                        {change}
-                    </span>
-                </div>
-                <h3 className="text-white/70 text-sm font-bold uppercase tracking-wider mb-1">{title}</h3>
-                <p className="text-4xl font-black tracking-tight">{value}</p>
-            </div>
-        </motion.div>
-    );
+const getColorClasses = (color) => {
+  const maps = {
+    blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+    orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
+    green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+    purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+    indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
+  };
+  return maps[color] || maps.blue;
 };
 
 const ClientReportPage = () => {
     const { user } = useAuthenticationStore();
-    const { tickets, fetchTickets } = useTicketStore(); 
+    const { tickets, fetchTickets, loading, error } = useTicketStore(); 
     
-    useEffect(() => { fetchTickets(); }, []);
+    useEffect(() => { fetchTickets("Client"); }, [fetchTickets]);
 
     const clientTickets = useMemo(() => {
-        if (!user || !tickets) return [];
-        return tickets.filter(t => (t.user?._id || t.user) === user._id);
+        if (!tickets) return [];
+        const safeTickets = Array.isArray(tickets) ? tickets : [];
+        return safeTickets.filter(t => (t.user?._id || t.user) === user._id);
     }, [tickets, user]);
 
-    const activeTickets = useMemo(() => {
-        return clientTickets.filter(t => ACTIVE_STATUSES.includes(t.status))
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }, [clientTickets]);
-
     const stats = {
+        total: clientTickets.length,
         resolved: clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length,
         open: clientTickets.filter(t => t.status === 'Open').length,
         avgRes: useMemo(() => calculateAverageResolutionTime(clientTickets), [clientTickets]),
         sat: useMemo(() => calculateUserSatisfaction(clientTickets), [clientTickets]),
         categories: useMemo(() => calculateOpenTicketsByCategory(clientTickets), [clientTickets]),
-        chart: useMemo(() => calculateMonthlyResolutionTimeData(clientTickets), [clientTickets])
+        chart: useMemo(() => calculateMonthlyResolutionTimeData(clientTickets), [clientTickets]),
     };
 
-    return (
+return (
         <DashboardLayout>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 lg:p-10 space-y-12 max-w-7xl mx-auto">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                 
-                {/* Header */}
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {/* Header Section */}
+                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                             {user?.name ? `${user.name.split(' ')[0]}'s Analytics` : "Report Overview"}
                         </h1>
-                        <p className="text-gray-500 font-normal mt-2 text-sm">Personal IT performance and ticket lifecycle tracking.</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-2xl">
-                        <Activity size={16} /> Live Data Tracking
-                    </div>
-                </header>
-
-                {/* KPI Section */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <PerformanceCard title="Tickets Resolved" value={stats.resolved} change="+0%" isPositiveBetter={true} icon={CheckCircle} gradient="bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600" />
-                    <PerformanceCard title="Resolution Time" value={stats.avgRes.value} change="-10%" isPositiveBetter={false} icon={Clock} gradient="bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600" />
-                    <PerformanceCard title="Satisfaction" value={stats.sat.value} change="+0%" isPositiveBetter={true} icon={Ticket} gradient="bg-gradient-to-br from-green-400 via-green-500 to-green-600" />
-                </section>
-
-                {/* Visual Trends Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Category Breakdown */}
-                    <motion.div initial={{ x: -20 }} animate={{ x: 0 }} className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-50 dark:border-gray-700">
-                        <div className="flex justify-between items-start mb-10">
-                            <div>
-                                <h3 className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mb-2">Ticket Volume</h3>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white">By Category</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-5xl font-bold text-blue-600">{stats.open}</p>
-                                <p className="text-xs font-bold text-gray-400">OPEN NOW</p>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 pt-8 border-t border-gray-100 dark:border-gray-700">
-                            {stats.categories.map(cat => (
-                                <div key={cat.type} className="flex flex-col items-center text-center group">
-                                    <span className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-500 transition-colors">{cat.count}</span>
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase leading-tight">{cat.displayName}</span>
-                                </div>
-                            ))}
-                        </div>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">
+                            Personal IT performance and ticket lifecycle tracking.
+                        </p>
                     </motion.div>
 
-                    {/* Chart Card */}
-                    <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-50 dark:border-gray-700">
-                        <h3 className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mb-6">Resolution Trend (6mo)</h3>
-                        <div style={{ height: '220px', width: '100%' }}>
-                            <LineChart 
-                                series={[{ data: stats.chart.data, color: '#4f46e5', area: true, showMark: true }]}
-                                xAxis={[{ scaleType: 'point', data: stats.chart.months }]}
-                                height={220}
-                                margin={{ top: 10, bottom: 30, left: 30, right: 10 }}
-                                sx={{ '.MuiAreaElement-root': { fillOpacity: 0.1 } }}
-                            />
-                        </div>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{ scale: 1.02 }}
+                        className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-2xl"
+                    >
+                        <Activity size={16} /> Live Data Tracking
                     </motion.div>
                 </div>
 
-                {/* Table Section */}
-                <section className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                            <TrendingUp className="text-blue-600" /> Active Tickets
-                        </h2>
-                        <Link to="/client-dashboard/all-tickets" className="text-sm font-bold text-blue-600 hover:text-indigo-600 transition-colors">View All History →</Link>
+                {/* Loading State */}
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-gray-500 animate-pulse">Loading analytics data...</p>
                     </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl border border-gray-50 dark:border-gray-700 overflow-hidden">
-                        {activeTickets.length === 0 ? (
-                            <div className="p-20 text-center font-medium text-gray-400">Everything is resolved! Check back later.</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-gray-50 dark:bg-gray-900/50">
-                                            <th className="p-6 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Reference</th>
-                                            <th className="p-6 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Issue Subject</th>
-                                            <th className="p-6 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                            <th className="p-6 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Urgency</th>
-                                            <th className="p-6 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Created</th>
-                                            <th className="p-6"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                                        {activeTickets.map((t) => (
-                                            <tr key={t._id} className="hover:bg-blue-50/30 dark:hover:bg-gray-700/30 transition-all group">
-                                                <td className="p-6 text-sm font-mono font-bold text-blue-600">#{t._id.slice(-6).toUpperCase()}</td>
-                                                <td className="p-6 text-sm font-bold text-gray-700 dark:text-gray-200">{t.subject}</td>
-                                                <td className="p-6">
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${t.status === "Open" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>
-                                                        {t.status}
-                                                    </span>
-                                                </td>
-                                                <td className="p-6">
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${t.urgency === "Critical" ? "bg-rose-100 text-rose-700" : t.urgency === "High" ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"}`}>
-                                                        {t.urgency}
-                                                    </span>
-                                                </td>
-                                                <td className="p-6 text-xs font-bold text-gray-400">{new Date(t.createdAt).toLocaleDateString()}</td>
-                                                <td className="p-6 text-right">
-                                                    <Link to={`/client-dashboard/all-tickets`} className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                                                        <ArrowRight size={18} />
-                                                    </Link>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                ) : error ? (
+                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3">
+                        <span className="font-bold">Error:</span> {error}
                     </div>
-                </section>
-            </motion.div>
+                ) : clientTickets.length === 0 ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <TrendingUp size={32} className="text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Analytics Data Yet</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                            Start creating support tickets to see your performance analytics and insights here.
+                        </p>
+                    </motion.div>
+                ) : (
+                    <>
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                            {[
+                                { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
+                                { label: "Tickets Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                                { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
+                                { label: "Resolution Time", val: stats.avgRes.value, icon: Clock, color: "purple" },
+                                { label: "Satisfaction", val: stats.sat.value, icon: Ticket, color: "indigo" },
+                            ].map((stat, i) => (
+                                <motion.div
+                                    key={stat.label}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4"
+                                >
+                                    <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
+                                        <stat.icon size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Visual Trends Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Category Breakdown */}
+                            <motion.div initial={{ x: -20 }} animate={{ x: 0 }} className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-50 dark:border-gray-700">
+                                <div className="flex justify-between items-start mb-10">
+                                    <div>
+                                        <h3 className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mb-2">Ticket Volume</h3>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white">By Category</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-5xl font-bold text-blue-600">{stats.open}</p>
+                                        <p className="text-xs font-bold text-gray-400">OPEN NOW</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 pt-8 border-t border-gray-100 dark:border-gray-700">
+                                    {stats.categories.map(cat => (
+                                        <div key={cat.type} className="flex flex-col items-center text-center group">
+                                            <span className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-500 transition-colors">{cat.count}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase leading-tight">{cat.displayName}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+                            {/* Chart Card */}
+                            <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-xl border border-gray-50 dark:border-gray-700">
+                                <h3 className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mb-6">Resolution Trend (6mo)</h3>
+                                <div style={{ height: '220px', width: '100%' }}>
+                                    <LineChart 
+                                        series={[{ data: stats.chart.data, color: '#4f46e5', area: true, showMark: true }]}
+                                        xAxis={[{ scaleType: 'point', data: stats.chart.months }]}
+                                        height={220}
+                                        margin={{ top: 10, bottom: 30, left: 30, right: 10 }}
+                                        sx={{ '.MuiAreaElement-root': { fillOpacity: 0.1 } }}
+                                    />
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        {/* Quick Navigation */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="flex justify-center mt-8"
+                        >
+                            <Link 
+                                to="/client-dashboard/all-tickets" 
+                                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-all group"
+                            >
+                                View Full Ticket History
+                                <TrendingUp size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </motion.div>
+                    </>
+                )}
+            </div>
         </DashboardLayout>
     );
 };

@@ -4,7 +4,7 @@ import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
-import { Ticket, Clock, CheckCircle, TrendingUp, Activity } from "lucide-react"; 
+import { Ticket, Clock, CheckCircle, TrendingUp, Activity, MessageCircle, Star } from "lucide-react"; 
 import { Link } from "react-router";
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
@@ -40,6 +40,42 @@ const calculateUserSatisfaction = (tickets) => {
     if (totalTickets === 0) return { value: 'N/A', change: '+0%', isPositiveBetter: true };
     const satisfactionRate = ((successfulTickets / totalTickets) * 100).toFixed(0);
     return { value: `${satisfactionRate}%`, change: '+0%', isPositiveBetter: true };
+};
+
+const calculateFeedbackAnalytics = (tickets) => {
+    const ticketsWithFeedback = tickets.filter(t => t.comments && t.comments.length > 0);
+    const totalFeedbackCount = tickets.reduce((sum, ticket) => sum + (ticket.comments?.length || 0), 0);
+    const recentFeedback = tickets.filter(t => {
+        const latestComment = t.comments?.[t.comments.length - 1];
+        return latestComment && (new Date() - new Date(latestComment.createdAt)) / (1000 * 60 * 60 * 24) <= 7;
+    }).length;
+    
+    return {
+        ticketsWithFeedback: ticketsWithFeedback.length,
+        totalFeedbackCount,
+        recentFeedback,
+        feedbackRate: tickets.length > 0 ? ((ticketsWithFeedback.length / tickets.length) * 100).toFixed(0) : '0'
+    };
+};
+
+const getRecentFeedbackActivity = (tickets) => {
+    const allFeedback = [];
+    tickets.forEach(ticket => {
+        if (ticket.comments && ticket.comments.length > 0) {
+            ticket.comments.forEach((comment, index) => {
+                allFeedback.push({
+                    ...comment,
+                    ticketId: ticket._id,
+                    ticketSubject: ticket.subject,
+                    commentIndex: index + 1
+                });
+            });
+        }
+    });
+    
+    return allFeedback
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5); // Get last 5 feedback entries
 };
 
 const calculateOpenTicketsByCategory = (tickets) => {
@@ -85,6 +121,7 @@ const getColorClasses = (color) => {
     green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
     purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
     indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
+    pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
   };
   return maps[color] || maps.blue;
 };
@@ -109,6 +146,8 @@ const ClientReportPage = () => {
         sat: useMemo(() => calculateUserSatisfaction(clientTickets), [clientTickets]),
         categories: useMemo(() => calculateOpenTicketsByCategory(clientTickets), [clientTickets]),
         chart: useMemo(() => calculateMonthlyResolutionTimeData(clientTickets), [clientTickets]),
+        feedback: useMemo(() => calculateFeedbackAnalytics(clientTickets), [clientTickets]),
+        recentFeedback: useMemo(() => getRecentFeedbackActivity(clientTickets), [clientTickets]),
     };
 
 return (
@@ -169,7 +208,8 @@ return (
                                 { label: "Tickets Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
                                 { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
                                 { label: "Resolution Time", val: stats.avgRes.value, icon: Clock, color: "purple" },
-                                { label: "Satisfaction", val: stats.sat.value, icon: Ticket, color: "indigo" },
+                                { label: "Satisfaction", val: stats.sat.value, icon: Star, color: "indigo" },
+                                { label: "Feedback Rate", val: `${stats.feedback.feedbackRate}%`, icon: MessageCircle, color: "pink" },
                             ].map((stat, i) => (
                                 <motion.div
                                     key={stat.label}
@@ -227,6 +267,82 @@ return (
                                 </div>
                             </motion.div>
                         </div>
+
+                        {/* Feedback Analytics Section */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden mt-4"
+                        >
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+                                <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
+                                    Feedback Analytics
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    Track your communication and engagement with the support team
+                                </p>
+                            </div>
+                            
+                            <div className="p-6 space-y-6">
+                                {/* Feedback Stats Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.feedback.ticketsWithFeedback}</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mt-1">Tickets with Feedback</p>
+                                    </div>
+                                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.feedback.totalFeedbackCount}</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mt-1">Total Messages</p>
+                                    </div>
+                                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.feedback.recentFeedback}</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mt-1">Recent Activity (7 days)</p>
+                                    </div>
+                                </div>
+
+                                {/* Recent Feedback Activity */}
+                                {stats.recentFeedback.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Recent Feedback Activity</h4>
+                                        <div className="space-y-3">
+                                            {stats.recentFeedback.map((feedback, index) => (
+                                                <div 
+                                                    key={`${feedback.ticketId}-${index}`}
+                                                    className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                                >
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs font-bold flex-shrink-0">
+                                                        {feedback.user?.name?.charAt(0) || feedback.user?.username?.charAt(0) || 'U'}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                                                                {feedback.user?.name || feedback.user?.username || 'Unknown User'}
+                                                            </span>
+                                                            <span className="text-xs text-gray-400 bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                                                                {feedback.ticketSubject}
+                                                            </span>
+                                                            {feedback.aiGenerated && (
+                                                                <span className="px-1 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold uppercase rounded">
+                                                                    AI
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                                                            {feedback.content}
+                                                        </p>
+                                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                            {new Date(feedback.createdAt).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
 
                         {/* Quick Navigation */}
                         <motion.div 

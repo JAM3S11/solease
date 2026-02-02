@@ -21,6 +21,13 @@ const Header = () => {
     { name: "Contact", href: "#contact" },
   ];
 
+  const onScrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    })
+  }
+
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-sans ${
@@ -32,7 +39,7 @@ const Header = () => {
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10">
         {/* Logo */}
         <div className="text-3xl md:text-4xl font-black tracking-tighter text-blue-600 drop-shadow-sm">
-          SOLEASE
+          <Link to="/" onClick={onScrollToTop}>SOLEASE</Link>
         </div>
 
         {/* Desktop Navigation */}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from "framer-motion";
-import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save } from "lucide-react";
+import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock } from "lucide-react";
 
 const ProfileSettings = ({
   role = 'client',
@@ -16,24 +16,17 @@ const ProfileSettings = ({
   // Input Field Component for consistency
   const ProfileInput = ({ label, icon: Icon, disabled, ...props }) => (
     <div className="w-full">
-      {role === 'client' && (
-        <label className='flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 ml-1'>
-          {Icon && <Icon size={14} />}
-          {label}
-        </label>
-      )}
-      {role === 'admin' && (
-        <label className='block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5'>{label}</label>
-      )}
+      <label className='flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1'>
+        {Icon && <Icon size={14} className="text-blue-600 dark:text-blue-400" />}
+        {label}
+      </label>
       <input
         {...props}
         disabled={disabled}
-        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200
+        className={`w-full px-4 py-3 rounded-lg border transition-all duration-200
           ${disabled
-            ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 text-gray-400 cursor-not-allowed'
-            : role === 'client'
-              ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm text-gray-700 dark:text-gray-200'
-              : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none'
+            ? 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md outline-none shadow-sm text-slate-700 dark:text-slate-200'
           }`}
       />
     </div>
@@ -43,14 +36,14 @@ const ProfileSettings = ({
     <div className={`p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto ${role === 'client' ? 'space-y-8' : ''}`}>
 
       {/* Header */}
-      <header className='flex flex-col items-start space-y-2 mb-8'>
-        <h2 className={`font-bold text-gray-900 dark:text-white tracking-tight ${
+      <header className='flex flex-col items-start space-y-3 mb-8'>
+        <h2 className={`font-bold text-slate-900 dark:text-white tracking-tight ${
           role === 'client' ? 'text-3xl font-black' : 'text-2xl md:text-3xl'
         }`}>
-          {role === 'client' ? 'Account Settings' : 'Profile'}
+          {role === 'client' ? 'Account Settings' : 'Profile Settings'}
         </h2>
-        <p className={`font-normal text-gray-500 dark:text-gray-400 ${
-          role === 'client' ? 'font-medium' : 'text-sm sm:text-base'
+        <p className={`font-normal text-slate-600 dark:text-slate-400 ${
+          role === 'client' ? 'font-medium text-sm' : 'text-sm sm:text-base'
         }`}>
           {role === 'client'
             ? 'Manage your personal identity, contact details, and account security.'
@@ -64,7 +57,7 @@ const ProfileSettings = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className='relative overflow-hidden w-full flex items-center bg-gradient-to-r from-blue-600 to-indigo-700 shadow-xl rounded-[2rem] p-8 text-white group mb-8'>
+          className='relative overflow-hidden w-full flex items-center bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg rounded-2xl p-8 text-white group mb-8'>
 
           <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-700" />
 
@@ -73,12 +66,12 @@ const ProfileSettings = ({
               <Fingerprint size={40} className="text-white" />
             </div>
             <div>
-              <h2 className='text-2xl font-black tracking-wide uppercase'>
+              <h2 className='text-2xl font-bold tracking-wide uppercase'>
                 {user?.name || user?.username}
               </h2>
-              <div className="flex items-center gap-2 mt-1 opacity-80">
-                <ShieldCheck size={16} />
-                <span className="text-sm font-bold tracking-tighter">
+              <div className="flex items-center gap-2 mt-2 opacity-90">
+                <ShieldCheck size={16} className="text-blue-100" />
+                <span className="text-sm font-semibold tracking-tight">
                   {role === 'client' ? 'CLIENT' : 'ADMIN'} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
                 </span>
               </div>
@@ -89,14 +82,21 @@ const ProfileSettings = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className='w-full flex flex-col items-start bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 shadow-sm rounded-2xl mb-8 p-6'
+          className='w-full flex flex-col items-start bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800/40 dark:to-slate-800 border border-blue-200 dark:border-slate-700 shadow-sm rounded-2xl mb-8 p-6'
         >
-          <h2 className='text-lg sm:text-xl font-black text-gray-800 dark:text-white tracking-tight uppercase'>
-            {user?.name || user?.username}
-          </h2>
-          <p className='text-xs font-bold text-blue-500 mt-1 tracking-wider'>
-            {role.toUpperCase()} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-200 dark:bg-blue-900/30 rounded-lg">
+              <User size={20} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h2 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
+                {user?.name || user?.username}
+              </h2>
+              <p className='text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1 tracking-wider'>
+                {role.toUpperCase()} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
 
@@ -105,7 +105,7 @@ const ProfileSettings = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className={`grid grid-cols-1 lg:grid-cols-2 gap-8 ${role === 'admin' ? 'mb-8' : ''}`}
+        className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${role === 'admin' ? 'mb-8' : ''}`}
       >
 
         {/* Personal Information Card */}
@@ -113,47 +113,41 @@ const ProfileSettings = ({
           initial={role === 'client' ? { opacity: 0, x: -20 } : { opacity: 0 }}
           animate={{ opacity: 1, x: 0 }}
           className={`space-y-6 ${role === 'client'
-            ? 'bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700'
-            : 'bg-white dark:bg-gray-800/40 p-6 rounded-2xl border border-gray-50 dark:border-gray-700'
+            ? 'bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700'
+            : 'bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm'
           }`}
         >
 
-          {role === 'client' && (
-            <div className="border-b border-gray-50 dark:border-gray-700 pb-4">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <User size={20} className="text-blue-500" /> Personal Info
-              </h3>
-            </div>
-          )}
-
-          {role === 'admin' && (
-            <p className='text-lg font-bold text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3'>
+          {/* Section Header - Unified Styling */}
+          <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <User size={20} className="text-blue-600 dark:text-blue-400" /> 
               Personal Information
-            </p>
-          )}
+            </h3>
+          </div>
 
           <div className='space-y-4'>
             <ProfileInput
-              label={role === 'client' ? 'Full Name' : 'Full Name'}
-              icon={role === 'client' ? User : null}
+              label='Full Name'
+              icon={User}
               name="name"
               value={personalData.name || ""}
               onChange={onPersonalChange}
             />
             <ProfileInput
-              label={role === 'client' ? 'Email Address' : 'Email'}
-              icon={role === 'client' ? Mail : null}
+              label='Email Address'
+              icon={Mail}
               disabled
               value={personalData.email || ""}
             />
-            <div className={role === 'client' ? "grid grid-cols-2 gap-4" : ""}>
+            <div className={role === 'client' ? "grid grid-cols-2 gap-4" : "grid grid-cols-2 gap-4"}>
               <ProfileInput
-                label={role === 'client' ? 'Account Role' : 'Role'}
+                label='Account Role'
                 disabled
                 value={personalData.role || ""}
               />
               <ProfileInput
-                label={role === 'client' ? 'Account Status' : 'Status'}
+                label='Account Status'
                 disabled
                 value={personalData.status || ""}
               />
@@ -166,37 +160,31 @@ const ProfileSettings = ({
           initial={role === 'client' ? { opacity: 0, x: 20 } : { opacity: 0 }}
           animate={{ opacity: 1, x: 0 }}
           className={`space-y-6 ${role === 'client'
-            ? 'bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700'
-            : 'bg-white dark:bg-gray-800/40 p-6 rounded-2xl border border-gray-50 dark:border-gray-700'
+            ? 'bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700'
+            : 'bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm'
           }`}
         >
 
-          {role === 'client' && (
-            <div className="border-b border-gray-50 dark:border-gray-700 pb-4">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <MapPin size={20} className="text-indigo-500" /> Contact Details
-              </h3>
-            </div>
-          )}
-
-          {role === 'admin' && (
-            <p className='text-lg font-bold text-gray-800 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3'>
-              Contact Information
-            </p>
-          )}
+          {/* Section Header - Unified Styling */}
+          <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <MapPin size={20} className="text-blue-600 dark:text-blue-400" /> 
+              Contact Details
+            </h3>
+          </div>
 
           <div className='space-y-4'>
             <ProfileInput
-              label={role === 'client' ? 'Physical Address' : 'Address'}
-              icon={role === 'client' ? MapPin : null}
+              label='Physical Address'
+              icon={MapPin}
               name="address"
               value={contactData.address || ""}
               onChange={onContactChange}
             />
-            <div className={role === 'client' ? 'flex gap-4' : 'grid grid-cols-2 gap-4'}>
+            <div className='grid grid-cols-2 gap-4'>
               <ProfileInput
                 label="Country"
-                icon={role === 'client' ? Globe : null}
+                icon={Globe}
                 name="country"
                 value={contactData.country || ""}
                 onChange={onContactChange}
@@ -209,8 +197,8 @@ const ProfileSettings = ({
               />
             </div>
             <ProfileInput
-              label={role === 'client' ? 'Telephone Number' : 'Telephone Number'}
-              icon={role === 'client' ? Phone : null}
+              label='Telephone Number'
+              icon={Phone}
               name="telephoneNumber"
               value={contactData.telephoneNumber ?? ""}
               onChange={onContactChange}
@@ -223,13 +211,13 @@ const ProfileSettings = ({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={`flex ${role === 'client' ? 'justify-center md:justify-end' : 'justify-end'} pt-4`}
+        className={`flex ${role === 'client' ? 'justify-center md:justify-end' : 'justify-end'} pt-6`}
       >
         <button
           onClick={onSave}
           disabled={loading}
-          className={`group flex items-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 ${
-            role === 'admin' ? 'px-8 py-3.5' : ''
+          className={`group flex items-center gap-3 px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold shadow-md hover:shadow-lg dark:shadow-none transition-all active:scale-95 ${
+            role === 'admin' ? '' : ''
           }`}
         >
           {loading ? (
@@ -243,7 +231,7 @@ const ProfileSettings = ({
           ) : (
             <>
               <Save size={18} className="group-hover:scale-110 transition-transform" />
-              {role === 'client' ? 'Save and Continue' : 'Save and Continue'}
+              Save Changes
             </>
           )}
         </button>

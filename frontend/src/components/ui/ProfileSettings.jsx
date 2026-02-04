@@ -2,6 +2,25 @@ import React from 'react'
 import { motion } from "framer-motion";
 import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock } from "lucide-react";
 
+// Input Field Component for consistency
+const ProfileInput = React.memo(({ label, icon: Icon, disabled, ...props }) => (
+  <div className="w-full">
+    <label className='flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1'>
+      {Icon && <Icon size={14} className="text-blue-600 dark:text-blue-400" />}
+      {label}
+    </label>
+    <input
+      {...props}
+      disabled={disabled}
+      className={`w-full px-4 py-3 rounded-lg border transition-all duration-200
+        ${disabled
+          ? 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md outline-none shadow-sm text-slate-700 dark:text-slate-200'
+        }`}
+    />
+  </div>
+));
+
 const ProfileSettings = ({
   role = 'client',
   user,
@@ -12,25 +31,6 @@ const ProfileSettings = ({
   onSave,
   loading
 }) => {
-
-  // Input Field Component for consistency
-  const ProfileInput = ({ label, icon: Icon, disabled, ...props }) => (
-    <div className="w-full">
-      <label className='flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 ml-1'>
-        {Icon && <Icon size={14} className="text-blue-600 dark:text-blue-400" />}
-        {label}
-      </label>
-      <input
-        {...props}
-        disabled={disabled}
-        className={`w-full px-4 py-3 rounded-lg border transition-all duration-200
-          ${disabled
-            ? 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md outline-none shadow-sm text-slate-700 dark:text-slate-200'
-          }`}
-      />
-    </div>
-  );
 
   return (
     <div className={`p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto ${role === 'client' ? 'space-y-8' : ''}`}>
@@ -128,6 +128,7 @@ const ProfileSettings = ({
 
           <div className='space-y-4'>
             <ProfileInput
+              key="personal-name"
               label='Full Name'
               icon={User}
               name="name"
@@ -135,6 +136,7 @@ const ProfileSettings = ({
               onChange={onPersonalChange}
             />
             <ProfileInput
+              key="personal-email"
               label='Email Address'
               icon={Mail}
               disabled
@@ -142,11 +144,13 @@ const ProfileSettings = ({
             />
             <div className={role === 'client' ? "grid grid-cols-2 gap-4" : "grid grid-cols-2 gap-4"}>
               <ProfileInput
+                key="personal-role"
                 label='Account Role'
                 disabled
                 value={personalData.role || ""}
               />
               <ProfileInput
+                key="personal-status"
                 label='Account Status'
                 disabled
                 value={personalData.status || ""}
@@ -175,6 +179,7 @@ const ProfileSettings = ({
 
           <div className='space-y-4'>
             <ProfileInput
+              key="contact-address"
               label='Physical Address'
               icon={MapPin}
               name="address"
@@ -183,6 +188,7 @@ const ProfileSettings = ({
             />
             <div className='grid grid-cols-2 gap-4'>
               <ProfileInput
+                key="contact-country"
                 label="Country"
                 icon={Globe}
                 name="country"
@@ -190,6 +196,7 @@ const ProfileSettings = ({
                 onChange={onContactChange}
               />
               <ProfileInput
+                key="contact-county"
                 label="County"
                 name="county"
                 value={contactData.county || ""}
@@ -197,6 +204,7 @@ const ProfileSettings = ({
               />
             </div>
             <ProfileInput
+              key="contact-telephone"
               label='Telephone Number'
               icon={Phone}
               name="telephoneNumber"

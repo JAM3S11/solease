@@ -29,21 +29,36 @@ const AdminSettingPage = () => {
   }, [getProfile]);
 
   useEffect(() => {
-    if(personal) setPersonalData((prev) => ({ ...prev, ...personal }));
-    if(contact) setContactData((prev) => ({ ...prev, ...contact }));
+    // Only update if fields are empty to avoid overwriting user input
+    if(personal) {
+      setPersonalData((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(personal).filter(([key, value]) => !prev[key] || prev[key] === "")
+        )
+      }));
+    }
+    if(contact) {
+      setContactData((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(contact).filter(([key, value]) => !prev[key] || prev[key] === "")
+        )
+      }));
+    }
   }, [personal, contact]);
 
   const handlePersonalChange = (e) => 
-    setPersonalData({
-      ...personalData,
-      [e.target.name] : e.target.value,
-    });
+    setPersonalData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   const handleContactChange = (e) => 
-    setContactData({
-      ...contactData,
-      [e.target.name] : e.target.value,
-    });
+    setContactData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
 
   const handleSave = async () => {
     const res = await putProfile({

@@ -47,7 +47,35 @@ const ReviewerProfilePage = () => {
     }
   }, [personal, contact]);
 
-  
+  // Check on the personal data form
+  const handlePersonalChange = (e) => {
+    setPersonalData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Check on the contact data form
+  const handleContactChange = (e) => {
+    setContactData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  //Save the changes
+  const handleSave = async () => {
+    const res = await putProfile({
+      personal: personalData,
+      contact: contactData,
+    });
+    if(res?.success){
+      toast.success("Profile updated successfully!", { duration: 2000 });
+      if(res?.user){
+        setUser(res.user);
+      }
+    }
+  }
   return (
     <DashboardLayout>
         <ProfileSettings />

@@ -2,7 +2,7 @@ import React, { useState, Fragment } from "react";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
 import useTicketStore from "../../store/ticketStore";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { MapPin, Tag, Info, AlertTriangle, Send, ChevronDown, Check, Upload, X, File } from "lucide-react";
@@ -173,12 +173,18 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
               {showWelcome ? "Let's submit your first support request and get started!" : "Fill in the details below to request technical assistance."}
             </p>
           </motion.div>
-          <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl border border-blue-100 dark:border-blue-800">
-            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-              {user?.name?.charAt(0).toUpperCase() || "G"}
+          <Link to={
+            role === 'client' ? '/client-dashboard/profile':
+            role === 'reviewer' ? '/reviewer-dashboard/settings':
+            '/admin-dashboard/admin-settings"'
+          }>
+            <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl border border-blue-100 dark:border-blue-800">
+              <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "G"}
+              </div>
+              <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">{user?.name || "Guest User"}</span>
             </div>
-            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">{user?.name || "Guest User"}</span>
-          </div>
+          </Link>
         </div>
         
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">

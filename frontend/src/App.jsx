@@ -56,6 +56,7 @@ import FeedbackComponent from "./components/ui/FeedbackComponent";
 
 // USE AUTHENTICATION STORE
 import { useAuthenticationStore } from "./store/authStore";
+import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
 
 // protect routes that require authentication + correct role
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -348,6 +349,12 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
               <ReviewerNewTicketPage />
+            </ProtectedRoute>
+          } />
+        <Route path="/reviewer-dashboard/settings" 
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerProfilePage />
             </ProtectedRoute>
           } />
 

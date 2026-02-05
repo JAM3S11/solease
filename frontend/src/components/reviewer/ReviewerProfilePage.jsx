@@ -78,7 +78,15 @@ const ReviewerProfilePage = () => {
   }
   return (
     <DashboardLayout>
-        <ProfileSettings />
+        <ProfileSettings 
+          role='reviewer'
+          user={user}
+          personalData={personalData}
+          contactData={contactData}
+          onPersonalChange={handlePersonalChange}
+          onContactChange={handleContactChange}
+          onSave={handleSave}
+          loading={loading} />
     </DashboardLayout>
   )
 }

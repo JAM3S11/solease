@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import { useProfileStore } from "../../store/profileStore";
@@ -11,8 +11,43 @@ const ReviewerProfilePage = () => {
 
   const [personalData, setPersonalData] = useState({
     name: "",
-    role: ""
+    email: "",
+    role: "",
+    status: "",
+  })
+
+  const [contactData, setContactData] = useState({
+    address: "",
+    country: "",
+    county: "",
+    telephoneNumber: "",
   });
+
+  useEffect(() => {
+    getProfile();
+  }, [getProfile]);
+
+  useEffect(() => {
+    if(personal){
+      setPersonalData((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(personal).filter(([key, value]) => !prev[key] || prev[key] === "")
+        )
+      }))
+    }
+
+    if(contact){
+      setContactData((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(contact).filter(([key, value]) => !prev[key] || prev[key] === "")
+        )
+      }))
+    }
+  }, [personal, contact]);
+
+  
   return (
     <DashboardLayout>
         <ProfileSettings />

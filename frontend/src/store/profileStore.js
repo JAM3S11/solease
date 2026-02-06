@@ -33,17 +33,25 @@ export const useProfileStore = create((set) => ({
                 contact: res.data.contact,
                 loading: false,
             });
-            const { setUser } = useAuthenticationStore.getState();
-            if (res.data.user) {
-                setUser(res.data.user);
+            
+            // Safely get setUser from auth store
+            try {
+                const authState = useAuthenticationStore.getState();
+                if (authState && typeof authState.setUser === 'function' && res.data.user) {
+                    authState.setUser(res.data.user);
+                }
+            } catch (err) {
+                console.warn("Warning: Could not update auth store:", err);
             }
+            
             return res.data;
         } catch (error) {
             console.error("Error updating a profile:", error);
             set({
                 loading: false,
                 error: error.response?.data?.message || "Update failed",
-            })
+            });
+            throw error;
         }
     },
 }));

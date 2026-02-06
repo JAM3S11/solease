@@ -128,7 +128,7 @@ const Header = () => {
           className={`p-2 md:hidden transition-colors ${isBlurred ? "text-gray-900" : "text-white"}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X size={28} className="hover:text-white" /> : <Menu size={28} />}
+          {isMenuOpen ? <X size={28} className="hover:text-wh" /> : <Menu size={28} />}
         </button>
       </nav>
 

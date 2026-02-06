@@ -115,19 +115,32 @@ export function AppSidebar({ userRole }) {
         <Collapsible key={item.name} asChild defaultOpen={isActive} className="group/collapsible">
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton tooltip={item.name}>
-                <Icon className={cn("size-4", isActive && "text-primary")} />
-                <span className="font-medium">{item.name}</span>
-                <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              <SidebarMenuButton 
+                tooltip={item.name}
+                className={cn(
+                  "md:h-auto h-12 md:py-2 py-3 transition-all duration-200",
+                  isActive ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+                )}
+              >
+                <Icon className={cn("md:size-4 size-5 transition-colors duration-200", isActive && "text-primary font-semibold")} />
+                <span className={cn("font-medium md:text-sm text-base transition-colors duration-200", isActive && "text-primary dark:text-white font-semibold")}>{item.name}</span>
+                <ChevronDown className={cn("ml-auto md:size-4 size-5 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-180", isActive && "text-primary")} />
               </SidebarMenuButton>
             </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenuSub>
+            <CollapsibleContent className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:collapse">
+              <SidebarMenuSub className="md:gap-1 gap-1.5">
                 {item.submenu.map((sub) => (
                   <SidebarMenuSubItem key={sub.name}>
-                    <SidebarMenuSubButton asChild isActive={location.pathname === sub.path}>
+                    <SidebarMenuSubButton 
+                      asChild 
+                      isActive={location.pathname === sub.path}
+                      className={cn(
+                        "md:h-auto h-11 md:py-1.5 py-2.5 md:pl-6 pl-8 transition-all duration-200 rounded-md",
+                        location.pathname === sub.path ? "bg-primary/15 dark:bg-primary/25 border-l-3 border-primary text-primary dark:text-white font-medium" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+                      )}
+                    >
                       <NavLink to={sub.path}>
-                        <span>{sub.name}</span>
+                        <span className="md:text-sm text-base">{sub.name}</span>
                       </NavLink>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -145,10 +158,14 @@ export function AppSidebar({ userRole }) {
           asChild 
           tooltip={item.name}
           isActive={location.pathname === item.path}
+          className={cn(
+            "md:h-auto h-12 md:py-2 py-3 transition-all duration-200",
+            location.pathname === item.path ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+          )}
         >
           <NavLink to={item.path}>
-            <Icon className="size-4" />
-            <span className="font-medium">{item.name}</span>
+            <Icon className={cn("md:size-4 size-5 transition-colors duration-200", location.pathname === item.path && "text-primary font-semibold")} />
+            <span className={cn("font-medium md:text-sm text-base transition-colors duration-200", location.pathname === item.path && "text-primary dark:text-white font-semibold")}>{item.name}</span>
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -156,18 +173,18 @@ export function AppSidebar({ userRole }) {
   };
 
   return (
-    <Sidebar variant="default" collapsible="icon" className="sticky top-0 h-screen bg-sidebar dark:bg-background border-r transition-colors duration-300">
-      <SidebarHeader>
+    <Sidebar variant="default" collapsible="icon" className="sticky top-0 h-screen bg-sidebar dark:bg-background border-r border-sidebar-border dark:border-sidebar-border transition-colors duration-300">
+      <SidebarHeader className="md:py-4 py-5 border-b border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="md:h-auto h-12 md:py-2 py-3 transition-all duration-200 text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent">
               <div className="flex items-center gap-3">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <img src="/solease.svg" alt="Logo" className="size-5 brightness-200" />
+                <div className="flex aspect-square md:size-8 size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all duration-200">
+                  <img src="/solease.svg" alt="Logo" className="md:size-5 size-6 brightness-200" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-bold">SOLEASE</span>
-                  <span className="truncate text-xs text-muted-foreground">{userRole}</span>
+                <div className="grid flex-1 text-left md:text-sm text-base leading-tight group-data-[collapsible=icon]:hidden transition-all duration-200">
+                  <span className="truncate font-bold text-sidebar-foreground dark:text-sidebar-primary-foreground">SOLEASE</span>
+                  <span className="truncate md:text-xs text-sm text-sidebar-foreground/70 dark:text-sidebar-foreground/80 font-medium">{userRole}</span>
                 </div>
               </div>
             </SidebarMenuButton>
@@ -175,27 +192,29 @@ export function AppSidebar({ userRole }) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="md:py-4 py-5 bg-sidebar dark:bg-background">
+        <SidebarGroup className="md:gap-3 gap-4">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="md:gap-2 gap-2.5">
               {currentMenu.top.map((item) => <NavItem key={item.name} item={item} />)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <SidebarMenu>
+      <SidebarFooter className="md:py-4 py-5 border-t border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
+        <SidebarMenu className="md:gap-2 gap-2.5">
           {currentMenu.bottom.map((item) => <NavItem key={item.name} item={item} />)}
-          <SidebarSeparator className="mx-0 my-2" />
+          <SidebarSeparator className="mx-0 md:my-2 my-3 bg-sidebar-border dark:bg-sidebar-border" />
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleLogout}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className={cn(
+                "md:h-auto h-12 md:py-2 py-3 text-destructive dark:text-red-400 hover:text-destructive dark:hover:text-red-300 hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-all duration-200 rounded-md font-medium",
+              )}
             >
-              <LogOut className="size-4" />
-              <span className="font-medium">Logout</span>
+              <LogOut className="md:size-4 size-5" />
+              <span className="md:text-sm text-base">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

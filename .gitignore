@@ -33,6 +33,7 @@ node_modules/
 /frontend/README.md
 /frontend/src/components/it/
 /frontend/src/components/service/
+/frontend/src/common/CanvasLoogo.jsx
 
 # Encrypted files will be released after review
 OBJECTIVE_1_ASSESSMENT.md

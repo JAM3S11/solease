@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Menu, X, ArrowRight, User } from "lucide-react";
 import { Link } from "react-router";
+// import { CanvasLogo } from "./CanvasLogo";
 
-const CanvasLogo = ({ isBlurred }) => {
+export const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -128,7 +129,7 @@ const Header = () => {
           className={`p-2 md:hidden transition-colors ${isBlurred ? "text-gray-900" : "text-white"}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X size={28} className="hover:text-wh" /> : <Menu size={28} />}
+          {isMenuOpen ? <X size={28} className="hover:text-white" /> : <Menu size={28} />}
         </button>
       </nav>
 

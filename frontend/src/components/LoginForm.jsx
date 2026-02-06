@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 // import { CanvasLogo } from "@/common/CanvasLogo";
 
-export const CanvasLogo = ({ isBlurred }) => {
+const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {

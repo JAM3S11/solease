@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Fixed import
-import { KeyRound, User, LogIn, ArrowRight, Mail, Lock } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, Check, AlertCircle, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-// import { CanvasLogo } from "@/common/CanvasLogo";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -56,20 +55,109 @@ const LoginForm = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
+    rememberMe: false,
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [validationSuccess, setValidationSuccess] = useState({});
+  const [touched, setTouched] = useState({});
 
   const navigate = useNavigate();
   const { isLoading, login } = useAuthenticationStore();
 
+  // Validation rules
+  const VALIDATION_RULES = {
+    username: {
+      pattern: /^[a-zA-Z0-9_-]{3,}$/,
+      message: "Username must be at least 3 characters (letters, numbers, _, -)"
+    },
+    password: {
+      minLength: 6,
+      message: "Password must be at least 6 characters"
+    }
+  };
+
+  // Calculate password strength
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { level: 'none', label: '', percent: 0 };
+    let strength = 0;
+    if (pwd.length >= 6) strength++;
+    if (pwd.length >= 8) strength++;
+    if (/[A-Z]/.test(pwd)) strength++;
+    if (/[0-9]/.test(pwd)) strength++;
+    if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+
+    if (strength <= 1) return { level: 'weak', label: 'Weak', percent: 33 };
+    if (strength <= 3) return { level: 'medium', label: 'Medium', percent: 66 };
+    return { level: 'strong', label: 'Strong', percent: 100 };
+  };
+
+  // Validate single field
+  const validateField = (name, value) => {
+    const errors = { ...validationErrors };
+    const success = { ...validationSuccess };
+
+    if (!value.trim()) {
+      errors[name] = `${name === 'username' ? 'Username' : 'Password'} is required`;
+      delete success[name];
+    } else if (name === 'username') {
+      if (!VALIDATION_RULES.username.pattern.test(value)) {
+        errors[name] = VALIDATION_RULES.username.message;
+        delete success[name];
+      } else {
+        delete errors[name];
+        success[name] = true;
+      }
+    } else if (name === 'password') {
+      if (value.length < VALIDATION_RULES.password.minLength) {
+        errors[name] = VALIDATION_RULES.password.message;
+        delete success[name];
+      } else {
+        delete errors[name];
+        success[name] = true;
+      }
+    }
+
+    setValidationErrors(errors);
+    setValidationSuccess(success);
+  };
+
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === 'checkbox' ? checked : value;
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: fieldValue,
     }));
+
+    // Real-time validation only for touched fields
+    if (touched[name]) {
+      validateField(name, fieldValue);
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    validateField(name, formData[name]);
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Validate all fields before submission
+    setTouched({ username: true, password: true });
+    validateField('username', formData.username);
+    validateField('password', formData.password);
+
+    // Check if there are any errors
+    if (validationErrors.username || validationErrors.password) {
+      toast.error("Please fix validation errors before submitting");
+      return;
+    }
+
     try {
       const user = await login(formData.username, formData.password);
       toast.success(`Welcome back, ${user.name || "User"}!`);
@@ -83,6 +171,18 @@ const LoginForm = () => {
     } catch (err) {
       toast.error(err.message || "Invalid credentials.");
     }
+  };
+
+  const passwordStrength = getPasswordStrength(formData.password);
+  const strengthColor = {
+    weak: 'bg-red-500',
+    medium: 'bg-yellow-500',
+    strong: 'bg-green-500'
+  };
+  const strengthTextColor = {
+    weak: 'text-red-600',
+    medium: 'text-yellow-600',
+    strong: 'text-green-600'
   };
 
   return (
@@ -121,91 +221,258 @@ const LoginForm = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[440px] bg-white/40 backdrop-blur-xl px-8 md:px-10 py-7 rounded-[32px] border border-gray-300/5 shadow-2xl"
+        className="relative z-10 w-full max-w-[440px] bg-white/40 backdrop-blur-xl px-6 md:px-8 py-8 md:py-9 rounded-[32px] border border-gray-300/5 shadow-2xl"
       >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
-            <p className="text-gray-600 text-sm">Sign in to continue using SOLEASE</p>
-          </div>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
+          <p className="text-gray-600 text-sm">Sign in to continue using SOLEASE</p>
+        </div>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
-            
-            {/* Username/Email Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 ml-1">Username</label>
-              <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
-                  <Mail size={18} />
-                </div>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="e.g. adminManager"
-                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 ml-1">Password</label>
-              <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
-                  <Lock size={18} />
-                </div>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300/10 bg-gray-100 text-blue-500 focus:ring-blue-500/20" />
-                <span className="text-xs text-gray-600">Remember me</span>
+        <form className="space-y-5" onSubmit={handleLogin}>
+          
+          {/* Username/Email Field */}
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center justify-between">
+              <label htmlFor="username" className="text-sm font-medium text-gray-700">
+                Username <span className="text-red-500">*</span>
               </label>
-              <Link to="/auth/forgot-password" size={16} className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">
-                Forgot password?
-              </Link>
+              {validationSuccess.username && !validationErrors.username && (
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-600 flex items-center gap-1">
+                  <Check size={14} /> Valid
+                </motion.span>
+              )}
+            </div>
+            <div className="relative group">
+              <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
+                validationErrors.username ? 'text-red-500' : 
+                validationSuccess.username ? 'text-green-500' : 
+                'text-gray-600 group-focus-within:text-blue-500'
+              }`}>
+                <Mail size={18} />
+              </div>
+              <input
+                id="username"
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Enter your username"
+                aria-label="Username"
+                aria-required="true"
+                aria-invalid={!!validationErrors.username}
+                aria-describedby={validationErrors.username ? "username-error" : undefined}
+                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                  validationErrors.username 
+                    ? 'border-red-300 focus:border-red-500' 
+                    : validationSuccess.username
+                    ? 'border-green-300 focus:border-green-500'
+                    : 'border-gray-200 focus:border-blue-500/50'
+                }`}
+                disabled={isLoading}
+                required
+              />
+            </div>
+            {validationErrors.username && touched.username && (
+              <motion.div 
+                id="username-error"
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+              >
+                <AlertCircle size={14} /> {validationErrors.username}
+              </motion.div>
+            )}
+            {!validationErrors.username && (
+              <p className="text-xs text-gray-500 ml-1">3+ characters (letters, numbers, _, -)</p>
+            )}
+          </motion.div>
+
+          {/* Password Field */}
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password <span className="text-red-500">*</span>
+              </label>
+              {passwordStrength.level !== 'none' && (
+                <motion.span 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }}
+                  className={`text-xs font-medium ${strengthTextColor[passwordStrength.level]}`}
+                >
+                  {passwordStrength.label}
+                </motion.span>
+              )}
+            </div>
+            <div className="relative group">
+              <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
+                validationErrors.password ? 'text-red-500' : 
+                validationSuccess.password ? 'text-green-500' : 
+                'text-gray-600 group-focus-within:text-blue-500'
+              }`}>
+                <Lock size={18} />
+              </div>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Enter your password"
+                aria-label="Password"
+                aria-required="true"
+                aria-invalid={!!validationErrors.password}
+                aria-describedby={validationErrors.password ? "password-error" : undefined}
+                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                  validationErrors.password 
+                    ? 'border-red-300 focus:border-red-500' 
+                    : validationSuccess.password
+                    ? 'border-green-300 focus:border-green-500'
+                    : 'border-gray-200 focus:border-blue-500/50'
+                }`}
+                disabled={isLoading}
+                required
+              />
+              <motion.button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </motion.button>
             </div>
 
-            {/* Sign In Button */}
-            <motion.button
-              type="submit"
-              disabled={isLoading}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-400 text-[#0a0a0a] rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
+            {/* Password Strength Meter */}
+            {formData.password && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-2"
+              >
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${passwordStrength.percent}%` }}
+                    transition={{ duration: 0.3 }}
+                    className={`h-2 rounded-full transition-colors ${strengthColor[passwordStrength.level] || 'bg-gray-300'}`}
+                  />
+                </div>
+
+                {/* Password Requirements */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className={`flex items-center gap-1 ${formData.password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={formData.password.length >= 6 ? 'opacity-100' : 'opacity-30'} />
+                    6+ characters
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[A-Z]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    Uppercase
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    Number
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[^A-Za-z0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    Symbol
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {validationErrors.password && touched.password && (
+              <motion.div 
+                id="password-error"
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+              >
+                <AlertCircle size={14} /> {validationErrors.password}
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Remember Me & Forgot Password */}
+          <motion.div 
+            className="flex items-center justify-between px-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+                aria-label="Remember me on this device"
+                disabled={isLoading}
+                className="w-4 h-4 rounded border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer accent-blue-500 transition-all" 
+              />
+              <span className="text-xs text-gray-600 group-hover:text-gray-700 transition-colors">Remember me</span>
+            </label>
+            <Link 
+              to="/auth/forgot-password" 
+              className="text-xs font-semibold text-blue-500 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors rounded px-1"
+              aria-label="Go to forgot password page"
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-[#0a0a0a]/30 border-t-[#0a0a0a] rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </motion.button>
-          </form>
+              Forgot password?
+            </Link>
+          </motion.div>
+
+          {/* Sign In Button */}
+          <motion.button
+            type="submit"
+            disabled={isLoading || validationErrors.username || validationErrors.password}
+            whileHover={{ scale: isLoading ? 1 : 1.01 }}
+            whileTap={{ scale: isLoading ? 1 : 0.98 }}
+            className="w-full py-3 md:py-4 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
+          >
+            {isLoading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign In</span>
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
+          </motion.button>
+        </form>
 
         {/* Footer Link */}
-        <div className="mt-8 text-center">
+        <motion.div 
+          className="mt-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+        >
           <p className="text-gray-600 text-sm">
             New to the platform?{" "}
-            <Link to="/auth/signup" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+            <Link 
+              to="/auth/signup" 
+              className="text-blue-500 font-semibold hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded px-1 transition-colors"
+            >
               Create Account
             </Link>
           </p>
-        </div>
+        </motion.div>
       </motion.div>
     </section>
   );

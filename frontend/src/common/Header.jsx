@@ -128,7 +128,7 @@ const Header = () => {
           className={`p-2 md:hidden transition-colors ${isBlurred ? "text-gray-900" : "text-white"}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          {isMenuOpen ? <X size={28} className="hover:text-white" /> : <Menu size={28} />}
         </button>
       </nav>
 
@@ -139,30 +139,30 @@ const Header = () => {
         }`}
       >
         {/* Semi-transparent background overlay */}
-        <div className="absolute inset-5 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}></div>
+        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-lg" onClick={() => setIsMenuOpen(false)}></div>
         
         {/* Menu Content Container */}
-         <div className="relative bg-[#0a0a0a]/80 h-auto max-h-[80vh] rounded-b-[2rem] shadow-2xl px-8 pt-24 pb-12 flex flex-col border-b border-white/10">
-          <div className="flex flex-col space-y-1">
+         <div className="relative bg-white/5 backdrop-blur-2xl h-auto max-h-[80vh] rounded-b-[2rem] shadow-2xl px-8 pt-24 pb-12 flex flex-col border-b border-white/20 border-t border-white/10">
+          <div className="flex flex-col space-y-0">
             {navLinks.map((link, index) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="group flex items-center justify-between py-4 text-xl font-bold text-white hover:text-blue-600 border-b border-white/10 transition-all"
+                className="group flex items-center justify-between py-5 px-2 text-lg font-semibold text-white hover:text-blue-400 border-b border-white/8 transition-all duration-300"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
-                {link.name}
-                <ArrowRight size={18} className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-blue-500" />
+                <span className="tracking-wide">{link.name}</span>
+                <ArrowRight size={18} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 text-blue-400" />
               </a>
             ))}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-10">
+          <div className="grid grid-cols-2 gap-3 mt-12">
             <Link
               to="/auth/login"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-gray-800 hover:bg-gray-700 transition-all active:scale-95"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 active:scale-95"
             >
               <User size={18} />
               Login
@@ -170,7 +170,7 @@ const Header = () => {
             <Link
               to="/auth/signup"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white bg-blue-600 shadow-xl shadow-blue-500/20 active:scale-95"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-white bg-blue-600/80 backdrop-blur-md shadow-lg shadow-blue-500/20 border border-blue-400/30 hover:bg-blue-600 hover:border-blue-400/50 transition-all duration-300 active:scale-95"
             >
               Join Now
             </Link>

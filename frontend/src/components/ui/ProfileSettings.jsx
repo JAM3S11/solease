@@ -323,21 +323,21 @@ const ProfileSettings = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className='relative overflow-hidden w-full flex items-center bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg rounded-2xl p-8 text-white group mb-8'>
+          className='relative overflow-hidden w-full flex items-center bg-gradient-to-r from-gray-300 to-gray-400 dark:from-blue-600 dark:to-blue-700 shadow-lg rounded-2xl p-8 text-white group mb-8'>
 
           <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-700" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
-              <Fingerprint size={40} className="text-white" />
+              <Fingerprint size={40} className="text-gray-500 dark:text-white" />
             </div>
             <div>
-              <h2 className='text-2xl font-bold tracking-wide uppercase'>
+              <h2 className='text-2xl font-bold tracking-wide uppercase text-gray-600 dark:text-white'>
                 {user?.name || user?.username}
               </h2>
               <div className="flex items-center gap-2 mt-2 opacity-90">
-                <ShieldCheck size={16} className="text-blue-100" />
-                <span className="text-sm font-semibold tracking-tight">
+                <ShieldCheck size={16} className="text-gray-400 dark:text-blue-100" />
+                <span className="text-sm font-semibold tracking-tight text-gray-600 dark:text-white">
                   {role === 'client' ? 'CLIENT' : 'ADMIN'} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
                 </span>
               </div>
@@ -506,7 +506,7 @@ const ProfileSettings = ({
               label='Telephone Number'
               icon={Phone}
               name="telephoneNumber"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+254 700 000 000"
               type="tel"
               value={contactData.telephoneNumber ?? ""}
               onChange={handleContactChange}

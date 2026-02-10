@@ -227,7 +227,7 @@ const ReviewerDashbord = () => {
                          <td className="px-4 py-4 text-right">
                            <Link
                              to={`/reviewer-dashboard/assigned-ticket`}
-                             className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                             className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:translate-x-1 ease-out duration-500 hover:drop-shadow-xl"
                            >
                              <ArrowRight size={18} />
                            </Link>

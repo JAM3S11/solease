@@ -57,9 +57,11 @@ const SignUpForm = () => {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPasword, setConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [validationSuccess, setValidationSuccess] = useState({});
   const [touched, setTouched] = useState({});
@@ -77,6 +79,9 @@ const SignUpForm = () => {
     password: {
       minLength: 6,
       message: "Password must be at least 6 characters"
+    },
+    confirmPasword: {
+      message: "Password does not match"
     },
     name: {
       minLength: 2,
@@ -105,7 +110,7 @@ const SignUpForm = () => {
     const success = { ...validationSuccess };
 
     if (!value.trim()) {
-      const fieldNames = { username: 'Username', name: 'Full Name', email: 'Email', password: 'Password' };
+      const fieldNames = { username: 'Username', name: 'Full Name', email: 'Email', password: 'Password', confirmPasword: 'Confirm Password' };
       errors[name] = `${fieldNames[name]} is required`;
       delete success[name];
     } else if (name === 'username') {
@@ -127,6 +132,14 @@ const SignUpForm = () => {
     } else if (name === 'password') {
       if (value.length < VALIDATION_RULES.password.minLength) {
         errors[name] = VALIDATION_RULES.password.message;
+        delete success[name];
+      } else {
+        delete errors[name];
+        success[name] = true;
+      }
+    } else if(name === 'confirmPassword') {
+      if(value !== formData.password){
+        errors[name] = VALIDATION_RULES.confirmPasword.message;
         delete success[name];
       } else {
         delete errors[name];
@@ -173,8 +186,9 @@ const SignUpForm = () => {
     validateField('name', formData.name);
     validateField('email', formData.email);
     validateField('password', formData.password);
+    validateField('confirmPasswrd', formData.confirmPassword);
 
-    if (validationErrors.username || validationErrors.name || validationErrors.email || validationErrors.password) {
+    if (validationErrors.username || validationErrors.name || validationErrors.email || validationErrors.password || validationErrors.confirmPassword) {
       toast.error("Please fix validation errors before submitting");
       return;
     }
@@ -188,6 +202,7 @@ const SignUpForm = () => {
         name: "", 
         email: "", 
         password: "", 
+        confirmPassword: "",
       });
       navigate("/verify-email");
     } catch (err) {
@@ -518,25 +533,109 @@ const SignUpForm = () => {
               </motion.div>
             )}
             {!validationErrors.password && (
-              <p className="text-xs text-gray-500 ml-1">Minimum 6 characters</p>
+              <p className="text-xs text-gray-500 ml-1">Use 6+ characters with 4+ lowercase letters, 1+ uppercase, 1+ number, 1+ symbol</p>
             )}
             {formData.password && (
               <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }}
-                className="mt-3 space-y-2"
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-2"
               >
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${passwordStrength.percent}%` }}
-                      className={`h-full transition-all ${strengthColor[passwordStrength.level] || 'bg-gray-300'}`}
-                    />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${passwordStrength.percent}%` }}
+                    transition={{ duration: 0.3 }}
+                    className={`h-2 rounded-full transition-colors ${strengthColor[passwordStrength.level] || 'bg-gray-300'}`}
+                  />
+                </div>
+
+                {/* Password Requirements */}
+                <div className="flex items-start flex-col text-xs">
+                  <div className={`flex items-center gap-1 ${formData.password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={formData.password.length >= 6 ? 'opacity-100' : 'opacity-30'} />
+                    Use at least 6 characters to protect against brute-force attacks
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[A-Z]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    At least one capital letter <span className="font-bold">(A–Z)</span>
+                  </div>
+                  <div className={`flex items-center gap-1 ${(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'opacity-100' : 'opacity-30'} />
+                    At least 4 small letters <span className="font-bold">(a–z)</span>
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    At least one numerical digit <span className="font-bold">(0–9)</span>
+                  </div>
+                  <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={/[^A-Za-z0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
+                    At least one symbol <span className="font-bold">(e.g., **! @ # $ % ^ & ***)</span>
                   </div>
                 </div>
               </motion.div>
             )}
+          </motion.div>
+
+          {/* Confirm Password */}
+          <motion.div
+            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm Password <span className="text-red-500">*</span>
+              </label>
+              {validationSuccess.confirmPassword && !validationErrors.confirmPassword
+              && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-xs text-green-600 flex items-center gap-1"
+                >
+                  <Check size={14} />
+                </motion.span>
+              )}
+            </div>
+            <div className="relative group">
+              <div
+                className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
+                  validationErrors.confirmPassword ? 'text-red-500' :
+                  validationSuccess.confirmPassword ? 'text-green-500':
+                  'text-gray-600 group-focus-within:text-blue-500'
+                }`}
+              >
+                <KeyRound size={18} />
+              </div>
+              <input
+                id="confirmPassword"
+                type={confirmPasword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="••••••••"
+                aria-label="Confirm Password"
+                aria-required="true"
+                aria-invalid={!!validationErrors.confirmPassword}
+                aria-describedby={validationErrors.confirmPassword ? "Confirm-Password Error": undefined}
+                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-gray-900
+                  placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                    validationErrors.confirmPassword
+                    ? "border-red-300 focus:border-red-500"
+                    : validationSuccess.confirmPassword
+                    ? "border-green-300 focus:border-green-500"
+                    : "border-gray-200 focus:border-blue-500/50"
+                  }`}
+                disabled={isLoading}
+                required
+               />
+              <motion.button
+                type="button"
+              ></motion.button>
+            </div>
           </motion.div>
 
           {error && (

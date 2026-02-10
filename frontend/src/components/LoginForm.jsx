@@ -373,23 +373,28 @@ const LoginForm = () => {
                 </div>
 
                 {/* Password Requirements */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-start flex-col text-xs">
                   <div className={`flex items-center gap-1 ${formData.password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
                     <Check size={12} className={formData.password.length >= 6 ? 'opacity-100' : 'opacity-30'} />
-                    6+ characters
+                    Use at least 6 characters to protect against brute-force attacks
                   </div>
                   <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
                     <Check size={12} className={/[A-Z]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
-                    Uppercase
+                    At least one capital letter <span className="font-bold">(A–Z)</span>
+                  </div>
+                  <div className={`flex items-center gap-1 ${(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'text-green-600' : 'text-gray-500'}`}>
+                    <Check size={12} className={(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'opacity-100' : 'opacity-30'} />
+                    At least 4 small letters <span className="font-bold">(a–z)</span>
                   </div>
                   <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
                     <Check size={12} className={/[0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
-                    Number
+                    At least one numerical digit <span className="font-bold">(0–9)</span>
                   </div>
                   <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
                     <Check size={12} className={/[^A-Za-z0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
-                    Symbol
+                    At least one symbol <span className="font-bold">(e.g., **! @ # $ % ^ & ***)</span>
                   </div>
+                  <div></div>
                 </div>
               </motion.div>
             )}

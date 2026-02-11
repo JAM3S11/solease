@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { CircleUser, KeyRound, Mail, User, Eye, EyeOff, Check, AlertCircle, ArrowRight } from "lucide-react";
+import { CircleUser, KeyRound, Mail, User, Eye, EyeOff, Check, AlertCircle, ArrowRight} from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
@@ -572,6 +572,9 @@ const SignUpForm = () => {
                     <Check size={12} className={/[^A-Za-z0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
                     At least one symbol <span className="font-bold">(e.g., **! @ # $ % ^ & ***)</span>
                   </div>
+                  <div className="flex items-center gap-1 text-gray-500 text-xs mt-2 font-bold">
+                    Restrictions against easily guessable strings like password123 or sequences like 12345
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -638,9 +641,26 @@ const SignUpForm = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label={confirmPasword ? "Hide Confirm Password" : "Show Confirm Password"}
+                className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                 disabled={isLoading}
-              ></motion.button>
+              >
+                {confirmPasword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </motion.button>
             </div>
+            {validationErrors.confirmPassword && touched.confirmPassword && (
+              <motion.div
+                id="confirmPassword-error"
+                role="status"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+              >
+                <AlertCircle size={18} /> {validationErrors.confirmPassword}
+              </motion.div>
+            )}
+            {!validationErrors.confirmPassword && (
+              <p className="text-xs text-gray-500 ml-1">Re-enter your password to confirm</p>
+            )}
           </motion.div>
 
           {error && (

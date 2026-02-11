@@ -634,6 +634,11 @@ const SignUpForm = () => {
                />
               <motion.button
                 type="button"
+                onClick={() => setConfirmPassword(!confirmPasword)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label={confirmPasword ? "Hide Confirm Password" : "Show Confirm Password"}
+                disabled={isLoading}
               ></motion.button>
             </div>
           </motion.div>

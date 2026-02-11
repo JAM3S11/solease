@@ -11,6 +11,10 @@ const ClientDashboard = () => {
   const { user } = useAuthenticationStore();
   const { tickets, fetchTickets, loading, error } = useTicketStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc'
+  })
 
   const userName = user?.name || user?.username || "Client";
   const safeTickets = Array.isArray(tickets) ? tickets : [];
@@ -23,6 +27,16 @@ const ClientDashboard = () => {
 
   const displayTickets = safeTickets
     .filter(t => t.subject?.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if(sortConfig.key === "ticketId"){
+        const aId = a._id.slice(-6).toUpperCase();
+        const bId = b._id.slice(-6).toUpperCase();
+        return sortConfig.direction === 'asc'
+          ? aId.localeCompare(bId)
+          : bId.localeCompare(aId);
+      }
+      return 0;
+    })
     .slice(0, 5);
 
   // Derived Stat Cards
@@ -51,6 +65,18 @@ const ClientDashboard = () => {
     };
     return maps[color] || maps.blue;
   };
+
+  //Sorting function
+  const handleSort = (columnKey) => {
+    let direction = 'asc';
+
+    // When clicking the same direction
+    if(sortConfig.key === columnKey){
+      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    setSortConfig({ key: columnKey, direction });
+  }
 
   return (
     <DashboardLayout>
@@ -158,8 +184,15 @@ const ClientDashboard = () => {
                   <thead className="bg-gray-50/50 dark:bg-gray-900/50">
                     <tr>
                       {["Ticket ID", "Subject", "Urgency", "Location", "Status", "Submitted", "Attachments", "Feedback", ""].map((header) => (
-                        <th key={header} className="px-4 py-3 text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+                        <th 
+                          key={header} 
+                          className={`px-4 py-3 text-[10px] font-medium text-gray-400 uppercase tracking-widest ${
+                            header === "Ticket ID" ? 'cursor-pointer hover:text-gray-600 dark:text-gray-300' : ''
+                          }`}
+                          onClick={() => header === "Ticket ID" && handleSort('ticketId')}
+                        >
                           {header}
+                          {sortConfig.direction === 'asc' ? '🔽' : '🔼' }
                         </th>
                       ))}
                     </tr>
@@ -189,7 +222,7 @@ const ClientDashboard = () => {
                             {ticket.urgency}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400 truncate font-normal">
                           {ticket.location}
                         </td>
                         <td className="px-4 py-4">
@@ -199,7 +232,7 @@ const ClientDashboard = () => {
                               ticket.status === "In Progress" ? "bg-yellow-500" :
                               ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
                             }`} />
-                            <span className="text-sm font-normal text-gray-700 dark:text-gray-300">{ticket.status}</span>
+                            <span className="text-sm font-normal text-gray-700 dark:text-gray-300 truncate">{ticket.status}</span>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">

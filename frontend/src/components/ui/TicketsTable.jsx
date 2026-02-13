@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
- import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye } from "lucide-react";
+import React, { Fragment, useMemo, useState } from "react";
+ import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye, ArrowUp, ArrowDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,6 +17,15 @@ const TicketsTable = ({
   onDateChange = () => {},
   onRowClick = () => {},
 }) => {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const handleSort = (columnKey) => {
+    setSortConfig((prev) => ({
+      key: columnKey,
+      direction: prev.key === columnKey && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
   // Filter logic
   const filteredTickets = tickets.filter((ticket) => {
     const matchSearch = 
@@ -28,7 +37,23 @@ const TicketsTable = ({
     return matchSearch && matchIssueType && matchStatus && matchDate;
   });
 
-  const sortedTickets = [...filteredTickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const sortedTickets = useMemo(() => {
+    const arr = [...filteredTickets];
+
+    if (sortConfig.key === "ticketId") {
+      arr.sort((a, b) => {
+        const aId = a._id.slice(-6).toUpperCase();
+        const bId = b._id.slice(-6).toUpperCase();
+        return sortConfig.direction === "asc"
+          ? aId.localeCompare(bId)
+          : bId.localeCompare(aId);
+      });
+    } else {
+      arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    return arr;
+  }, [filteredTickets, sortConfig]);
 
   const issueTypes = ["Hardware Issue", "Software Issue", "Network Connectivity", "Account Access", "Other"];
   const statuses = role === 'admin' || role === 'reviewer' ? ["Open", "In Progress", "Resolved", "Closed"] : ["Open", "In Progress", "Resolved"];
@@ -78,7 +103,7 @@ const TicketsTable = ({
         key: role === 'client' ? 'location' : 'assignedTo',
         label: role === 'client' ? 'LOCATION' : 'ASSIGNED TO',
         render: (ticket) => role === 'client' ? (
-          <span className="text-sm text-gray-600 dark:text-gray-400">{ticket.location}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{ticket.location}</span>
         ) : (
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-bold text-blue-600">
@@ -258,11 +283,28 @@ const TicketsTable = ({
           <table className='w-full table-auto border-collapse'>
             <thead className="bg-gray-50/50 dark:bg-gray-800/50">
               <tr>
-                {columns.map((col) => (
-                  <th key={col.key} className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {col.label}
-                  </th>
-                ))}
+                {columns.map((col) => {
+                  const isTicketId = col.key === "id";
+
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={isTicketId ? () => handleSort("ticketId") : undefined}
+                      className={`px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest ${
+                        isTicketId ? "cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" : ""
+                      }`}
+                    >
+                      {isTicketId ? (
+                        <span className="inline-flex items-center gap-1 align-middle">
+                          <span>{col.label}</span>
+                          {sortConfig.direction === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                        </span>
+                      ) : (
+                        col.label
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-50 dark:divide-gray-800'>

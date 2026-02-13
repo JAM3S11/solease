@@ -159,37 +159,42 @@ const ClientDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+            className="mb-8 space-y-4"
           >
-            {[
-              { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
-              { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
-              { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
-              { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
-              { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -2, scale: 1.01 }}
-                className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
-              >
-                <div className="relative">
-                  <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
-                    <stat.icon size={22} className="text-white" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Here's and overview of your support tickets
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
+                { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
+                { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
+                { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
+                >
+                  <div className="relative">
+                    <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                      <stat.icon size={22} className="text-white" />
+                    </div>
+                    <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                      <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                    </span>
                   </div>
-                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
-                    <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         )}
 
@@ -226,6 +231,13 @@ const ClientDashboard = () => {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
+            <div className="mb-4 flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              </span>
+              <p className="font-medium">Pro-tip: Click on Ticket ID and Urgency headers to sort.</p>
+            </div>
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 dark:bg-gray-800/40">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Recent Tickets</h2>
@@ -255,7 +267,7 @@ const ClientDashboard = () => {
                           return (
                             <th
                               key={header}
-                              className={`px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest ${
+                              className={`px-6 py-4 text-[10px] text-left font-bold text-gray-400 uppercase tracking-widest ${
                                 sortKey ? "cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" : ""
                               }`}
                               onClick={() => sortKey && handleSort(sortKey)}

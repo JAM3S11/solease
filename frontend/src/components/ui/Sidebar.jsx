@@ -1,5 +1,5 @@
 // components/Sidebar.jsx
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Users, Ticket, Settings, LogOut,
@@ -25,6 +25,80 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsib
 import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import { cn } from "../../lib/utils";
+import { useTheme } from "./theme-provider";
+
+const useDarkMode = () => {
+  const [isDark, setIsDark] = useState(false);
+  
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkMode);
+    };
+    
+    checkDarkMode();
+    
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ["class"] 
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+  
+  return isDark;
+};
+
+const CanvasLogo = ({ isBlurred }) => {
+  const canvasRef = useRef(null);
+  const isDark = useDarkMode();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+
+    if(!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    // CLear for redrawing
+    ctx.clearRect(0, 0, 40, 40);
+
+    // Background gradient based on the scroll state and dark mode
+    const gradient = ctx.createLinearGradient(0, 0, 40, 40);
+    if(isBlurred){
+      gradient.addColorStop(0, '#2563EB');
+      gradient.addColorStop(1, '#06B6D4');
+    } else if (isDark) {
+      gradient.addColorStop(0, '#60A5FA');
+      gradient.addColorStop(1, '#22D3EE');
+    } else {
+      gradient.addColorStop(0, '#3B82F6');
+      gradient.addColorStop(1, '#06B6D4');
+    }
+
+    ctx.fillStyle = gradient;
+
+    // Drew the S-shape layer
+    const drawChevron = (yOffset, alpha = 1) => {
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(10, yOffset + 8);
+      ctx.lineTo(20, yOffset);
+      ctx.lineTo(30, yOffset + 8);
+      ctx.lineTo(20, yOffset + 16);
+      ctx.fill();
+    }
+
+    drawChevron(18, 0.6); // Bottom
+    drawChevron(10, 0.8); // Middle
+    drawChevron(2, 1);    // Top
+
+    ctx.globalAlpha = 1;
+  }, [isBlurred, isDark]);
+
+  return <canvas ref={canvasRef} width='40' height='40' className="w-8 h-8 md:w-10 md:h-10" />
+}
 
 const MENU_CONFIG = {
   Manager: {
@@ -179,9 +253,10 @@ export function AppSidebar({ userRole }) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="md:h-auto h-12 md:py-2 py-3 transition-all duration-200 text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent">
               <div className="flex items-center gap-3">
-                <div className="flex aspect-square md:size-8 size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all duration-200">
+                {/* <div className="flex aspect-square md:size-8 size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all duration-200">
                   <img src="/solease.svg" alt="Logo" className="md:size-5 size-6 brightness-200" />
-                </div>
+                </div> */}
+                <CanvasLogo />
                 <div className="grid flex-1 text-left md:text-sm text-base leading-tight group-data-[collapsible=icon]:hidden transition-all duration-200">
                   <span className="truncate font-bold text-sidebar-foreground dark:text-sidebar-primary-foreground">SOLEASE</span>
                   <span className="truncate md:text-xs text-sm text-sidebar-foreground/70 dark:text-sidebar-foreground/80 font-medium">{userRole}</span>

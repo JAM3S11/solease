@@ -18,6 +18,7 @@ import { useAuthenticationStore } from "../../store/authStore";
 import { Link } from "react-router-dom";
 import useTicketStore from "../../store/ticketStore";
 import WelcomeMessage from "../ui/WelcomeMessage";
+import { NumberTicker } from "../ui/number-ticker";
 
 const ClientDashboard = () => {
   const { user } = useAuthenticationStore();
@@ -190,7 +191,9 @@ const ClientDashboard = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {<NumberTicker value={stat.val} />}
+                    </p>
                   </div>
                 </motion.div>
               ))}

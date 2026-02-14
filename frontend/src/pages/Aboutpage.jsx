@@ -7,6 +7,7 @@ import { Users,
   Sparkles, BrainCircuit, ArrowRight, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router';
+import { NumberTicker } from '@/components/ui/number-ticker';
 
 const Aboutpage = () => {
   const navigate = useNavigate();
@@ -189,10 +190,10 @@ const Aboutpage = () => {
             </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-            <StatCard icon={<Users2 size={24} />} value="10k+" label="Daily Users" index={0} />
-            <StatCard icon={<TicketCheck size={24} />} value="99%" label="Uptime Goal" index={1} />
+            <StatCard icon={<Users2 size={24} />} value={<NumberTicker value={10000} />} suffix="+" label="Daily Users" index={0} />
+            <StatCard icon={<TicketCheck size={24} />} value={<NumberTicker value={99} />} suffix="%" label="Uptime Goal" index={1} />
             <StatCard icon={<Zap size={24} />} value="24/7" label="Real-Time Alerts" index={2} />
-            <StatCard icon={<BarChart3 size={24} />} value="1M+" label="Data Points" index={3} />
+            <StatCard icon={<BarChart3 size={24} />} value={<NumberTicker value={1000000} />} suffix="+" label="Data Points" index={3} />
           </div>
         </section>
       </div>
@@ -221,7 +222,7 @@ const FeatureCard = ({ Icon, title, desc, index }) => (
   </motion.article>
 );
 
-const StatCard = ({ icon, value, label, index }) => (
+const StatCard = ({ icon, value, suffix, label, index }) => (
   <motion.article
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -234,7 +235,8 @@ const StatCard = ({ icon, value, label, index }) => (
       {icon}
     </div>
     <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-700 tracking-tight">
-      {value}
+      {typeof value === 'object' ? value : value}
+      {suffix}
     </span>
     <span className="text-gray-600 mt-3 sm:mt-4 text-xs sm:text-sm font-bold uppercase tracking-[0.15em]">
       {label}

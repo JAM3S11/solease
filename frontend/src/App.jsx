@@ -173,56 +173,68 @@ const App = () => {
       {!hideLayout && <Header />}
 
       <Routes>
-        {/* Main Page */}
+        {/* Homepage - Standalone */}
         <Route
           path="/"
           element={
-            <>
-              <motion.section 
-                id="home" 
-                className="min-h-screen"
-                initial={{ opacity: 0, y: 5 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-                // viewport={{ once: false, amount: 0.3 }}
-              >
-                <Homepage />
-              </motion.section>
-              <motion.section 
-                id="about" 
-                className="min-h-screen"
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: "easeInOut" }}
-                // viewport={{ once: false, amount: 0.3 }}
-              >
-                <Aboutpage />
-              </motion.section>
-              <motion.section 
-                id="services" 
-                className="min-h-screen"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.6, delay: 0.4, ease: "easeInOut" }}
-                // viewport={{ once: false, amount: 0.3 }}
-              >
-                <ServicePage />
-              </motion.section>
-              <motion.section 
-                id="contact" 
-                className="min-h-screen"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.6, delay: 0.6, ease: "easeInOut" }}
-                // viewport={{ once: false, amount: 0.3 }}
-              >
-                <ContactPage />
-              </motion.section>
-            </>
+            <motion.section 
+              id="home" 
+              className="min-h-screen"
+              initial={{ opacity: 0, y: 5 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <Homepage />
+            </motion.section>
+          }
+        />
+
+        {/* About Page - Standalone */}
+        <Route
+          path="/about"
+          element={
+            <motion.section 
+              className="min-h-screen"
+              initial={{ opacity: 0, y: 5 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <Aboutpage />
+            </motion.section>
+          }
+        />
+
+        {/* Services Page - Standalone */}
+        <Route
+          path="/services"
+          element={
+            <motion.section 
+              className="min-h-screen"
+              initial={{ opacity: 0, y: 5 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <ServicePage />
+            </motion.section>
+          }
+        />
+
+        {/* Contact Page - Standalone */}
+        <Route
+          path="/contact"
+          element={
+            <motion.section 
+              className="min-h-screen"
+              initial={{ opacity: 0, y: 5 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <ContactPage />
+            </motion.section>
           }
         />
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Menu, X, ArrowRight, User } from "lucide-react";
-import { Link } from "react-router";
-// import { CanvasLogo } from "./CanvasLogo";
+import { Link, useLocation } from "react-router";
 
 export const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -52,6 +51,8 @@ export const CanvasLogo = ({ isBlurred }) => {
 const Header = () => {
   const [isBlurred, setIsBlurred] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  const isHomepage = location.pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,10 +63,10 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Services", href: "#services" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Contact", href: "/contact" },
   ];
 
   const onScrollToTop = () => {
@@ -78,16 +79,20 @@ const Header = () => {
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-sans ${
-        isBlurred
-          ? "backdrop-blur-2xl bg-white/40 border-b border-white/10 py-3 shadow-sm"
-          : "bg-transparent py-5"
+        isHomepage
+          ? isBlurred
+            ? "backdrop-blur-2xl bg-white/90 border-b border-gray-200 py-3 shadow-sm"
+            : "bg-transparent py-5"
+          : "backdrop-blur-2xl bg-white/90 border-b border-gray-200 py-3 shadow-sm"
       }`}
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10">
         {/* Logo */}
-        <div className="text-3xl md:text-4xl font-black tracking-tighter text-blue-600 drop-shadow-sm">
+        <div className={`text-3xl md:text-4xl font-black tracking-tighter drop-shadow-sm ${
+          isHomepage && !isBlurred ? "text-white" : "text-blue-600"
+        }`}>
           <Link to="/" onClick={onScrollToTop} className="flex m-0">
-            <CanvasLogo isBlurred={isBlurred} />{" "}
+            <CanvasLogo isBlurred={isHomepage ? isBlurred : true} />{" "}
             <span className="hidden md:block">SOLEASE</span>
           </Link>
         </div>
@@ -96,13 +101,17 @@ const Header = () => {
         <ul className="hidden md:flex items-center space-x-8 uppercase text-sm font-bold tracking-[0.06em]">
           {navLinks.map((link) => (
             <li key={link.name}>
-              <a
-                href={link.href}
-                className={`relative transition-colors duration-300 group ${isBlurred ? "text-gray-900 hover:text-blue-700" : "text-white hover:text-blue-400"}`}
+              <Link
+                to={link.href}
+                className={`relative transition-colors duration-300 group ${
+                  isHomepage && !isBlurred
+                    ? "text-white hover:text-blue-300"
+                    : "text-gray-900 hover:text-blue-700"
+                }`}
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full" />
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -111,7 +120,11 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           <Link
             to="/auth/login"
-            className={`text-sm font-bold transition-all px-4 ${isBlurred ? "text-gray-900 hover:text-blue-700" : "text-white hover:text-blue-400"}`}
+            className={`text-sm font-bold transition-all px-4 ${
+              isHomepage && !isBlurred
+                ? "text-white hover:text-blue-300"
+                : "text-gray-900 hover:text-blue-700"
+            }`}
           >
             Login
           </Link>
@@ -126,7 +139,9 @@ const Header = () => {
 
         {/* Mobile Toggle */}
         <button
-          className={`p-2 md:hidden transition-colors ${isBlurred ? "text-gray-900" : "text-white"}`}
+          className={`p-2 md:hidden transition-colors ${
+            isHomepage && !isBlurred ? "text-white" : "text-gray-900"
+          }`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? <X size={28} className="hover:text-white" /> : <Menu size={28} />}
@@ -146,16 +161,16 @@ const Header = () => {
          <div className="relative bg-white/5 backdrop-blur-2xl h-auto max-h-[80vh] rounded-b-[2rem] shadow-2xl px-8 pt-24 pb-12 flex flex-col border-b border-white/20 border-t border-white/10">
           <div className="flex flex-col space-y-0">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="group flex items-center justify-between py-5 px-2 text-lg font-semibold text-white hover:text-blue-400 border-b border-white/8 transition-all duration-300"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
                 <span className="tracking-wide">{link.name}</span>
                 <ArrowRight size={18} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 text-blue-400" />
-              </a>
+              </Link>
             ))}
           </div>
 

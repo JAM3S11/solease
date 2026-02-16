@@ -336,7 +336,7 @@ const ServicePage = () => {
 
       {/* Pricing/Comparison Section */}
       <section className="py-24 md:py-32 min-h-[100vh] bg-gray-50 flex items-center">
-        <div className="max-w-7xl mx-auto px-6 w-full">
+        <div className="max-w-5xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -424,7 +424,7 @@ const ServicePage = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-3xl shadow-lg p-8 md:p-12"
+            className=" rounded-3xl shadow-md p-8 md:p-12"
           >
             <div className="text-center mb-12">
               <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">FAQ</span>
@@ -451,13 +451,13 @@ const ServicePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 md:py-32 min-h-[35vh] bg-white flex items-center">
+      <section className="py-24 md:py-32 min-h-[35vh] flex items-center">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-3xl shadow-lg p-10 md:p-12"
+            className="bg-white rounded-3xl shadow-sm p-10 md:p-12"
           >
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
               Ready to Get Started?

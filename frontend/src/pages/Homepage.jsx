@@ -373,9 +373,9 @@ const Homepage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 md:py-32 bg-gray-50">
-        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[80px]" />
+      <section className="py-24 md:py-32 bg-white">
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] rounded-full blur-[80px]" />
         
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div

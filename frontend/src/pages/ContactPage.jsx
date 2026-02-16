@@ -120,7 +120,7 @@ const ContactPage = () => {
             <motion.div 
               {...fadeInUp}
               transition={{ delay: 0.2 }}
-              className="bg-white shadow-lg rounded-[2.5rem] p-8 md:p-12 border border-gray-100"
+              className="shadow-lg rounded-[2.5rem] p-8 md:p-12 border border-gray-100 h-3/4"
             >
               <h2 className="text-2xl font-black text-gray-900 mb-2 flex items-center gap-3">
                 Send us a Message
@@ -195,7 +195,7 @@ const ContactPage = () => {
               <motion.div 
                 {...fadeInUp}
                 transition={{ delay: 0.3 }}
-                className="bg-white shadow-lg rounded-[2.5rem] p-8 md:p-10 border border-gray-100"
+                className="shadow-lg rounded-[2.5rem] p-8 md:p-10 border border-gray-100"
               >
                 <h2 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-3">
                   <ShieldCheck className="text-blue-600" /> Contact Information
@@ -369,7 +369,7 @@ const ContactPage = () => {
 
       {/* SLA Section */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-5xl mx-auto px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -425,7 +425,7 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-[3rem] p-8 md:p-12 shadow-lg"
+            className="rounded-[3rem] p-8 md:p-12 shadow-lg"
           >
             <div className="text-center mb-10">
               <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />

@@ -103,6 +103,7 @@ const Header = () => {
             <li key={link.name}>
               <Link
                 to={link.href}
+                onClick={onScrollToTop}
                 className={`relative transition-colors duration-300 group ${
                   isHomepage && !isBlurred
                     ? "text-white hover:text-blue-300"

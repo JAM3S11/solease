@@ -122,7 +122,7 @@ const TicketsTable = ({
             ticket.status === "In Progress" ? "bg-yellow-500" :
             ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
           }`} />
-          <span className="text-sm font-normal text-gray-700 dark:text-gray-300">{ticket.status}</span>
+          <span className="text-sm font-normal text-gray-700 dark:text-gray-300 truncate">{ticket.status}</span>
         </div>
       ) },
       { key: 'createdAt', label: role === 'client' ? 'SUBMITTED' : 'CREATED AT', render: (ticket) => (

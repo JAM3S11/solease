@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import api from "../lib/axios.js";
+import useNotificationStore from "./notificationStore.js";
 
 
 export const useAuthenticationStore = create((set) => ({
@@ -55,6 +56,7 @@ export const useAuthenticationStore = create((set) => ({
                 error: null,
                 isLoading: false,
             });
+            useNotificationStore.getState().fetchNotifications();
             return response.data.user;
         } catch (error) {
             const message = error.response?.data?.message || "Error logging in";
@@ -75,7 +77,7 @@ export const useAuthenticationStore = create((set) => ({
                 isAuthenticated: false,
                 error: null,
                 isLoading: false,
-            })
+            });
         } catch (error) {
             set({
                 error: "Error logging out",
@@ -84,6 +86,7 @@ export const useAuthenticationStore = create((set) => ({
             throw error;
         }
     },
+
     checkAuth: async () => {
         set({ isCheckingAuth: true, error: null });
         try {
@@ -92,16 +95,21 @@ export const useAuthenticationStore = create((set) => ({
                 user: response.data.user,
                 isAuthenticated: true,
                 isCheckingAuth: false,
-            })
+            });
+            useNotificationStore.getState().fetchNotifications();
+            return response.data.user;
         } catch (error) {
             set({
+                user: null,
                 error: null,
                 isCheckingAuth: false,
                 isAuthenticated: false,
             });
-            throw error;
+            // Treat "not logged in" as a normal state; don't surface as an unhandled promise.
+            return null;
         }
     },
+
     forgotPassword: async (email) => {
         set({ isLoading: true, error: null });
         try {
@@ -118,6 +126,7 @@ export const useAuthenticationStore = create((set) => ({
             throw error;
         }
     },
+
     resetPassword: async (token, password) => {
         set({ isLoading: true, error: null });
         try {

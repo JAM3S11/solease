@@ -1,6 +1,8 @@
 // controllers/ticket.controller.js
 import { Ticket } from "../models/tickets.model.js";
 import { User } from "../models/user.model.js";
+import { createNotification } from "../controllers/notification.controllers.js";
+import { sendTicketStatusUpdateEmail } from "../mailtrap/emails.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -158,6 +160,8 @@ export const updateTicketStatus = async (req, res) => {
             });
         }
 
+        const previousStatus = ticket.status;
+
         if(status){
             ticket.status = status;
         }
@@ -173,6 +177,35 @@ export const updateTicketStatus = async (req, res) => {
         }
 
         await ticket.save();
+
+        if (status && status !== previousStatus) {
+            try {
+                const ticketOwner = await User.findById(ticket.user);
+                
+                if (ticketOwner && ticketOwner.email) {
+                    await sendTicketStatusUpdateEmail(
+                        ticketOwner.email,
+                        ticketOwner.name,
+                        ticket._id.toString(),
+                        ticket.subject,
+                        previousStatus,
+                        status
+                    );
+                }
+
+                await createNotification(
+                    ticket.user,
+                    ticket._id,
+                    "status_update",
+                    `Ticket Status Updated: ${status}`,
+                    `Your ticket "${ticket.subject}" has been updated from ${previousStatus} to ${status}`,
+                    previousStatus,
+                    status
+                );
+            } catch (notificationError) {
+                console.error("Error sending notification/email:", notificationError);
+            }
+        }
 
         res.status(200).json({
             success: true,

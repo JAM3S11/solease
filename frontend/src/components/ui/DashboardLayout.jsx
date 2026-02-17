@@ -5,6 +5,7 @@ import { AppSidebar } from "./Sidebar";
 import { ThemeProvider } from "./theme-provider";
 import { ThemeToggle } from "./theme-toggle";
 import { ProfileDropdown } from "./profile-dropdown";
+import { NotificationBell } from "./notification-bell";
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
 
@@ -24,6 +25,7 @@ const DashboardLayout = ({ children }) => {
               <div className="flex-1">
                 <DynamicBreadcrumb />
               </div>
+              <NotificationBell />
               <ProfileDropdown />
               <ThemeToggle />
             </header>

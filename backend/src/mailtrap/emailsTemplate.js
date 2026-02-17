@@ -96,6 +96,50 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 </html>
 `;
 
+export const TICKET_STATUS_UPDATE_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Status Update - {{newStatus}}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(to right, #6366F1, #4F46E5); padding: 20px; text-align: center;">
+    <h1 style="color: white; margin: 0;">Ticket Status Update</h1>
+  </div>
+  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <p>Hello {{userName}},</p>
+    <p>Your ticket has been updated. Here are the details:</p>
+    
+    <div style="background-color: white; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6366F1;">
+      <p style="margin: 0 0 10px 0;"><strong>Ticket ID:</strong> {{ticketId}}</p>
+      <p style="margin: 0 0 10px 0;"><strong>Subject:</strong> {{subject}}</p>
+      <p style="margin: 0;">
+        <strong>Status:</strong> 
+        <span style="background-color: {{statusColor}}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px;">{{previousStatus}}</span>
+        <span style="margin: 0 8px;">→</span>
+        <span style="background-color: {{statusColor}}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px;">{{newStatus}}</span>
+      </p>
+    </div>
+    
+    <p>{{statusMessage}}</p>
+    
+    <p>You can log in to your dashboard to view more details or respond to this update.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="#" style="background-color: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Ticket</a>
+    </div>
+    
+    <p>Thank you,<br>The SolEase Team</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>
+`;
+
 export const WELCOME_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">

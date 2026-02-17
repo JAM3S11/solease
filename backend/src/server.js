@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import ticketRoutes from "./routes/ticket.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 dotenv.config();
 
@@ -43,6 +44,8 @@ app.use("/sol/ticket", ticketRoutes);
 app.use("/sol/user", userRoutes);
 
 app.use("/sol/profile", profileRoutes);
+
+app.use("/sol/notifications", notificationRoutes);
 
 connectDB().then(async () => {
     await createDefaultManager();

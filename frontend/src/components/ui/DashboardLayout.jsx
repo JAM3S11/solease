@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "./shadcn-sidebar"
 import { AppSidebar } from "./Sidebar";
 import { ThemeProvider } from "./theme-provider";
 import { ThemeToggle } from "./theme-toggle";
+import { ProfileDropdown } from "./profile-dropdown";
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
 
@@ -23,6 +24,7 @@ const DashboardLayout = ({ children }) => {
               <div className="flex-1">
                 <DynamicBreadcrumb />
               </div>
+              <ProfileDropdown />
               <ThemeToggle />
             </header>
             

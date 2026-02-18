@@ -343,6 +343,103 @@ export const addReply = async (req, res) => {
     }
 };
 
+// Edit comment
+export const editComment = async (req, res) => {
+    const { ticketId, commentId } = req.params;
+    const { content } = req.body;
+
+    try {
+        const ticket = await Ticket.findById(ticketId);
+
+        if(!ticket){
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found",
+            });
+        }
+
+        const comment = ticket.comments.id(commentId);
+        if(!comment){
+            return res.status(404).json({
+                success: false,
+                message: "Comment not found",
+            });
+        }
+
+        if(comment.user.toString() !== req.user._id.toString()){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to edit this comment"
+            });
+        }
+
+        comment.content = content;
+        comment.updatedAt = new Date();
+        comment.editedBy = req.user._id;
+
+        await ticket.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Comment updated successfully",
+            comment,
+        });
+    } catch (error) {
+        console.log("Error editing comment", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while editing comment"
+        });
+    }
+};
+
+// Delete comment
+export const deleteComment = async (req, res) => {
+    const { ticketId, commentId } = req.params;
+
+    try {
+        const ticket = await Ticket.findById(ticketId);
+
+        if(!ticket){
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found",
+            });
+        }
+
+        const comment = ticket.comments.id(commentId);
+        if(!comment){
+            return res.status(404).json({
+                success: false,
+                message: "Comment not found",
+            });
+        }
+
+        if(comment.user.toString() !== req.user._id.toString()){
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to delete this comment"
+            });
+        }
+
+        ticket.comments.pull({ _id: commentId });
+
+        await ticket.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Comment deleted successfully",
+            ticket,
+        });
+    } catch (error) {
+        console.log("Error deleting comment", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while deleting comment"
+        });
+    }
+};
+
 // Edit reply
 export const editReply = async (req, res) => {
     const { ticketId, commentId, replyId } = req.params;

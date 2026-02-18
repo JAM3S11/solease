@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2 } from 'lucide-react';
 import DashboardLayout from '../ui/DashboardLayout';
 import { useAuthenticationStore } from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 import toast from 'react-hot-toast';
+
+const ISSUE_TYPE_INITIALS = {
+  'Software Issue': 'SI',
+  'Hardware Issue': 'HI',
+  'Network Connectivity': 'NC',
+  'Account Access': 'AA',
+  'Other': 'OT'
+};
 
 const FeedbackComponent = () => {
   const { id } = useParams();
@@ -17,6 +25,10 @@ const FeedbackComponent = () => {
     fetchSingleTicket,
     submitFeedback,
     addReply,
+    editComment,
+    deleteComment,
+    editReply,
+    deleteReply,
     loading,
     hideFeedback,
     unhideFeedback,
@@ -28,6 +40,12 @@ const FeedbackComponent = () => {
   const [moderating, setModerating] = useState(null);
   const [interventionContent, setInterventionContent] = useState('');
   const [moderationMenu, setModerationMenu] = useState(null);
+  const [showTicketDetails, setShowTicketDetails] = useState(false);
+  const [hideModal, setHideModal] = useState({ show: false, commentId: null });
+  const [unhideModal, setUnhideModal] = useState({ show: false, commentId: null });
+  const [copiedId, setCopiedId] = useState(false);
+  const [editModal, setEditModal] = useState({ show: false, message: null, content: '' });
+  const [deleteModal, setDeleteModal] = useState({ show: false, message: null });
 
 
   useEffect(() => {
@@ -83,26 +101,80 @@ const FeedbackComponent = () => {
     }
   };
 
-  const handleHide = async (commentId, unhideCode) => {
-    setModerating(commentId);
+  const handleHide = async (unhideCode) => {
+    if (!unhideCode) return;
+    setModerating(hideModal.commentId);
     try {
-      await hideFeedback(id, commentId, unhideCode);
+      await hideFeedback(id, hideModal.commentId, unhideCode);
       toast.success('Comment hidden successfully');
     } catch (error) {
-      toast.error('Failed to hide comment');
+      toast.error('Failed to hide comment. Check your code.');
+    }
+    setModerating(null);
+    setHideModal({ show: false, commentId: null });
+  };
+
+  const handleUnhide = async (code) => {
+    if (!code) return;
+    setModerating(unhideModal.commentId);
+    try {
+      await unhideFeedback(id, unhideModal.commentId, code);
+      toast.success('Comment unhidden successfully');
+    } catch (error) {
+      toast.error('Failed to unhide comment. Check your code.');
+    }
+    setModerating(null);
+    setUnhideModal({ show: false, commentId: null });
+  };
+
+  const openHideModal = (commentId) => {
+    setHideModal({ show: true, commentId });
+  };
+
+  const openUnhideModal = (commentId) => {
+    setUnhideModal({ show: true, commentId });
+  };
+
+  const openEditModal = (message) => {
+    setEditModal({ show: true, message, content: message.content });
+  };
+
+  const openDeleteModal = (message) => {
+    setDeleteModal({ show: true, message });
+  };
+
+  const handleEditMessage = async () => {
+    if (!editModal.content.trim() || !editModal.message) return;
+    setModerating('edit');
+    try {
+      const { message } = editModal;
+      if (message.type === 'comment') {
+        await editComment(id, message.id, editModal.content);
+      } else {
+        await editReply(id, message.commentId, message.id, editModal.content);
+      }
+      toast.success('Message updated successfully');
+      setEditModal({ show: false, message: null, content: '' });
+    } catch (error) {
+      toast.error('Failed to update message');
     }
     setModerating(null);
   };
 
-  const handleUnhide = async (commentId) => {
-    const code = prompt('Enter unhide code:');
-    if (!code) return;
-    setModerating(commentId);
+  const handleDeleteMessage = async () => {
+    if (!deleteModal.message) return;
+    setModerating('delete');
     try {
-      await unhideFeedback(id, commentId, code);
-      toast.success('Comment unhidden successfully');
+      const { message } = deleteModal;
+      if (message.type === 'comment') {
+        await deleteComment(id, message.id);
+      } else {
+        await deleteReply(id, message.commentId, message.id);
+      }
+      toast.success('Message deleted successfully');
+      setDeleteModal({ show: false, message: null });
     } catch (error) {
-      toast.error('Failed to unhide comment');
+      toast.error('Failed to delete message');
     }
     setModerating(null);
   };
@@ -161,6 +233,19 @@ const FeedbackComponent = () => {
       case 'Medium': return '🟡';
       default: return '🟢';
     }
+  };
+
+  // Helper to get issue type initials
+  const getIssueTypeInitials = (issueType) => {
+    return ISSUE_TYPE_INITIALS[issueType] || issueType?.slice(0, 2).toUpperCase() || '?';
+  };
+
+  // Copy ticket ID to clipboard
+  const copyTicketId = () => {
+    navigator.clipboard.writeText(ticket._id);
+    setCopiedId(true);
+    toast.success('Ticket ID copied!');
+    setTimeout(() => setCopiedId(false), 2000);
   };
 
 
@@ -291,64 +376,113 @@ const FeedbackComponent = () => {
           </motion.div>
         </div>
 
-        {/* Ticket Info - Grid Layout */}
+        {/* Ticket Info - Compact Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm"
+          className="bg-white dark:bg-slate-800 rounded-xl p-4 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm"
         >
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="text-lg">📋</span> Ticket Information
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-6">
-            {/* Subject */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">Subject</label>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.subject}</p>
-            </div>
-
-            {/* Location */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">📍 Location</label>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.location}</p>
-            </div>
-
-            {/* Issue Type */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">Issue Type</label>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.issueType}</p>
-            </div>
-
-            {/* Status */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">Status</label>
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
-                  ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                  ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                  ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
-                  'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                }`}>
-                  <span className="text-xs">●</span> {ticket.status}
+          {/* Quick Info Row */}
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Issue Type Badge */}
+            <div className="flex items-center gap-2" title={ticket.issueType}>
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                  {getIssueTypeInitials(ticket.issueType)}
                 </span>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Type</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.issueType}</p>
               </div>
             </div>
 
-            {/* Created Date */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">Created</label>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.createdAt).toLocaleDateString()}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{getRelativeTime(ticket.createdAt)}</p>
+            {/* Location */}
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <span className="text-sm">📍</span>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Location</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.location}</p>
+              </div>
             </div>
 
-            {/* Updated Date */}
-            <div className="col-span-2 sm:col-span-1">
-              <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block mb-2">Last Updated</label>
-              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{getRelativeTime(ticket.updatedAt)}</p>
+            {/* Priority */}
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <span className="text-sm">{getUrgencyIcon(ticket.urgency)}</span>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Priority</p>
+                <p className={`text-sm font-medium ${getUrgencyColor(ticket.urgency)}`}>{ticket.urgency}</p>
+              </div>
             </div>
+
+            {/* Created */}
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <Clock size={16} className="text-slate-500" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Created</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{getRelativeTime(ticket.createdAt)}</p>
+              </div>
+            </div>
+
+            {/* Copy ID Button */}
+            <button
+              onClick={copyTicketId}
+              className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              title="Copy Ticket ID"
+            >
+              {copiedId ? <Check size={16} className="text-green-500" /> : <Copy size={16} className="text-slate-500" />}
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                #{ticket._id.slice(-6).toUpperCase()}
+              </span>
+            </button>
+
+            {/* Expand/Collapse Details */}
+            <button
+              onClick={() => setShowTicketDetails(!showTicketDetails)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            >
+              {showTicketDetails ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Details</span>
+            </button>
           </div>
+
+          {/* Subject - Always Visible */}
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.subject}</p>
+          </div>
+
+          {/* Expanded Details */}
+          <AnimatePresence>
+            {showTicketDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-2 gap-4 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Created</label>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Last Updated</label>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Description</label>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{ticket.description}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Manager Intervention (Manager only) */}
@@ -499,14 +633,33 @@ const FeedbackComponent = () => {
                                     {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
 
+                                  {/* Own Message Actions - Edit/Delete */}
+                                  {isSelf && (
+                                    <div className="flex gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity">
+                                      <button
+                                        onClick={() => openEditModal(message)}
+                                        disabled={moderating === 'edit' || moderating === 'delete'}
+                                        className="p-1 hover:bg-white/20 rounded transition-colors"
+                                        title="Edit message"
+                                      >
+                                        <Edit2 size={14} />
+                                      </button>
+                                      <button
+                                        onClick={() => openDeleteModal(message)}
+                                        disabled={moderating === 'edit' || moderating === 'delete'}
+                                        className="p-1 hover:bg-red-500 hover:text-white rounded transition-colors"
+                                        title="Delete message"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
+                                  )}
+
                                   {/* Moderation Actions - Always Visible */}
                                   {canModerate && message.type === 'comment' && !isSelf && (
                                     <div className="flex gap-1 opacity-70 hover:opacity-100 transition-opacity">
                                       <button
-                                        onClick={() => {
-                                          const code = prompt('Enter hide code: SOLEASEHIDE');
-                                          if (code === 'SOLEASEHIDE') handleHide(message._id, code);
-                                        }}
+                                        onClick={() => openHideModal(message._id)}
                                         disabled={moderating === message._id}
                                         className="p-1 hover:bg-red-500 hover:text-white rounded transition-colors"
                                         title="Hide inappropriate comment"
@@ -515,10 +668,7 @@ const FeedbackComponent = () => {
                                       </button>
                                       {message.isHidden && (
                                         <button
-                                          onClick={() => {
-                                            const code = prompt('Enter unhide code: SOLEASEUNHIDE');
-                                            if (code === 'SOLEASEUNHIDE') handleUnhide(message._id);
-                                          }}
+                                          onClick={() => openUnhideModal(message._id)}
                                           disabled={moderating === message._id}
                                           className="p-1 hover:bg-green-500 hover:text-white rounded transition-colors"
                                           title="Unhide comment"
@@ -600,6 +750,262 @@ const FeedbackComponent = () => {
             </div>
           )}
         </motion.div>
+
+        {/* Hide Comment Modal */}
+        <AnimatePresence>
+          {hideModal.show && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setHideModal({ show: false, commentId: null })}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <EyeOff size={20} className="text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Hide Comment</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Enter the hide code</p>
+                  </div>
+                  <button
+                    onClick={() => setHideModal({ show: false, commentId: null })}
+                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                  >
+                    <X size={20} className="text-slate-500" />
+                  </button>
+                </div>
+                
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    id="hideCode"
+                    placeholder="Enter hide code"
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleHide(e.target.value);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">💡 Hint: The code is SOLEASEHIDE</p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setHideModal({ show: false, commentId: null })}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleHide(document.getElementById('hideCode')?.value)}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                  >
+                    Hide Comment
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Unhide Comment Modal */}
+        <AnimatePresence>
+          {unhideModal.show && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setUnhideModal({ show: false, commentId: null })}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <Eye size={20} className="text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Unhide Comment</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Enter the unhide code</p>
+                  </div>
+                  <button
+                    onClick={() => setUnhideModal({ show: false, commentId: null })}
+                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                  >
+                    <X size={20} className="text-slate-500" />
+                  </button>
+                </div>
+                
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    id="unhideCode"
+                    placeholder="Enter unhide code"
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUnhide(e.target.value);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">💡 Hint: The code is SOLEASEUNHIDE</p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setUnhideModal({ show: false, commentId: null })}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleUnhide(document.getElementById('unhideCode')?.value)}
+                    className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+                  >
+                    Unhide Comment
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Edit Message Modal */}
+        <AnimatePresence>
+          {editModal.show && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setEditModal({ show: false, message: null, content: '' })}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Edit2 size={20} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Message</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Update your message</p>
+                  </div>
+                  <button
+                    onClick={() => setEditModal({ show: false, message: null, content: '' })}
+                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                  >
+                    <X size={20} className="text-slate-500" />
+                  </button>
+                </div>
+                
+                <div className="mb-4">
+                  <textarea
+                    value={editModal.content}
+                    onChange={(e) => setEditModal({ ...editModal, content: e.target.value })}
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditModal({ show: false, message: null, content: '' })}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleEditMessage}
+                    disabled={!editModal.content.trim() || moderating === 'edit'}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {moderating === 'edit' ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Delete Message Modal */}
+        <AnimatePresence>
+          {deleteModal.show && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setDeleteModal({ show: false, message: null })}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <Trash2 size={20} className="text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Message</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Are you sure you want to delete this message?</p>
+                  </div>
+                  <button
+                    onClick={() => setDeleteModal({ show: false, message: null })}
+                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                  >
+                    <X size={20} className="text-slate-500" />
+                  </button>
+                </div>
+                
+                <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{deleteModal.message?.content}</p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDeleteModal({ show: false, message: null })}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteMessage}
+                    disabled={moderating === 'delete'}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {moderating === 'delete' ? 'Deleting...' : 'Delete Message'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
   );

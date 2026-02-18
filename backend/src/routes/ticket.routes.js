@@ -3,7 +3,8 @@ import express from "express";
 import { protect } from "../middleware/authTicketTok.js";
 import { createTicket, getTickets, 
     updateTicketStatus, submitFeedback, 
-    addReply, editReply, deleteReply, 
+    addReply, editComment, deleteComment,
+    editReply, deleteReply, 
     hideFeedback, unhideFeedback, 
     viewHiddenFeedback, approveHiddenForManager, 
     managerIntervention, triggerAIResponse, 
@@ -26,6 +27,12 @@ router.post("/:id/feedback", protect, submitFeedback);
 
 // Add reply to feedback/comment
 router.post("/:ticketId/comment/:commentId/reply", protect, addReply);
+
+// Edit comment
+router.put("/:ticketId/comment/:commentId", protect, editComment);
+
+// Delete comment
+router.delete("/:ticketId/comment/:commentId", protect, deleteComment);
 
 // Edit reply
 router.put("/:ticketId/comment/:commentId/reply/:replyId", protect, editReply);

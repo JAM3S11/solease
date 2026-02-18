@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "./dropdown-menu"
 import useNotificationStore from "../../store/notificationStore"
+import { useAuthenticationStore } from "../../store/authStore"
 import { useEffect } from "react"
 
 const STATUS_COLORS = {
@@ -22,6 +23,7 @@ const STATUS_COLORS = {
 
 export function NotificationBell() {
   const navigate = useNavigate()
+  const { user } = useAuthenticationStore()
   const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead, fetchUnreadCount } = useNotificationStore()
 
   useEffect(() => {
@@ -32,11 +34,35 @@ export function NotificationBell() {
     return () => clearInterval(interval)
   }, [fetchNotifications, fetchUnreadCount])
 
+  const getTicketPath = (ticketId) => {
+    const userRole = user?.role
+    
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      return `/admin-dashboard/admin-tickets/${ticketId}`
+    } else if (userRole === 'Reviewer') {
+      return `/reviewer-dashboard/ticket/${ticketId}`
+    } else {
+      return `/client-dashboard/ticket/${ticketId}/feedback`
+    }
+  }
+
+  const getAllTicketsPath = () => {
+    const userRole = user?.role
+    
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      return "/admin-dashboard/admin-tickets"
+    } else if (userRole === 'Reviewer') {
+      return "/reviewer-dashboard/assigned-ticket"
+    } else {
+      return "/client-dashboard/all-tickets"
+    }
+  }
+
   const handleNotificationClick = async (notification) => {
     if (!notification.read) {
       await markAsRead(notification._id)
     }
-    navigate(`/client-dashboard/ticket/${notification.ticket._id}`)
+    navigate(getTicketPath(notification.ticket._id))
   }
 
   const getNotificationIcon = (type) => {
@@ -135,7 +161,7 @@ export function NotificationBell() {
         
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          onClick={() => navigate("/client-dashboard/all-tickets")}
+          onClick={() => navigate(getAllTicketsPath())}
           className="text-center justify-center text-sm text-blue-600 hover:text-blue-800"
         >
           View all tickets

@@ -154,6 +154,49 @@ const useTicketStore = create((set) => ({
         }
     },
     
+    // Edit comment
+    editComment: async (ticketId, commentId, content) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await api.put(`/ticket/${ticketId}/comment/${commentId}`, { content });
+            set((state) => ({
+                tickets: state.tickets.map((ticket) =>
+                    ticket._id === ticketId ? res.data.ticket : ticket
+                ),
+                loading: false,
+            }));
+            return res.data.comment;
+        } catch (error) {
+            console.error("Error editing comment:", error);
+            set({
+                error: error.response?.data?.message || "Error editing comment",
+                loading: false,
+            });
+            throw error;
+        }
+    },
+    
+    // Delete comment
+    deleteComment: async (ticketId, commentId) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await api.delete(`/ticket/${ticketId}/comment/${commentId}`);
+            set((state) => ({
+                tickets: state.tickets.map((ticket) =>
+                    ticket._id === ticketId ? res.data.ticket : ticket
+                ),
+                loading: false,
+            }));
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            set({
+                error: error.response?.data?.message || "Error deleting comment",
+                loading: false,
+            });
+            throw error;
+        }
+    },
+    
     // Edit reply
     editReply: async (ticketId, commentId, replyId, content) => {
         set({ loading: true, error: null });

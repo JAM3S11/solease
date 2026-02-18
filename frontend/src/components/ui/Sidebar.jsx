@@ -3,7 +3,8 @@ import React, { useRef, useEffect, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Users, Ticket, Settings, LogOut,
-  LucideChartSpline, ChevronDown
+  LucideChartSpline, ChevronDown, ChevronLeft,
+  Bell
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,6 +22,7 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "./shadcn-sidebar";
+import { Button } from "./button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
@@ -108,9 +110,10 @@ const MENU_CONFIG = {
       { 
         name: "Tickets", 
         icon: Ticket, 
+        badge: 5,
         submenu: [
-          { name: "All Tickets", path: "/admin-dashboard/admin-tickets" },
-          { name: "Pending", path: "/admin-dashboard/admin-pending-tickets" },
+          { name: "All Tickets", path: "/admin-dashboard/admin-tickets", badge: 3 },
+          { name: "Pending", path: "/admin-dashboard/admin-pending-tickets", badge: 2 },
           { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
         ] 
       },
@@ -126,9 +129,10 @@ const MENU_CONFIG = {
       { 
         name: "Tickets", 
         icon: Ticket, 
+        badge: 8,
         submenu: [
           { name: "New Ticket", path: "/reviewer-dashboard/new-ticket" },
-          { name: "Assigned", path: "/reviewer-dashboard/assigned-ticket" },
+          { name: "Assigned", path: "/reviewer-dashboard/assigned-ticket", badge: 8 },
         ]
       },
       { name: "Report", icon: LucideChartSpline, path: "/reviewer-dashboard/report" },
@@ -143,6 +147,7 @@ const MENU_CONFIG = {
       { 
         name: "My Tickets", 
         icon: Ticket, 
+        badge: 2,
         submenu: [
           { name: "All Tickets", path: "/client-dashboard/all-tickets" },
           { name: "New Ticket", path: "/client-dashboard/new-ticket" },
@@ -157,10 +162,10 @@ const MENU_CONFIG = {
 };
 
 export function AppSidebar({ userRole }) {
-  const { logout } = useAuthenticationStore();
+  const { logout, user } = useAuthenticationStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
 
   const handleLogout = async () => {
     try {
@@ -180,66 +185,122 @@ export function AppSidebar({ userRole }) {
     return false;
   };
 
-  const NavItem = ({ item }) => {
+  const isSubmenuActive = (submenu) => {
+    if (!submenu) return false;
+    return submenu.some(sub => location.pathname === sub.path);
+  };
+
+  const NavItem = ({ item, isCollapsed }) => {
     const Icon = item.icon;
     const isActive = isRouteActive(item.path, item.submenu);
+    const isSubmenuItemActive = isSubmenuActive(item.submenu);
+
+    const handleKeyDown = (e, path) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigate(path);
+      }
+    };
 
     if (item.submenu) {
       return (
-        <Collapsible key={item.name} asChild defaultOpen={isActive} className="group/collapsible">
-          <SidebarMenuItem>
+        <Collapsible key={item.name} asChild defaultOpen={isActive || isSubmenuItemActive} className="group/collapsible w-full">
+          <SidebarMenuItem className={isCollapsed ? "flex justify-center" : ""}>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton 
                 tooltip={item.name}
                 className={cn(
-                  "md:h-auto h-12 md:py-2 py-3 transition-all duration-200",
-                  isActive ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+                  "transition-all duration-200 hover:scale-[1.02] h-12",
+                  isActive || isSubmenuItemActive ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground",
+                  isCollapsed ? "w-12 justify-center px-0" : "py-2"
                 )}
               >
-                <Icon className={cn("md:size-4 size-5 transition-colors duration-200", isActive && "text-primary font-semibold")} />
-                <span className={cn("font-medium md:text-sm text-base transition-colors duration-200", isActive && "text-primary dark:text-white font-semibold")}>{item.name}</span>
-                <ChevronDown className={cn("ml-auto md:size-4 size-5 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-180", isActive && "text-primary")} />
+                <Icon className={cn("size-5 transition-colors duration-200 flex-shrink-0", (isActive || isSubmenuItemActive) ? "text-primary font-semibold" : "")} />
+                {!isCollapsed && (
+                  <>
+                    <span className={cn("font-medium text-sm transition-colors duration-200 flex-1", (isActive || isSubmenuItemActive) ? "text-primary dark:text-white font-semibold" : "")}>{item.name}</span>
+                    {item.badge > 0 ? (
+                      <span className="ml-auto bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                        {item.badge}
+                      </span>
+                    ) : null}
+                    <ChevronDown className={cn("ml-auto size-5 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-180", (isActive || isSubmenuItemActive) ? "text-primary" : "")} />
+                  </>
+                )}
+                {isCollapsed && item.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-medium px-1 py-0.5 rounded-full min-w-[16px] text-center">
+                    {item.badge}
+                  </span>
+                )}
               </SidebarMenuButton>
             </CollapsibleTrigger>
-            <CollapsibleContent className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:collapse">
-              <SidebarMenuSub className="md:gap-1 gap-1.5">
-                {item.submenu.map((sub) => (
-                  <SidebarMenuSubItem key={sub.name}>
-                    <SidebarMenuSubButton 
-                      asChild 
-                      isActive={location.pathname === sub.path}
-                      className={cn(
-                        "md:h-auto h-11 md:py-1.5 py-2.5 md:pl-6 pl-8 transition-all duration-200 rounded-md",
-                        location.pathname === sub.path ? "bg-primary/15 dark:bg-primary/25 border-l-3 border-primary text-primary dark:text-white font-medium" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
-                      )}
-                    >
-                      <NavLink to={sub.path}>
-                        <span className="md:text-sm text-base">{sub.name}</span>
-                      </NavLink>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                ))}
-              </SidebarMenuSub>
-            </CollapsibleContent>
+            {!isCollapsed && (
+              <CollapsibleContent className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:collapse">
+                <SidebarMenuSub className="gap-1.5">
+                  {item.submenu.map((sub) => (
+                    <SidebarMenuSubItem key={sub.name}>
+                      <SidebarMenuSubButton 
+                        asChild 
+                        isActive={location.pathname === sub.path}
+                        className={cn(
+                          "h-11 py-2.5 pl-8 transition-all duration-200 rounded-md hover:scale-[1.02] hover:shadow-sm cursor-pointer",
+                          location.pathname === sub.path ? "bg-primary/15 dark:bg-primary/25 border-l-3 border-primary text-primary dark:text-white font-medium" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+                        )}
+                      >
+                        <NavLink 
+                          to={sub.path}
+                          tabIndex={0}
+                          onKeyDown={(e) => handleKeyDown(e, sub.path)}
+                          className="flex items-center justify-between w-full"
+                        >
+                          <span className="text-base">{sub.name}</span>
+                          {sub.badge > 0 ? (
+                            <span className="bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center ml-2">
+                              {sub.badge}
+                            </span>
+                          ) : null}
+                        </NavLink>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            )}
           </SidebarMenuItem>
         </Collapsible>
       );
     }
 
     return (
-      <SidebarMenuItem key={item.name}>
+      <SidebarMenuItem key={item.name} className={isCollapsed ? "flex justify-center" : ""}>
         <SidebarMenuButton 
           asChild 
           tooltip={item.name}
           isActive={location.pathname === item.path}
+          onKeyDown={(e) => handleKeyDown(e, item.path)}
           className={cn(
-            "md:h-auto h-12 md:py-2 py-3 transition-all duration-200",
-            location.pathname === item.path ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground"
+            "transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer h-12",
+            location.pathname === item.path ? "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-sidebar-primary dark:text-sidebar-primary-foreground font-semibold" : "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground",
+            isCollapsed ? "w-12 justify-center px-0" : "py-2"
           )}
         >
-          <NavLink to={item.path}>
-            <Icon className={cn("md:size-4 size-5 transition-colors duration-200", location.pathname === item.path && "text-primary font-semibold")} />
-            <span className={cn("font-medium md:text-sm text-base transition-colors duration-200", location.pathname === item.path && "text-primary dark:text-white font-semibold")}>{item.name}</span>
+          <NavLink to={item.path} tabIndex={0} className={cn("flex items-center gap-2", isCollapsed ? "justify-center" : "")}>
+            <Icon className={cn("size-5 transition-colors duration-200 flex-shrink-0", location.pathname === item.path ? "text-primary font-semibold" : "")} />
+            {!isCollapsed && (
+              <>
+                <span className={cn("font-medium text-sm transition-colors duration-200", location.pathname === item.path ? "text-primary dark:text-white font-semibold" : "")}>{item.name}</span>
+                {item.badge > 0 ? (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </>
+            )}
+            {isCollapsed && item.badge > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-medium px-1 py-0.5 rounded-full min-w-[16px] text-center">
+                {item.badge}
+              </span>
+            )}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -250,12 +311,9 @@ export function AppSidebar({ userRole }) {
     <Sidebar variant="default" collapsible="icon" className="sticky top-0 h-screen bg-sidebar dark:bg-background border-r border-sidebar-border dark:border-sidebar-border transition-colors duration-300">
       <SidebarHeader className="md:py-4 py-5 border-b border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="md:h-auto h-12 md:py-2 py-3 transition-all duration-200 text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent">
+          <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuButton size="lg" asChild className="md:h-auto h-12 md:py-2 py-3 transition-all duration-200 text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent flex-1">
               <div className="flex items-center gap-3">
-                {/* <div className="flex aspect-square md:size-8 size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all duration-200">
-                  <img src="/solease.svg" alt="Logo" className="md:size-5 size-6 brightness-200" />
-                </div> */}
                 <CanvasLogo />
                 <div className="grid flex-1 text-left md:text-sm text-base leading-tight group-data-[collapsible=icon]:hidden transition-all duration-200">
                   <span className="truncate font-bold text-sidebar-foreground dark:text-sidebar-primary-foreground">SOLEASE</span>
@@ -263,7 +321,44 @@ export function AppSidebar({ userRole }) {
                 </div>
               </div>
             </SidebarMenuButton>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className={cn(
+                "md:flex hidden h-8 w-8 hover:bg-sidebar-accent dark:hover:bg-sidebar-accent transition-all duration-200",
+                state === "collapsed" ? "rotate-180" : ""
+              )}
+              title={state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <ChevronLeft className="h-4 w-4 transition-transform duration-300" />
+            </Button>
           </SidebarMenuItem>
+          {user && state !== "collapsed" && (
+            <SidebarMenuItem className="px-2 mt-2">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50 dark:bg-sidebar-accent/30">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium text-sm">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium text-sidebar-foreground dark:text-sidebar-primary-foreground">
+                    {user.name || 'User'}
+                  </span>
+                  <span className="truncate text-xs text-sidebar-foreground/70 dark:text-sidebar-foreground/80">
+                    {user.email || ''}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  title="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                </Button>
+              </div>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarHeader>
 
@@ -271,7 +366,7 @@ export function AppSidebar({ userRole }) {
         <SidebarGroup className="md:gap-3 gap-4">
           <SidebarGroupContent>
             <SidebarMenu className="md:gap-2 gap-2.5">
-              {currentMenu.top.map((item) => <NavItem key={item.name} item={item} />)}
+              {currentMenu.top.map((item) => <NavItem key={item.name} item={item} isCollapsed={state === "collapsed"} />)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -279,7 +374,7 @@ export function AppSidebar({ userRole }) {
 
       <SidebarFooter className="md:py-4 py-5 border-t border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
         <SidebarMenu className="md:gap-2 gap-2.5">
-          {currentMenu.bottom.map((item) => <NavItem key={item.name} item={item} />)}
+          {currentMenu.bottom.map((item) => <NavItem key={item.name} item={item} isCollapsed={state === "collapsed"} />)}
           <SidebarSeparator className="mx-0 md:my-2 my-3 bg-sidebar-border dark:bg-sidebar-border" />
           <SidebarMenuItem>
             <SidebarMenuButton 

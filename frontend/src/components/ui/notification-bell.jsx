@@ -24,7 +24,7 @@ const STATUS_COLORS = {
 export function NotificationBell() {
   const navigate = useNavigate()
   const { user } = useAuthenticationStore()
-  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead, fetchUnreadCount } = useNotificationStore()
+  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead, fetchUnreadCount, notificationsEnabled } = useNotificationStore()
 
   useEffect(() => {
     fetchNotifications()
@@ -36,7 +36,7 @@ export function NotificationBell() {
 
   const getTicketPath = (ticketId) => {
     const userRole = user?.role
-    
+
     if (userRole === 'Manager' || userRole === 'Admin') {
       return `/admin-dashboard/admin-tickets/${ticketId}`
     } else if (userRole === 'Reviewer') {
@@ -48,7 +48,7 @@ export function NotificationBell() {
 
   const getAllTicketsPath = () => {
     const userRole = user?.role
-    
+
     if (userRole === 'Manager' || userRole === 'Admin') {
       return "/admin-dashboard/admin-tickets"
     } else if (userRole === 'Reviewer') {
@@ -94,7 +94,7 @@ export function NotificationBell() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {notificationsEnabled && unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
@@ -104,8 +104,8 @@ export function NotificationBell() {
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
-          {unreadCount > 0 && (
-            <button 
+          {notificationsEnabled && unreadCount > 0 && (
+            <button
               onClick={markAllAsRead}
               className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
             >
@@ -115,7 +115,7 @@ export function NotificationBell() {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {loading ? (
           <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
         ) : notifications.length === 0 ? (
@@ -123,7 +123,7 @@ export function NotificationBell() {
         ) : (
           <div className="max-h-96 overflow-y-auto">
             {notifications.slice(0, 10).map((notification) => (
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 key={notification._id}
                 onClick={() => handleNotificationClick(notification)}
                 className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
@@ -158,9 +158,9 @@ export function NotificationBell() {
             ))}
           </div>
         )}
-        
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => navigate(getAllTicketsPath())}
           className="text-center justify-center text-sm text-blue-600 hover:text-blue-800"
         >

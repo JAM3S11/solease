@@ -18,10 +18,10 @@ export function DynamicBreadcrumb() {
   const { fetchSingleTicket, tickets } = useTicketStore();
   const navigate = useNavigate();
 
-  const [ items, setItems ] = useState([]);
+  const [items, setItems] = useState([]);
 
   const handleLogout = async () => {
-    try{
+    try {
       await logout();
       toast.success("See you later!", { duration: 2000 });
       navigate("/auth/login");
@@ -34,7 +34,7 @@ export function DynamicBreadcrumb() {
   // It shall fetch using the Ticket Issue type
   // (Software Issue, Hardware Issue, etc...)
   const getInitials = (text) => {
-    if(!text) return "";
+    if (!text) return "";
     return text
       .split(' ')
       .slice(0, 2)
@@ -47,19 +47,19 @@ export function DynamicBreadcrumb() {
     const updateBreadcrumbs = async () => {
       const pathSegments = location.pathname.split('/').filter(Boolean);
       const breadcrumbList = [];
-  
+
       // Always start with Home
       breadcrumbList.push({
         label: "Home",
         isLogout: true,
         href: "home-key"
       });
-  
+
       // If on dashboard, add appropriate dashboard entry
       if (pathSegments.length > 0 && pathSegments[0].includes('dashboard')) {
         const dashboardType = pathSegments[0];
         let dashboardLabel = "Dashboard";
-  
+
         // Customize based on role
         if (dashboardType.includes('admin')) {
           dashboardLabel = "Admin Dashboard";
@@ -68,38 +68,58 @@ export function DynamicBreadcrumb() {
         } else if (dashboardType.includes('client')) {
           dashboardLabel = "Client Dashboard";
         }
-  
+
         breadcrumbList.push({
           label: dashboardLabel,
           href: `/${dashboardType}`
         });
-  
+
         // Process remaining path segments
         let currentPath = `/${dashboardType}`;
         for (let i = 1; i < pathSegments.length; i++) {
           currentPath += `/${pathSegments[i]}`;
           const segment = pathSegments[i];
-          
+
           let displayLabel;
-  
+
           // Counter check to see if this is a Ticket ID segment
-          if(pathSegments[i-1] === 'ticket' && segment.length > 10){
+          if (pathSegments[i - 1]?.includes('ticket') && segment.length > 10) {
             // Find the ticket store to get the issueType
-            let ticket = tickets.find(t => t._id === segment);
-            if(!ticket) {
-             ticket = await fetchSingleTicket(segment);
+            let ticket = tickets.find((t) => t._id === segment);
+            if (!ticket) {
+              ticket = await fetchSingleTicket(segment);
             }
-            displayLabel = ticket?.issueType ? getInitials(ticket.issueType) : segment.substring(0, 6);
+
+            if (ticket?.issueType) {
+              displayLabel = getInitials(ticket.issueType);
+              // Link back to the listing page with category filter
+              let listingSegment = pathSegments[i - 1];
+
+              // Handle role-specific listing routes
+              if (pathSegments[0] === 'admin-dashboard') {
+                listingSegment = 'admin-tickets';
+              } else if (pathSegments[0] === 'reviewer-dashboard') {
+                listingSegment = 'assigned-ticket';
+              } else if (pathSegments[0] === 'client-dashboard') {
+                listingSegment = 'all-tickets';
+              }
+
+              currentPath = `/${pathSegments[0]}/${listingSegment}?category=${encodeURIComponent(ticket.issueType)}`;
+            } else {
+              displayLabel = segment.substring(0, 6);
+            }
           } else {
-            // Convert kebab-case to readanle format
+            // Convert kebab-case to readable format
             displayLabel = segment
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, l => l.toUpperCase());
+              .replace(/-/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase());
           }
+
           breadcrumbList.push({
             label: displayLabel,
             href: currentPath,
-            isLast: i === pathSegments.length - 1
+            isLast: i === pathSegments.length - 1,
+            forceLink: segment.length > 10 && pathSegments[i - 1]?.includes('ticket') // Allow clicking even if last
           });
         }
       } else {
@@ -108,11 +128,11 @@ export function DynamicBreadcrumb() {
         for (let i = 0; i < pathSegments.length; i++) {
           currentPath += `/${pathSegments[i]}`;
           const segment = pathSegments[i];
-          
+
           const label = segment
             .replace(/-/g, ' ')
             .replace(/\b\w/g, l => l.toUpperCase());
-  
+
           breadcrumbList.push({
             label: label,
             href: currentPath,
@@ -120,7 +140,7 @@ export function DynamicBreadcrumb() {
           });
         }
       }
-  
+
       setItems(breadcrumbList);
     };
 
@@ -139,13 +159,13 @@ export function DynamicBreadcrumb() {
                 <BreadcrumbLink onClick={handleLogout} className="hover:text-pretty transition-colors cursor-pointer" >
                   {item.label}
                 </BreadcrumbLink>
-              ) : item.isLast ? (
+              ) : (item.isLast && !item.forceLink) ? (
                 <BreadcrumbPage className="font-medium">
                   {item.label}
                 </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link 
+                  <Link
                     to={item.href}
                     className="hover:text-foreground transition-colors"
                   >

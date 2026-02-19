@@ -30,6 +30,7 @@ import ReviewerDashbord from "./components/reviewer/ReviewerDashbord";
 import ReviewerNewTicketPage from "./components/reviewer/ReviewerNewTicketPage";
 import ReviewerAssignedTickets from "./components/reviewer/ReviewerAssignedTickets";
 import ReviewerTicketDetail from "./components/reviewer/ReviewerTicketDetail";
+import ReviewerReportPage from "./components/reviewer/ReviewerReportPage";
 
 // // SERVICE DESK DASHBOARD
 // import ServiceDeskDashboard from "./components/service/ServiceDeskDashboard";
@@ -156,9 +157,9 @@ const App = () => {
   }, [hideLayout]);
 
   // Checking authentication
-	useEffect(() => {
-		checkAuth();
-	}, [checkAuth]);
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   if (isCheckingAuth) {
     return (
@@ -166,7 +167,7 @@ const App = () => {
         <div className="h-1 bg-blue-600 animate-pulse w-1/2"></div>
       </div>
     );
-  }  
+  }
 
   return (
     <div>
@@ -177,8 +178,8 @@ const App = () => {
         <Route
           path="/"
           element={
-            <motion.section 
-              id="home" 
+            <motion.section
+              id="home"
               className="min-h-screen"
               initial={{ opacity: 0, y: 5 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -194,7 +195,7 @@ const App = () => {
         <Route
           path="/about"
           element={
-            <motion.section 
+            <motion.section
               className="min-h-screen"
               initial={{ opacity: 0, y: 5 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -210,7 +211,7 @@ const App = () => {
         <Route
           path="/services"
           element={
-            <motion.section 
+            <motion.section
               className="min-h-screen"
               initial={{ opacity: 0, y: 5 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -226,7 +227,7 @@ const App = () => {
         <Route
           path="/contact"
           element={
-            <motion.section 
+            <motion.section
               className="min-h-screen"
               initial={{ opacity: 0, y: 5 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -239,43 +240,43 @@ const App = () => {
         />
 
         {/** Navigations of getting started process */}
-        <Route path="/auth/signup" 
+        <Route path="/auth/signup"
           element={
             <RedirectAuthenticatedUser>
               <SignUpForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/auth/login" 
+        <Route path="/auth/login"
           element={
             <RedirectAuthenticatedUser>
               <LoginForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/auth/verify-email" 
+        <Route path="/auth/verify-email"
           element={
             <RedirectAuthenticatedUser>
               <EmailVerificationPage />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/auth/forgot-password" 
+        <Route path="/auth/forgot-password"
           element={
             <RedirectAuthenticatedUser>
               <ForgotPassForm />
             </RedirectAuthenticatedUser>
           } />
-        <Route path="/auth/reset-password/:token" 
+        <Route path="/auth/reset-password/:token"
           element={
             <ResetPassword />
           } />
 
         {/* ADMIN DASHBOARD ROUTES */}
-        <Route path="/admin-dashboard" 
+        <Route path="/admin-dashboard"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
               <AdminDashboard />
             </ProtectedRoute>
           } />
-        <Route path="/admin-dashboard/users" 
+        <Route path="/admin-dashboard/users"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
               <AdminUsersPage />
@@ -293,7 +294,7 @@ const App = () => {
               <AdminTicketsView />
             </ProtectedRoute>
           } />
-        <Route path="/admin-dashboard/admin-pending-tickets" 
+        <Route path="/admin-dashboard/admin-pending-tickets"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
               <AdminPendingTickets />
@@ -305,7 +306,7 @@ const App = () => {
               <AdminNewTicketPage />
             </ProtectedRoute>
           }
-         />
+        />
         <Route path="/admin-dashboard/admin-reports"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
@@ -318,8 +319,8 @@ const App = () => {
               <AdminSettingPage />
             </ProtectedRoute>
           }
-         />
-        
+        />
+
         {/* REVIEWER ROLES */}
         <Route path="/reviewer-dashboard"
           element={
@@ -340,78 +341,84 @@ const App = () => {
             </ProtectedRoute>
           } />
         <Route path="/reviewer-dashboard/ticket/:id"
-           element={
-             <ProtectedRoute allowedRoles={["Reviewer"]}>
-               <ReviewerTicketDetail />
-             </ProtectedRoute>
-           } />
-         <Route path="/reviewer-dashboard/ticket/:id"
-            element={
-              <ProtectedRoute allowedRoles={["Reviewer", "Manager"]}>
-                <ReviewerTicketDetail />
-              </ProtectedRoute>
-            } />
-         <Route path="/reviewer-dashboard/ticket/:id/feedback"
-            element={
-              <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
-                <FeedbackComponent />
-              </ProtectedRoute>
-            } />
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerTicketDetail />
+            </ProtectedRoute>
+          } />
+        <Route path="/reviewer-dashboard/ticket/:id"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer", "Manager"]}>
+              <ReviewerTicketDetail />
+            </ProtectedRoute>
+          } />
+        <Route path="/reviewer-dashboard/ticket/:id/feedback"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
+              <FeedbackComponent />
+            </ProtectedRoute>
+          } />
         <Route path="/reviewer-dashboard/new-ticket"
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
               <ReviewerNewTicketPage />
             </ProtectedRoute>
           } />
-        <Route path="/reviewer-dashboard/settings" 
+        <Route path="/reviewer-dashboard/settings"
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
               <ReviewerProfilePage />
             </ProtectedRoute>
           } />
+        <Route path="/reviewer-dashboard/report"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <ReviewerReportPage />
+            </ProtectedRoute>
+          } />
 
-         {/* CLIENT ROUTES */}
-         <Route path="/client-dashboard/all-tickets"
-           element={
-             <ProtectedRoute allowedRoles={["Client"]}>
-               <ClientAllTicketPage />
-             </ProtectedRoute>
-           } />
-         <Route path="/client-dashboard/new-ticket"
-           element={
-             <ProtectedRoute allowedRoles={["Client"]}>
-               <ClientNewTicketPage />
-             </ProtectedRoute>
-           } />
-         <Route path="/client-dashboard/profile"
-           element={
-             <ProtectedRoute allowedRoles={["Client"]}>
-               <ClientProfilePage />
-             </ProtectedRoute>
-           } />
-         <Route path="/client-dashboard/report"
-            element={
-              <ProtectedRoute allowedRoles={["Client"]}>
-                <ClientReportPage />
-              </ProtectedRoute>
-            } />
-         <Route path="/client-dashboard/ticket/:id/feedback"
-            element={
-              <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
-                <FeedbackComponent />
-              </ProtectedRoute>
-            } />
-         <Route path="/client-dashboard"
-           element={
-             <ProtectedRoute allowedRoles={["Client"]}>
-               <ClientDashboard />
-             </ProtectedRoute>
-           } />
+        {/* CLIENT ROUTES */}
+        <Route path="/client-dashboard/all-tickets"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientAllTicketPage />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/new-ticket"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientNewTicketPage />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/profile"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientProfilePage />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/report"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientReportPage />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/ticket/:id/feedback"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
+              <FeedbackComponent />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientDashboard />
+            </ProtectedRoute>
+          } />
 
-         {/* Static Pages */}
-         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-         <Route path="/terms-of-service" element={<TermsOfService />} />
-       </Routes>
+        {/* Static Pages */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+      </Routes>
 
       {!hideLayout && <Footer />}
     </div>

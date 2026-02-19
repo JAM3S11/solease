@@ -1,17 +1,21 @@
- import React, { useEffect, useState } from 'react'
- import DashboardLayout from '../ui/DashboardLayout'
- import { Plus, Ticket, CheckCircle, Clock, MessageCircle } from 'lucide-react'
- import useTicketStore from '../../store/ticketStore'
- import { useNavigate } from 'react-router'
- import SelectedTicketModal from '../ui/SelectedTicketModal'
- import ExportData from '../../document/ExportData'
- import TicketsTable from '../ui/TicketsTable'
- import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react'
+import DashboardLayout from '../ui/DashboardLayout'
+import { Plus, Ticket, CheckCircle, Clock, MessageCircle } from 'lucide-react'
+import useTicketStore from '../../store/ticketStore'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import SelectedTicketModal from '../ui/SelectedTicketModal'
+import ExportData from '../../document/ExportData'
+import TicketsTable from '../ui/TicketsTable'
+import DetailedTicketsView from '../ui/DetailedTicketsView'
+import { motion } from 'framer-motion';
 
 const AdminTicketsView = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "";
+
   const [search, setSearch] = useState("");
-  const [issueTypeFilter, setIssueTypeFilter] = useState("");
+  const [issueTypeFilter, setIssueTypeFilter] = useState(initialCategory);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -143,25 +147,38 @@ const AdminTicketsView = () => {
         )}
 
         {!loading && !error && safeTickets.length > 0 && (
-          <TicketsTable
-            tickets={safeTickets}
-            role="admin"
-            search={search}
-            issueTypeFilter={issueTypeFilter}
-            statusFilter={statusFilter}
-            dateFilter={dateFilter}
-            onSearchChange={setSearch}
-            onIssueTypeChange={setIssueTypeFilter}
-            onStatusChange={setStatusFilter}
-            onDateChange={setDateFilter}
-            onRowClick={setSelectedTicket}
-          />
+          issueTypeFilter ? (
+            <DetailedTicketsView
+              tickets={safeTickets.filter(t =>
+                (!search || t.issueType?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
+                (t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
+                (!statusFilter || t.status === statusFilter) &&
+                (!dateFilter || new Date(t.createdAt).toISOString().split("T")[0] === dateFilter)
+              )}
+              role="admin"
+              onRowClick={setSelectedTicket}
+            />
+          ) : (
+            <TicketsTable
+              tickets={safeTickets}
+              role="admin"
+              search={search}
+              issueTypeFilter={issueTypeFilter}
+              statusFilter={statusFilter}
+              dateFilter={dateFilter}
+              onSearchChange={setSearch}
+              onIssueTypeChange={setIssueTypeFilter}
+              onStatusChange={setStatusFilter}
+              onDateChange={setDateFilter}
+              onRowClick={setSelectedTicket}
+            />
+          )
         )}
       </div>
-      {selectedTicket && 
-        <SelectedTicketModal 
-          ticket={selectedTicket} 
-          onClose={() => setSelectedTicket(null)} 
+      {selectedTicket &&
+        <SelectedTicketModal
+          ticket={selectedTicket}
+          onClose={() => setSelectedTicket(null)}
         />
       }
     </DashboardLayout>

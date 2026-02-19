@@ -53,7 +53,7 @@ export const createTicket = async (req, res) => {
 
     try {
         // Check if fields are empty
-        if(!location || !issueType || !subject || !description || !urgency){
+        if (!location || !issueType || !subject || !description || !urgency) {
             return res.status(400).json({
                 success: false,
                 message: "Kindly fill in all the details"
@@ -107,22 +107,22 @@ export const getTickets = async (req, res) => {
         let query = {};
         let sort = { createdAt: -1 };
 
-        if(req.user.role === "Client"){
+        if (req.user.role === "Client") {
             query.user = req.user._id;
             sort = { createdAt: -1 };
-        } else if(req.user.role === "Reviewer" || req.user.role === "Manager"){
+        } else if (req.user.role === "Reviewer" || req.user.role === "Manager") {
             query = {}
-            sort = { 
+            sort = {
                 createdAt: -1
             };
         };
 
         const tickets = await Ticket.find(query)
-        .populate("user", "username name role")
-        .populate("comments.user", "username name role")
-        .populate("comments.replies.user", "username name role")
-        .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments")
-        .sort(sort);
+            .populate("user", "username name role")
+            .populate("comments.user", "username name role")
+            .populate("comments.replies.user", "username name role")
+            .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments")
+            .sort(sort);
 
         res.status(200).json({
             success: true,
@@ -145,7 +145,7 @@ export const updateTicketStatus = async (req, res) => {
     try {
         const ticket = await Ticket.findById(id);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -162,17 +162,17 @@ export const updateTicketStatus = async (req, res) => {
 
         const previousStatus = ticket.status;
 
-        if(status){
+        if (status) {
             ticket.status = status;
         }
 
-        if(isAutomated){
+        if (isAutomated) {
             ticket.isAutomated = isAutomated;
             ticket.autoResolvedAt = new Date();
             ticket.resolutionMethod = "Auto";
         }
 
-        if(typeof chatEnabled === 'boolean'){
+        if (typeof chatEnabled === 'boolean') {
             ticket.chatEnabled = chatEnabled;
         }
 
@@ -181,27 +181,29 @@ export const updateTicketStatus = async (req, res) => {
         if (status && status !== previousStatus) {
             try {
                 const ticketOwner = await User.findById(ticket.user);
-                
-                if (ticketOwner && ticketOwner.email) {
-                    await sendTicketStatusUpdateEmail(
-                        ticketOwner.email,
-                        ticketOwner.name,
-                        ticket._id.toString(),
-                        ticket.subject,
+
+                if (ticketOwner && ticketOwner.notificationsEnabled !== false) {
+                    if (ticketOwner.email) {
+                        await sendTicketStatusUpdateEmail(
+                            ticketOwner.email,
+                            ticketOwner.name,
+                            ticket._id.toString(),
+                            ticket.subject,
+                            previousStatus,
+                            status
+                        );
+                    }
+
+                    await createNotification(
+                        ticket.user,
+                        ticket._id,
+                        "status_update",
+                        `Ticket Status Updated: ${status}`,
+                        `Your ticket "${ticket.subject}" has been updated from ${previousStatus} to ${status}`,
                         previousStatus,
                         status
                     );
                 }
-
-                await createNotification(
-                    ticket.user,
-                    ticket._id,
-                    "status_update",
-                    `Ticket Status Updated: ${status}`,
-                    `Your ticket "${ticket.subject}" has been updated from ${previousStatus} to ${status}`,
-                    previousStatus,
-                    status
-                );
             } catch (notificationError) {
                 console.error("Error sending notification/email:", notificationError);
             }
@@ -214,9 +216,9 @@ export const updateTicketStatus = async (req, res) => {
         });
     } catch (error) {
         console.log("Error updating ticket status", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Server error while updating ticket status" 
+        res.status(500).json({
+            success: false,
+            message: "Server error while updating ticket status"
         });
     }
 };
@@ -229,21 +231,21 @@ export const submitFeedback = async (req, res) => {
     try {
         const ticket = await Ticket.findById(id);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
             });
         }
 
-        if(req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()){
+        if (req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to submit feedback on this ticket"
             });
         }
 
-        if(ticket.status !== "Resolved" && ticket.status !== "In Progress" && ticket.status !== "Closed"){
+        if (ticket.status !== "Resolved" && ticket.status !== "In Progress" && ticket.status !== "Closed") {
             return res.status(400).json({
                 success: false,
                 message: "Can only submit feedback on resolved, in progress, or closed tickets"
@@ -284,7 +286,7 @@ export const addReply = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -292,14 +294,14 @@ export const addReply = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(comment.isHidden && req.user.role !== "Reviewer" && req.user.role !== "Manager"){
+        if (comment.isHidden && req.user.role !== "Reviewer" && req.user.role !== "Manager") {
             return res.status(403).json({
                 success: false,
                 message: "Cannot reply to hidden comments"
@@ -323,7 +325,7 @@ export const addReply = async (req, res) => {
             Date.now() - new Date(ticket.createdAt)
         ) / (1000 * 60 * 60);
 
-        if(totalReplies >= 4 && hoursSinceCreation >= 48){
+        if (totalReplies >= 4 && hoursSinceCreation >= 48) {
             ticket.chatEnabled = true;
         }
 
@@ -351,7 +353,7 @@ export const editComment = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -359,14 +361,14 @@ export const editComment = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(comment.user.toString() !== req.user._id.toString()){
+        if (comment.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to edit this comment"
@@ -400,7 +402,7 @@ export const deleteComment = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -408,14 +410,14 @@ export const deleteComment = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(comment.user.toString() !== req.user._id.toString()){
+        if (comment.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to delete this comment"
@@ -448,7 +450,7 @@ export const editReply = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -456,7 +458,7 @@ export const editReply = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
@@ -464,14 +466,14 @@ export const editReply = async (req, res) => {
         }
 
         const reply = comment.replies.id(replyId);
-        if(!reply){
+        if (!reply) {
             return res.status(404).json({
                 success: false,
                 message: "Reply not found",
             });
         }
 
-        if(reply.user.toString() !== req.user._id.toString()){
+        if (reply.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to edit this reply"
@@ -506,7 +508,7 @@ export const deleteReply = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -514,7 +516,7 @@ export const deleteReply = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
@@ -522,7 +524,7 @@ export const deleteReply = async (req, res) => {
         }
 
         const reply = comment.replies.id(replyId);
-        if(!reply){
+        if (!reply) {
             return res.status(404).json({
                 success: false,
                 message: "Reply not found",
@@ -531,7 +533,7 @@ export const deleteReply = async (req, res) => {
 
         const replyUserId = reply.user.toString();
 
-        if(replyUserId !== req.user._id.toString() && req.user.role !== "Manager"){
+        if (replyUserId !== req.user._id.toString() && req.user.role !== "Manager") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to delete this reply"
@@ -562,14 +564,14 @@ export const hideFeedback = async (req, res) => {
     const { unhideCode } = req.body;
 
     try {
-        if(req.user.role !== "Reviewer"){
+        if (req.user.role !== "Reviewer") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to hide feedback"
             });
         }
 
-        if(unhideCode !== "SOLEASEHIDE"){
+        if (unhideCode !== "SOLEASEHIDE") {
             return res.status(403).json({
                 success: false,
                 message: "Invalid hide code"
@@ -578,7 +580,7 @@ export const hideFeedback = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -586,14 +588,14 @@ export const hideFeedback = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(comment.isHidden){
+        if (comment.isHidden) {
             return res.status(400).json({
                 success: false,
                 message: "Comment is already hidden"
@@ -626,14 +628,14 @@ export const unhideFeedback = async (req, res) => {
     const { unhideCode } = req.body;
 
     try {
-        if(req.user.role !== "Reviewer"){
+        if (req.user.role !== "Reviewer") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to unhide feedback"
             });
         }
 
-        if(unhideCode !== "SOLEASEUNHIDE"){
+        if (unhideCode !== "SOLEASEUNHIDE") {
             return res.status(403).json({
                 success: false,
                 message: "Invalid unhide code"
@@ -642,7 +644,7 @@ export const unhideFeedback = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -650,14 +652,14 @@ export const unhideFeedback = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(!comment.isHidden){
+        if (!comment.isHidden) {
             return res.status(400).json({
                 success: false,
                 message: "Comment is not hidden"
@@ -689,7 +691,7 @@ export const viewHiddenFeedback = async (req, res) => {
     const { code } = req.body;
 
     try {
-        if(req.user.role !== "Manager"){
+        if (req.user.role !== "Manager") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to view hidden feedback"
@@ -698,7 +700,7 @@ export const viewHiddenFeedback = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -706,21 +708,21 @@ export const viewHiddenFeedback = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
             });
         }
 
-        if(!comment.isHidden || !comment.approvedForManager){
+        if (!comment.isHidden || !comment.approvedForManager) {
             return res.status(403).json({
                 success: false,
                 message: "This feedback is not available for viewing"
             });
         }
 
-        if(comment.unhideCode !== code){
+        if (comment.unhideCode !== code) {
             return res.status(403).json({
                 success: false,
                 message: "Invalid unhide code"
@@ -745,7 +747,7 @@ export const approveHiddenForManager = async (req, res) => {
     const { ticketId, commentId } = req.params;
 
     try {
-        if(req.user.role !== "Reviewer"){
+        if (req.user.role !== "Reviewer") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to approve hidden feedback"
@@ -754,7 +756,7 @@ export const approveHiddenForManager = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -762,7 +764,7 @@ export const approveHiddenForManager = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
@@ -793,7 +795,7 @@ export const managerIntervention = async (req, res) => {
     const { content } = req.body;
 
     try {
-        if(req.user.role !== "Manager"){
+        if (req.user.role !== "Manager") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized"
@@ -802,7 +804,7 @@ export const managerIntervention = async (req, res) => {
 
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -810,7 +812,7 @@ export const managerIntervention = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
@@ -851,7 +853,7 @@ export const triggerAIResponse = async (req, res) => {
     try {
         const ticket = await Ticket.findById(ticketId);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
@@ -859,7 +861,7 @@ export const triggerAIResponse = async (req, res) => {
         }
 
         const comment = ticket.comments.id(commentId);
-        if(!comment){
+        if (!comment) {
             return res.status(404).json({
                 success: false,
                 message: "Comment not found",
@@ -904,14 +906,14 @@ export const uploadAttachment = async (req, res) => {
     try {
         const ticket = await Ticket.findById(id);
 
-        if(!ticket){
+        if (!ticket) {
             return res.status(404).json({
                 success: false,
                 message: "Ticket not found",
             });
         }
 
-        if(req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()){
+        if (req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to upload to this ticket"

@@ -8,9 +8,9 @@ export const getNotifications = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(50);
 
-        const unreadCount = await Notification.countDocuments({ 
-            user: req.user._id, 
-            read: false 
+        const unreadCount = await Notification.countDocuments({
+            user: req.user._id,
+            read: false
         });
 
         res.status(200).json({
@@ -33,7 +33,7 @@ export const markNotificationAsRead = async (req, res) => {
 
         const notification = await Notification.findOneAndUpdate(
             { _id: id, user: req.user._id },
-            { 
+            {
                 read: true,
                 readAt: new Date()
             },
@@ -47,9 +47,9 @@ export const markNotificationAsRead = async (req, res) => {
             });
         }
 
-        const unreadCount = await Notification.countDocuments({ 
-            user: req.user._id, 
-            read: false 
+        const unreadCount = await Notification.countDocuments({
+            user: req.user._id,
+            read: false
         });
 
         res.status(200).json({
@@ -70,7 +70,7 @@ export const markAllNotificationsAsRead = async (req, res) => {
     try {
         await Notification.updateMany(
             { user: req.user._id, read: false },
-            { 
+            {
                 read: true,
                 readAt: new Date()
             }
@@ -92,9 +92,9 @@ export const markAllNotificationsAsRead = async (req, res) => {
 
 export const getUnreadCount = async (req, res) => {
     try {
-        const unreadCount = await Notification.countDocuments({ 
-            user: req.user._id, 
-            read: false 
+        const unreadCount = await Notification.countDocuments({
+            user: req.user._id,
+            read: false
         });
 
         res.status(200).json({
@@ -126,5 +126,39 @@ export const createNotification = async (userId, ticketId, type, title, message,
     } catch (error) {
         console.error("Error creating notification:", error);
         return null;
+    }
+};
+
+export const getNotificationPreference = async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true,
+            notificationsEnabled: req.user.notificationsEnabled !== false,
+        });
+    } catch (error) {
+        console.error("Error fetching notification preference:", error);
+        res.status(500).json({ success: false, message: "Error fetching notification preference" });
+    }
+};
+
+export const toggleNotificationPreference = async (req, res) => {
+    try {
+        const { enabled } = req.body;
+
+        if (typeof enabled !== "boolean") {
+            return res.status(400).json({ success: false, message: "enabled must be a boolean" });
+        }
+
+        req.user.notificationsEnabled = enabled;
+        await req.user.save();
+
+        res.status(200).json({
+            success: true,
+            notificationsEnabled: enabled,
+            message: `Notifications ${enabled ? "enabled" : "disabled"} successfully`,
+        });
+    } catch (error) {
+        console.error("Error toggling notification preference:", error);
+        res.status(500).json({ success: false, message: "Error updating notification preference" });
     }
 };

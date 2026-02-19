@@ -1,24 +1,29 @@
- import React, { useEffect, useState } from "react";
- import DashboardLayout from "../ui/DashboardLayout";
- import { useAuthenticationStore } from "../../store/authStore";
- import {
-   Plus, Ticket, CheckCircle,
-   Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight
- } from "lucide-react";
- import useTicketStore from "../../store/ticketStore";
- import SelectedTicketModal from "../ui/SelectedTicketModal";
- import { useNavigate, Link } from "react-router-dom";
- import { motion } from "framer-motion";
- import NoTicketComponent from "../ui/NoTicketComponent";
- import TicketsTable from "../ui/TicketsTable";
+import React, { useEffect, useState } from "react";
+import DashboardLayout from "../ui/DashboardLayout";
+import { useAuthenticationStore } from "../../store/authStore";
+import {
+  Plus, Ticket, CheckCircle,
+  Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight
+} from "lucide-react";
+import useTicketStore from "../../store/ticketStore";
+import SelectedTicketModal from "../ui/SelectedTicketModal";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import NoTicketComponent from "../ui/NoTicketComponent";
+import TicketsTable from "../ui/TicketsTable";
+import DetailedTicketsView from "../ui/DetailedTicketsView";
 import { NumberTicker } from "../ui/number-ticker";
 
 const ClientAllTicketPage = () => {
   const { user } = useAuthenticationStore();
   const { fetchTickets, tickets, loading, error } = useTicketStore();
 
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "";
+
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [search, setSearch] = useState("");
+  const [issueTypeFilter, setIssueTypeFilter] = useState(initialCategory);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
@@ -108,48 +113,48 @@ const ClientAllTicketPage = () => {
         {/* Stats Section */}
         {!loading && safeTickets.length > 0 && (
           <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8 space-y-4"
-        >
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Here's and overview of your support tickets
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
-              { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
-              { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
-              { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
-              { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -2, scale: 1.01 }}
-                className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
-              >
-                <div className="relative">
-                  <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
-                    <stat.icon size={22} className="text-white" />
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 space-y-4"
+          >
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Here's and overview of your support tickets
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
+                { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
+                { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
+                { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
+                >
+                  <div className="relative">
+                    <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                      <stat.icon size={22} className="text-white" />
+                    </div>
+                    <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                      <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                    </span>
                   </div>
-                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
-                    <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {<NumberTicker value={stat.val} />}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {<NumberTicker value={stat.val} />}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         )}
 
         {/* Loading & Error States */}
@@ -166,31 +171,44 @@ const ClientAllTicketPage = () => {
           </div>
         )}
 
-        {!loading && !error 
+        {!loading && !error
           && safeTickets.length === 0 && <NoTicketComponent noTicket={user?.name} />
         }
 
         {!loading && !error && safeTickets.length > 0 && (
-          <>
-             <TicketsTable
-               tickets={safeTickets}
-               role="client"
-               search={search}
-               statusFilter={statusFilter}
-               dateFilter={dateFilter}
-               onSearchChange={setSearch}
-               onStatusChange={setStatusFilter}
-               onDateChange={setDateFilter}
-               onRowClick={setSelectedTicket}
-             />
-          </>
+          issueTypeFilter ? (
+            <DetailedTicketsView
+              tickets={safeTickets.filter(t =>
+                (!search || t.subject?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
+                (t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
+                (!statusFilter || t.status === statusFilter) &&
+                (!dateFilter || new Date(t.createdAt).toISOString().split("T")[0] === dateFilter)
+              )}
+              role="client"
+              onRowClick={setSelectedTicket}
+            />
+          ) : (
+            <TicketsTable
+              tickets={safeTickets}
+              role="client"
+              search={search}
+              issueTypeFilter={issueTypeFilter}
+              statusFilter={statusFilter}
+              dateFilter={dateFilter}
+              onSearchChange={setSearch}
+              onIssueTypeChange={setIssueTypeFilter}
+              onStatusChange={setStatusFilter}
+              onDateChange={setDateFilter}
+              onRowClick={setSelectedTicket}
+            />
+          )
         )}
       </div>
 
       {selectedTicket && (
-        <SelectedTicketModal 
-          ticket={selectedTicket} 
-          onClose={() => setSelectedTicket(null)} 
+        <SelectedTicketModal
+          ticket={selectedTicket}
+          onClose={() => setSelectedTicket(null)}
         />
       )}
     </DashboardLayout>

@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock, CheckCircle, AlertCircle, Eye, EyeOff, Upload, X, LogOut, Shield } from "lucide-react";
+import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock, CheckCircle, AlertCircle, Eye, EyeOff, Upload, X, LogOut, Shield, Bell, BellOff } from "lucide-react";
 import toast from 'react-hot-toast';
+import useNotificationStore from "../../store/notificationStore";
 
 // Toast configuration with theme awareness
 const toastConfig = {
@@ -22,28 +23,27 @@ const VALIDATION_RULES = {
 };
 
 // Enhanced Input Field Component with validation
-const ProfileInput = React.memo(({ 
-  label, 
-  icon: Icon, 
-  disabled, 
+const ProfileInput = React.memo(({
+  label,
+  icon: Icon,
+  disabled,
   error,
   success,
   required,
   validationType,
   helpText,
-  ...props 
+  ...props
 }) => {
   const isValid = success && !error;
-  
+
   return (
     <div className="w-full">
-      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${
-        error 
-          ? 'text-red-600 dark:text-red-400' 
+      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
+          ? 'text-red-600 dark:text-red-400'
           : isValid
-          ? 'text-green-600 dark:text-green-400'
-          : 'text-slate-500 dark:text-slate-400'
-      }`}>
+            ? 'text-green-600 dark:text-green-400'
+            : 'text-slate-500 dark:text-slate-400'
+        }`}>
         {Icon && <Icon size={14} className={error ? 'text-red-600 dark:text-red-400' : isValid ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'} />}
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -56,15 +56,14 @@ const ProfileInput = React.memo(({
           aria-required={required}
           aria-invalid={!!error}
           aria-describedby={error ? `${props.name}-error` : undefined}
-          className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
-            disabled
+          className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${disabled
               ? 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
               : error
-              ? 'bg-white dark:bg-slate-800 border-red-500 dark:border-red-500 focus:ring-red-500 text-slate-700 dark:text-slate-200'
-              : isValid
-              ? 'bg-white dark:bg-slate-800 border-green-500 dark:border-green-500 focus:ring-green-500 text-slate-700 dark:text-slate-200'
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-blue-500 focus:border-transparent shadow-sm text-slate-700 dark:text-slate-200'
-          }`}
+                ? 'bg-white dark:bg-slate-800 border-red-500 dark:border-red-500 focus:ring-red-500 text-slate-700 dark:text-slate-200'
+                : isValid
+                  ? 'bg-white dark:bg-slate-800 border-green-500 dark:border-green-500 focus:ring-green-500 text-slate-700 dark:text-slate-200'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-blue-500 focus:border-transparent shadow-sm text-slate-700 dark:text-slate-200'
+            }`}
         />
         <AnimatePresence>
           {isValid && (
@@ -124,13 +123,12 @@ const PasswordInput = React.memo(({ label, error, success, required, helpText, .
 
   return (
     <div className="w-full">
-      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${
-        error 
-          ? 'text-red-600 dark:text-red-400' 
+      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
+          ? 'text-red-600 dark:text-red-400'
           : isValid
-          ? 'text-green-600 dark:text-green-400'
-          : 'text-slate-500 dark:text-slate-400'
-      }`}>
+            ? 'text-green-600 dark:text-green-400'
+            : 'text-slate-500 dark:text-slate-400'
+        }`}>
         <Lock size={14} className={error ? 'text-red-600 dark:text-red-400' : isValid ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'} />
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -143,13 +141,12 @@ const PasswordInput = React.memo(({ label, error, success, required, helpText, .
           aria-required={required}
           aria-invalid={!!error}
           aria-describedby={error ? `${props.name}-error` : undefined}
-          className={`w-full px-4 py-3 pr-10 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
-            error
+          className={`w-full px-4 py-3 pr-10 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${error
               ? 'bg-white dark:bg-slate-800 border-red-500 dark:border-red-500 focus:ring-red-500'
               : isValid
-              ? 'bg-white dark:bg-slate-800 border-green-500 dark:border-green-500 focus:ring-green-500'
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-blue-500 focus:border-transparent shadow-sm'
-          } text-slate-700 dark:text-slate-200`}
+                ? 'bg-white dark:bg-slate-800 border-green-500 dark:border-green-500 focus:ring-green-500'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-blue-500 focus:border-transparent shadow-sm'
+            } text-slate-700 dark:text-slate-200`}
         />
         <button
           type="button"
@@ -192,7 +189,7 @@ PasswordInput.displayName = 'PasswordInput';
 const validateField = (name, value, validationType) => {
   if (!value && name.includes('address')) return 'This field is required';
   if (!value && validationType) return `${name.replace(/([A-Z])/g, ' $1').trim()} is required`;
-  
+
   if (validationType === 'email' && value && !VALIDATION_RULES.email.test(value)) {
     return 'Please enter a valid email address';
   }
@@ -202,7 +199,7 @@ const validateField = (name, value, validationType) => {
   if (validationType === 'password' && value && !VALIDATION_RULES.password.test(value)) {
     return 'Password must be 8+ chars with uppercase, lowercase, number, and symbol';
   }
-  
+
   return '';
 };
 
@@ -216,6 +213,8 @@ const ProfileSettings = ({
   onSave,
   loading
 }) => {
+  const { notificationsEnabled, fetchNotificationPreference, toggleNotifications } = useNotificationStore();
+
   const [validationErrors, setValidationErrors] = useState({});
   const [validationSuccess, setValidationSuccess] = useState({});
   const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -226,10 +225,15 @@ const ProfileSettings = ({
     confirm: ''
   });
   const [isDirty, setIsDirty] = useState(false);
+  const [togglingNotif, setTogglingNotif] = useState(false);
+
+  useEffect(() => {
+    fetchNotificationPreference();
+  }, [fetchNotificationPreference]);
 
   const handleValidation = useCallback((name, value, validationType) => {
     const error = validateField(name, value, validationType);
-    
+
     setValidationErrors(prev => ({
       ...prev,
       [name]: error
@@ -252,7 +256,7 @@ const ProfileSettings = ({
     const { name, value } = e.target;
     setIsDirty(true);
     onPersonalChange(e);
-    
+
     const validationType = name === 'email' ? 'email' : name === 'name' ? 'name' : null;
     handleValidation(name, value, validationType);
   }, [onPersonalChange, handleValidation]);
@@ -261,7 +265,7 @@ const ProfileSettings = ({
     const { name, value } = e.target;
     setIsDirty(true);
     onContactChange(e);
-    
+
     const validationType = name === 'telephoneNumber' ? 'phone' : null;
     handleValidation(name, value, validationType);
   }, [onContactChange, handleValidation]);
@@ -287,7 +291,7 @@ const ProfileSettings = ({
       toast.error('Passwords do not match', toastConfig);
       return;
     }
-    
+
     try {
       // API call would go here
       toast.success('Password changed successfully!', toastConfig);
@@ -298,19 +302,32 @@ const ProfileSettings = ({
     }
   }, [passwordData]);
 
+  const handleNotificationToggle = useCallback(async () => {
+    setTogglingNotif(true);
+    try {
+      await toggleNotifications(!notificationsEnabled);
+      toast.success(
+        notificationsEnabled ? 'Notifications turned off' : 'Notifications turned on',
+        toastConfig
+      );
+    } catch {
+      toast.error('Failed to update notification preference', toastConfig);
+    } finally {
+      setTogglingNotif(false);
+    }
+  }, [toggleNotifications, notificationsEnabled]);
+
   return (
     <div className={`p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-8`}>
 
       {/* Header */}
       <header className='flex flex-col items-start space-y-3 mb-8'>
-        <h2 className={`font-bold text-slate-900 dark:text-white tracking-tight ${
-          role === 'client' ? 'text-3xl font-black' : 'text-2xl md:text-3xl'
-        }`}>
+        <h2 className={`font-bold text-slate-900 dark:text-white tracking-tight ${role === 'client' ? 'text-3xl font-black' : 'text-2xl md:text-3xl'
+          }`}>
           {role === 'client' ? 'Account Settings' : 'Profile Settings'}
         </h2>
-        <p className={`font-normal text-slate-600 dark:text-slate-400 ${
-          role === 'client' ? 'font-medium text-sm' : 'text-sm sm:text-base'
-        }`}>
+        <p className={`font-normal text-slate-600 dark:text-slate-400 ${role === 'client' ? 'font-medium text-sm' : 'text-sm sm:text-base'
+          }`}>
           {role === 'client'
             ? 'Manage your personal identity, contact details, and account security.'
             : 'Manage your personal information and account settings'
@@ -382,13 +399,13 @@ const ProfileSettings = ({
           className={`space-y-6 ${role === 'client'
             ? 'bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700'
             : 'bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm'
-          }`}
+            }`}
         >
 
           {/* Section Header */}
           <div className="space-y-2 border-b border-slate-200 dark:border-slate-700 pb-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <User size={20} className="text-blue-600 dark:text-blue-400" /> 
+              <User size={20} className="text-blue-600 dark:text-blue-400" />
               Personal Information
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -448,13 +465,13 @@ const ProfileSettings = ({
           className={`space-y-6 ${role === 'client'
             ? 'bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700'
             : 'bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm'
-          }`}
+            }`}
         >
 
           {/* Section Header */}
           <div className="space-y-2 border-b border-slate-200 dark:border-slate-700 pb-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <MapPin size={20} className="text-blue-600 dark:text-blue-400" /> 
+              <MapPin size={20} className="text-blue-600 dark:text-blue-400" />
               Contact Details
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -515,7 +532,7 @@ const ProfileSettings = ({
               validationType="phone"
               helpText="Used for urgent communications and account verification. Keep it updated!"
             />
-           </div>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -528,7 +545,7 @@ const ProfileSettings = ({
       >
         <div className="space-y-2">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <Shield size={20} className="text-blue-600 dark:text-blue-400" /> 
+            <Shield size={20} className="text-blue-600 dark:text-blue-400" />
             Security & Privacy
           </h3>
           <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -536,7 +553,7 @@ const ProfileSettings = ({
           </p>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Password Change Card */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -670,7 +687,7 @@ const ProfileSettings = ({
                   <button
                     className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all"
                   >
-                    Verify & Enable 2FA
+                    Verify &amp; Enable 2FA
                   </button>
                   <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded">
                     💡 <strong>Tip:</strong> Save your backup codes in a safe place. You'll need them if you lose access to your authenticator app.
@@ -684,6 +701,67 @@ const ProfileSettings = ({
                 Add an extra security layer by requiring a code from your phone during login.
               </p>
             )}
+          </motion.div>
+
+          {/* Notification Preferences Card */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'
+          >
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  {notificationsEnabled
+                    ? <Bell size={18} className="text-blue-600 dark:text-blue-400" />
+                    : <BellOff size={18} className="text-slate-400" />
+                  }
+                  Notification Preferences
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Control whether you receive email and in-app alerts when your ticket status changes.
+                </p>
+              </div>
+            </div>
+
+            {/* Toggle row */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                  Email &amp; in-app alerts
+                </p>
+                <p className={`text-xs mt-0.5 font-semibold ${notificationsEnabled
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-slate-400'
+                  }`}>
+                  {notificationsEnabled ? 'On' : 'Off'}
+                </p>
+              </div>
+              <button
+                onClick={handleNotificationToggle}
+                disabled={togglingNotif}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60 ${notificationsEnabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+                role="switch"
+                aria-checked={notificationsEnabled}
+                aria-label="Toggle notifications"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                />
+              </button>
+            </div>
+
+            <p className={`text-xs ${notificationsEnabled
+                ? 'text-slate-500 dark:text-slate-400'
+                : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg'
+              }`}>
+              {notificationsEnabled
+                ? 'You will be notified when your ticket status is updated.'
+                : '⚠\uFE0F Notifications are off. You won\'t receive any email or in-app alerts.'
+              }
+            </p>
           </motion.div>
         </div>
       </motion.div>

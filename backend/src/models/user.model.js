@@ -47,8 +47,12 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpiresAt: Date,
     verificationToken: String,
     verificationTokenExpiresAt: Date,
-}, { 
-    timestamps: true 
+    notificationsEnabled: {
+        type: Boolean,
+        default: true,
+    },
+}, {
+    timestamps: true
 });
 
 export const User = mongoose.model("User", userSchema);

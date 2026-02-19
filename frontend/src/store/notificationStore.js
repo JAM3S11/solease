@@ -1,26 +1,27 @@
 import { create } from "zustand";
 import api from "../lib/axios";
 
-const useNotificationStore = create((set, get) => ({
+const useNotificationStore = create((set) => ({
     notifications: [],
     unreadCount: 0,
     loading: false,
     error: null,
+    notificationsEnabled: true,
 
     fetchNotifications: async () => {
         set({ loading: true, error: null });
         try {
             const res = await api.get("/notifications");
-            set({ 
-                notifications: res.data.notifications, 
+            set({
+                notifications: res.data.notifications,
                 unreadCount: res.data.unreadCount,
-                loading: false 
+                loading: false
             });
         } catch (error) {
             console.error("Error fetching notifications:", error);
-            set({ 
+            set({
                 error: error.response?.data?.message || "Error fetching notifications",
-                loading: false 
+                loading: false
             });
         }
     },
@@ -38,7 +39,7 @@ const useNotificationStore = create((set, get) => ({
         try {
             const res = await api.put(`/notifications/${notificationId}/read`);
             set((state) => ({
-                notifications: state.notifications.map(n => 
+                notifications: state.notifications.map(n =>
                     n._id === notificationId ? { ...n, read: true } : n
                 ),
                 unreadCount: res.data.unreadCount
@@ -65,7 +66,29 @@ const useNotificationStore = create((set, get) => ({
             notifications: [notification, ...state.notifications],
             unreadCount: state.unreadCount + 1
         }));
-    }
+    },
+
+    fetchNotificationPreference: async () => {
+        try {
+            const res = await api.get("/notifications/preferences");
+            set({ notificationsEnabled: res.data.notificationsEnabled });
+        } catch (error) {
+            console.error("Error fetching notification preference:", error);
+        }
+    },
+
+    toggleNotifications: async (enabled) => {
+        // Optimistically update UI first
+        set({ notificationsEnabled: enabled });
+        try {
+            await api.patch("/notifications/preferences", { enabled });
+        } catch (error) {
+            // Revert on failure
+            set({ notificationsEnabled: !enabled });
+            console.error("Error toggling notifications:", error);
+            throw error;
+        }
+    },
 }));
 
 export default useNotificationStore;

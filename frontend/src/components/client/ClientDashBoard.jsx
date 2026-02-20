@@ -11,6 +11,10 @@ import {
   Paperclip,
   ArrowUp,
   ArrowDown,
+  BookOpen,
+  HelpCircle,
+  Headphones,
+  Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -139,7 +143,7 @@ const ClientDashboard = () => {
             </p>
           </motion.div>
 
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.05 }}
@@ -152,8 +156,86 @@ const ClientDashboard = () => {
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
               Submit New Ticket
             </Link>
-          </motion.div>
+          </motion.div> */}
         </div>
+
+        {!loading && !error && safeTickets.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="size-5 text-amber-500" />
+              <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                What would like to do {userName}?
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { 
+                  label: "Submit Ticket", 
+                  description: "Create a new support request",
+                  icon: Plus, 
+                  to: "/client-dashboard/new-ticket", 
+                  color: "blue" 
+                },
+                { 
+                  label: "My Tickets", 
+                  description: "View all your tickets",
+                  icon: Ticket, 
+                  to: "/client-dashboard/all-tickets", 
+                  color: "indigo" 
+                },
+                { 
+                  label: "FAQ", 
+                  description: "Get quick answers",
+                  icon: HelpCircle, 
+                  to: "/client-dashboard/faq", 
+                  color: "emerald" 
+                },
+                { 
+                  label: "Help Center", 
+                  description: "Browse articles",
+                  icon: BookOpen, 
+                  to: "/client-dashboard/knowledge", 
+                  color: "violet" 
+                },
+              ].map((link, i) => (
+                <motion.div
+                  key={link.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group"
+                >
+                  <Link
+                    to={link.to}
+                    className="flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 h-full relative overflow-hidden"
+                  >
+                    <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'emerald' ? 'bg-emerald-500' : 'bg-violet-500'}`} />
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30' : 'bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30'}`}>
+                      <link.icon size={22} className="text-white" />
+                    </div>
+                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {link.label}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                      {link.description}
+                    </p>
+                    <div className="mt-auto pt-3 flex items-center text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                      <span>Learn more</span>
+                      <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {!loading && !error && safeTickets.length > 0 && (
           <motion.div

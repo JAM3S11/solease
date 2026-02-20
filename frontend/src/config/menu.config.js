@@ -26,9 +26,9 @@ export const MENU_CONFIG = {
             },
             { name: "Reports", icon: LucideChartSpline, path: "/admin-dashboard/admin-reports" },
         ],
-        bottom: [
-            { name: "Settings", icon: Settings, path: "/admin-dashboard/admin-settings" },
-        ],
+        // bottom: [
+        //     { name: "Settings", icon: Settings, path: "/admin-dashboard/admin-settings" },
+        // ],
     },
     Reviewer: {
         top: [
@@ -44,9 +44,9 @@ export const MENU_CONFIG = {
             },
             { name: "Reports", icon: LucideChartSpline, path: "/reviewer-dashboard/report" },
         ],
-        bottom: [
-            { name: "Settings", icon: Settings, path: "/reviewer-dashboard/settings" },
-        ],
+        // bottom: [
+        //     { name: "Settings", icon: Settings, path: "/reviewer-dashboard/settings" },
+        // ],
     },
     Client: {
         top: [
@@ -62,8 +62,8 @@ export const MENU_CONFIG = {
             },
             { name: "Report", icon: LucideChartSpline, path: "/client-dashboard/report" },
         ],
-        bottom: [
-            { name: "Profile", icon: Users, path: "/client-dashboard/profile" },
-        ],
+        // bottom: [
+        //     { name: "Profile", icon: Users, path: "/client-dashboard/profile" },
+        // ],
     },
 };

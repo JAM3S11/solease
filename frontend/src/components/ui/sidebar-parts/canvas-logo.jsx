@@ -46,7 +46,16 @@ export const CanvasLogo = memo(({ isBlurred }) => {
         ctx.globalAlpha = 1;
     }, [isBlurred, isDark]);
 
-    return <canvas ref={canvasRef} width="40" height="40" className="w-9 h-9 flex-shrink-0" />;
+    return (
+        <canvas
+            ref={canvasRef}
+            width="40"
+            height="40"
+            role="img"
+            aria-label="Solease Logo"
+            className="w-9 h-9 flex-shrink-0"
+        />
+    );
 });
 
 CanvasLogo.displayName = "CanvasLogo";

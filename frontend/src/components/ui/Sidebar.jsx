@@ -1,7 +1,7 @@
 // components/ui/Sidebar.jsx
 import React, { useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { LogOut, ChevronLeft } from "lucide-react";
+import { ChevronsUpDown, Hash, Clock, Briefcase, MoreHorizontal, Plus, ChevronLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarTrigger,
   useSidebar,
 } from "./shadcn-sidebar";
 import { Button } from "./button";
@@ -18,15 +19,11 @@ import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import { cn } from "../../lib/utils";
 
-// Extracted parts
 import { MENU_CONFIG } from "../../config/menu.config";
 import { CanvasLogo } from "./sidebar-parts/canvas-logo";
 import { UserCard } from "./sidebar-parts/user-card";
 import { NavItem } from "./sidebar-parts/nav-item";
 
-/**
- * Main application sidebar component.
- */
 export function AppSidebar({ userRole }) {
   const { logout, user } = useAuthenticationStore();
   const navigate = useNavigate();
@@ -34,7 +31,7 @@ export function AppSidebar({ userRole }) {
   const { state, isMobile, toggleSidebar } = useSidebar();
 
   const isCollapsed = state === "collapsed";
-  const currentMenu = MENU_CONFIG[userRole] ?? { top: [], bottom: [] };
+  const currentMenu = MENU_CONFIG[userRole] ?? { top: [] };
 
   const handleLogout = useCallback(async () => {
     try {
@@ -46,55 +43,70 @@ export function AppSidebar({ userRole }) {
     }
   }, [logout, navigate]);
 
+  // Sample projects data
+  // const projects = [
+  //   { name: "Design Engineering", icon: Hash },
+  //   { name: "Sales & Marketing", icon: Clock },
+  //   { name: "Travel", icon: Briefcase },
+  // ];
+
   return (
     <Sidebar
       variant="default"
       collapsible="icon"
-      className="sticky top-0 h-screen bg-sidebar dark:bg-background border-r border-sidebar-border dark:border-sidebar-border transition-colors duration-300"
+      className="sticky top-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 group/sidebar"
     >
-      {/* ── Header: Logo + App name + Collapse toggle ── */}
-      <SidebarHeader className="py-4 border-b border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
+      {/* Header: Logo + Company name + Tier + Dropdown */}
+      <SidebarHeader className={cn(
+        "py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 transition-all duration-300",
+        isCollapsed ? "px-0" : "px-3"
+      )}>
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
+          <SidebarMenuItem className="flex items-center">
             <SidebarMenuButton
               size="lg"
-              asChild
-              className="h-12 transition-all duration-200 text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-transparent cursor-default flex-1"
+              className="h-auto transition-all duration-200 text-gray-900 dark:text-white hover:bg-transparent cursor-pointer flex-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
-              <div className="flex items-center gap-3">
-                <CanvasLogo />
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden transition-all duration-200">
-                  <span className="truncate font-bold text-sidebar-foreground dark:text-sidebar-primary-foreground tracking-wide">
-                    SOLEASE
-                  </span>
-                  <span className="truncate text-xs text-sidebar-foreground/60 dark:text-sidebar-foreground/70 font-medium">
-                    {userRole}
-                  </span>
+              <div className={cn(
+                "flex items-center w-full transition-all duration-300",
+                isCollapsed ? "justify-center gap-0" : "gap-1 px-2P"
+              )}>
+                <div className="relative flex-shrink-0">
+                  <CanvasLogo />
                 </div>
+                {!isCollapsed && (
+                  <div className="flex items-center justify-between flex-1 min-w-0">
+                    <div className="grid flex-1 text-left text-sm leading-tight animate-in fade-in slide-in-from-left-2">
+                      <span className="truncate font-bold text-gray-900 dark:text-white text-base">
+                        SOLEASE
+                      </span>
+                      <span className="truncate text-xs text-gray-500 dark:text-gray-400 font-medium capitalize">
+                        {userRole || "Enterprise"}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="size-4 text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2" />
+                  </div>
+                )}
               </div>
             </SidebarMenuButton>
-
-            {!isMobile && (
+            
+            {/* {!isCollapsed && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
-                className={cn(
-                  "h-8 w-8 flex-shrink-0 hover:bg-sidebar-accent dark:hover:bg-sidebar-accent transition-all duration-200",
-                  isCollapsed && "rotate-180"
-                )}
-                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                className="h-7 w-7 absolute -right-3 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full shadow-sm z-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-            )}
+            )} */}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* ── Main nav items ── */}
-      <SidebarContent className="py-3 bg-sidebar dark:bg-background">
-        <SidebarMenu className="gap-1 px-2">
+      {/* Main nav items */}
+      <SidebarContent className="py-4 bg-white dark:bg-gray-900 custom-scrollbar">
+        <SidebarMenu className={cn("gap-1 transition-all duration-300", isCollapsed ? "px-0" : "px-2")}>
           {currentMenu.top.map((item) => (
             <NavItem
               key={item.name}
@@ -104,39 +116,76 @@ export function AppSidebar({ userRole }) {
             />
           ))}
         </SidebarMenu>
+
+        {/* Projects Section - Now handles collapsed state */}
+        {/* <div className={cn("mt-8 transition-all duration-300", isCollapsed ? "px-0" : "px-2")}>
+          <div className={cn(
+            "px-3 mb-2 flex items-center justify-between",
+            isCollapsed && "justify-center px-0"
+          )}>
+            {!isCollapsed ? (
+              <>
+                <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                  Projects
+                </span>
+                <Plus className="size-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors" />
+              </>
+            ) : (
+              <div className="h-px w-8 bg-gray-100 dark:bg-gray-800" />
+            )}
+          </div>
+          <SidebarMenu className="gap-1">
+            {projects.map((project, index) => {
+              const ProjectIcon = project.icon;
+              return (
+                <SidebarMenuItem key={index}>
+                  <SidebarMenuButton
+                    tooltip={isCollapsed ? project.name : undefined}
+                    className={cn(
+                      "h-9 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200",
+                      isCollapsed ? "justify-center px-0 rounded-none" : "rounded-lg px-3"
+                    )}
+                  >
+                    <ProjectIcon className="size-4 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="flex-1 text-sm font-medium ml-3 truncate animate-in fade-in slide-in-from-left-2">
+                        {project.name}
+                      </span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip={isCollapsed ? "More Projects" : undefined}
+                className={cn(
+                  "h-9 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200",
+                  isCollapsed ? "justify-center px-0 rounded-none" : "rounded-lg px-3"
+                )}
+              >
+                <MoreHorizontal className="size-4 flex-shrink-0" />
+                {!isCollapsed && <span className="flex-1 text-sm font-medium ml-3">More</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div> */}
       </SidebarContent>
 
-      {/* ── Footer: Bottom nav + User card + Logout ── */}
-      <SidebarFooter className="py-3 border-t border-sidebar-border dark:border-sidebar-border bg-sidebar dark:bg-background">
-        <SidebarMenu className="gap-1 px-2">
-          {currentMenu.bottom.map((item) => (
+      {/* Footer: Bottom nav + User card */}
+      <SidebarFooter className="py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <SidebarMenu className={cn("gap-1 transition-all duration-300", isCollapsed ? "px-0" : "px-2")}>
+          {/* {currentMenu.bottom.map((item) => (
             <NavItem
               key={item.name}
               item={item}
               isCollapsed={isCollapsed}
               pathname={location.pathname}
             />
-          ))}
+          ))} */}
 
-          {!isCollapsed && (
-            <SidebarMenuItem className="mt-1">
-              <UserCard user={user} />
-            </SidebarMenuItem>
-          )}
-
-          <SidebarSeparator className="mx-0 my-2 bg-sidebar-border dark:bg-sidebar-border" />
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={handleLogout}
-              className={cn(
-                "h-11 text-destructive dark:text-red-400 hover:text-destructive dark:hover:text-red-300 hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-all duration-200 rounded-md font-medium",
-                isCollapsed && "justify-center px-0"
-              )}
-            >
-              <LogOut className="size-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm">Logout</span>}
-            </SidebarMenuButton>
+          <SidebarMenuItem className={cn("transition-all duration-300", isCollapsed ? "mt-2" : "mt-4")}>
+            <UserCard user={user} userRole={userRole} isCollapsed={isCollapsed} onLogout={handleLogout} />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

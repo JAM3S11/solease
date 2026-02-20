@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import {
     SidebarMenuButton,
     SidebarMenuItem,
@@ -12,9 +12,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../collapsi
 import useNotificationStore from "../../../store/notificationStore";
 import { cn } from "../../../lib/utils";
 
-/**
- * A notification badge component.
- */
 export const Badge = ({ count, small = false }) => {
     const { notificationsEnabled } = useNotificationStore();
     if (!notificationsEnabled || !count || count <= 0) return null;
@@ -32,9 +29,6 @@ export const Badge = ({ count, small = false }) => {
     );
 };
 
-/**
- * A memoized navigation item component used in the side menu.
- */
 export const NavItem = memo(({ item, isCollapsed, pathname }) => {
     const Icon = item.icon;
     const navigate = useNavigate();
@@ -43,8 +37,11 @@ export const NavItem = memo(({ item, isCollapsed, pathname }) => {
         ? pathname === item.path
         : item.submenu?.some((s) => pathname === s.path) ?? false;
 
-    const activeButtonCls = "bg-primary/10 dark:bg-primary/20 border-l-4 border-primary text-primary dark:text-white font-semibold";
-    const idleButtonCls = "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent text-sidebar-foreground";
+    const activeButtonCls = cn(
+        "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 font-semibold",
+        "before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:bg-blue-600 before:dark:bg-blue-400 before:rounded-r-full before:z-10"
+    );
+    const idleButtonCls = "hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 hover:scale-[1.01]";
 
     if (item.submenu) {
         return (
@@ -58,38 +55,48 @@ export const NavItem = memo(({ item, isCollapsed, pathname }) => {
                         <SidebarMenuButton
                             tooltip={item.name}
                             className={cn(
-                                "relative h-11 transition-all duration-200 hover:scale-[1.02]",
+                                "relative h-10 transition-all duration-200",
                                 isParentActive ? activeButtonCls : idleButtonCls,
-                                isCollapsed && "w-12 justify-center px-0"
+                                isCollapsed 
+                                    ? "w-full justify-center rounded-lg mx-0 px-0" 
+                                    : "rounded-lg mx-1 px-2"
                             )}
                         >
-                            <Icon
-                                className={cn(
-                                    "size-5 flex-shrink-0 transition-colors duration-200",
-                                    isParentActive && "text-primary"
-                                )}
-                            />
+                            <div className={cn(
+                                "p-2 rounded-lg flex-shrink-0 transition-all duration-200",
+                                isParentActive 
+                                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" 
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/collapsible:bg-slate-200 dark:group-hover/collapsible:bg-slate-700"
+                            )}>
+                                <Icon className="size-[18px]" />
+                            </div>
                             {!isCollapsed && (
                                 <>
-                                    <span className={cn("flex-1 text-sm font-medium", isParentActive && "text-primary dark:text-white font-semibold")}>
+                                    <span className={cn("flex-1 text-sm font-medium text-left", isParentActive ? "text-blue-700 dark:text-blue-300" : "text-slate-600 dark:text-slate-300")}>
                                         {item.name}
                                     </span>
                                     <Badge count={item.badge} />
                                     <ChevronDown
                                         className={cn(
                                             "size-4 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-180",
-                                            isParentActive && "text-primary"
+                                            isParentActive ? "text-blue-500" : "text-slate-400"
                                         )}
                                     />
                                 </>
+                            )}
+                            {isCollapsed && (
+                                <div className={cn(
+                                    "absolute inset-0 rounded-lg ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-gray-900 pointer-events-none opacity-0 group-hover/collapsible:opacity-100 transition-opacity",
+                                    isParentActive && "opacity-100"
+                                )} />
                             )}
                             {isCollapsed && <Badge count={item.badge} small />}
                         </SidebarMenuButton>
                     </CollapsibleTrigger>
 
                     {!isCollapsed && (
-                        <CollapsibleContent className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:collapse">
-                            <SidebarMenuSub className="gap-1">
+                        <CollapsibleContent className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-200">
+                            <SidebarMenuSub className="gap-0.5 pb-2 pl-2 pr-2">
                                 {item.submenu.map((sub) => {
                                     const isSubActive = pathname === sub.path;
                                     return (
@@ -98,10 +105,10 @@ export const NavItem = memo(({ item, isCollapsed, pathname }) => {
                                                 asChild
                                                 isActive={isSubActive}
                                                 className={cn(
-                                                    "h-10 pl-7 rounded-md transition-all duration-200 hover:scale-[1.01] cursor-pointer",
+                                                    "h-9 pl-10 pr-3 rounded-md transition-all duration-200 cursor-pointer my-0.5",
                                                     isSubActive
-                                                        ? "bg-primary/15 dark:bg-primary/25 border-l-2 border-primary text-primary dark:text-white font-medium"
-                                                        : "hover:bg-sidebar-accent text-sidebar-foreground"
+                                                        ? "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 font-medium border-l-[3px] border-blue-600 dark:border-blue-400"
+                                                        : "hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                                                 )}
                                             >
                                                 <NavLink
@@ -130,28 +137,46 @@ export const NavItem = memo(({ item, isCollapsed, pathname }) => {
                 tooltip={item.name}
                 isActive={pathname === item.path}
                 className={cn(
-                    "relative h-11 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm cursor-pointer",
+                    "relative h-10 transition-all duration-200 cursor-pointer",
                     isParentActive ? activeButtonCls : idleButtonCls,
-                    isCollapsed && "w-12 justify-center px-0"
+                    isCollapsed 
+                        ? "w-full justify-center rounded-lg mx-0 px-0" 
+                        : "rounded-lg mx-1 px-2"
                 )}
             >
                 <NavLink
                     to={item.path}
-                    className={cn("flex items-center gap-2", isCollapsed && "justify-center")}
+                    className={cn("flex items-center gap-3 w-full px-1", isCollapsed && "justify-center")}
                 >
-                    <Icon
-                        className={cn(
-                            "size-5 flex-shrink-0 transition-colors duration-200",
-                            isParentActive && "text-primary"
-                        )}
-                    />
+                    <div className={cn(
+                        "p-2 rounded-lg flex-shrink-0 transition-all duration-200",
+                        isParentActive 
+                            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400" 
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                    )}>
+                        <Icon className="size-[18px]" />
+                    </div>
                     {!isCollapsed && (
                         <>
-                            <span className={cn("flex-1 text-sm font-medium", isParentActive && "text-primary dark:text-white font-semibold")}>
+                            <span className={cn("flex-1 text-sm font-medium text-left", isParentActive ? "text-blue-700 dark:text-blue-300" : "text-slate-600 dark:text-slate-300")}>
                                 {item.name}
                             </span>
                             <Badge count={item.badge} />
+                            {item.submenu && (
+                                <ChevronRight
+                                    className={cn(
+                                        "size-4 flex-shrink-0",
+                                        isParentActive ? "text-blue-500" : "text-slate-400"
+                                    )}
+                                />
+                            )}
                         </>
+                    )}
+                    {isCollapsed && (
+                        <div className={cn(
+                            "absolute inset-0 rounded-lg ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-gray-900 pointer-events-none opacity-0 hover:opacity-100 transition-opacity",
+                            isParentActive && "opacity-100"
+                        )} />
                     )}
                     {isCollapsed && <Badge count={item.badge} small />}
                 </NavLink>

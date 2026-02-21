@@ -48,13 +48,6 @@ export function DynamicBreadcrumb() {
       const pathSegments = location.pathname.split('/').filter(Boolean);
       const breadcrumbList = [];
 
-      // Always start with Home
-      breadcrumbList.push({
-        label: "Home",
-        isLogout: true,
-        href: "home-key"
-      });
-
       // If on dashboard, add appropriate dashboard entry
       if (pathSegments.length > 0 && pathSegments[0].includes('dashboard')) {
         const dashboardType = pathSegments[0];

@@ -401,11 +401,11 @@ const ProfileSettings = ({
                       </span>
                     )}
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
+                  <div className="sm:hidden absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
                     {verified ? (
-                      <BadgeCheck size={16} className="text-white" />
+                      <BadgeCheck size={10} className="text-white" />
                     ) : (
-                      <AlertCircle size={16} className="text-white" />
+                      <AlertCircle size={10} className="text-white" />
                     )}
                   </div>
                 </div>
@@ -767,8 +767,6 @@ const ProfileSettings = ({
           </div>
         </DrawerContent>
       </Drawer>
-
-      {/* Contact Info Drawer */}
       
       {/* Contact Info Drawer */}
       <Drawer open={showContactDrawer} onOpenChange={setShowContactDrawer}>
@@ -876,11 +874,7 @@ const ProfileSettings = ({
 
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Password Change Card */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'
-          >
+          <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
@@ -951,14 +945,10 @@ const ProfileSettings = ({
                 Change your account password regularly for better security.
               </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Two-Factor Authentication Card */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'
-          >
+          <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1022,14 +1012,10 @@ const ProfileSettings = ({
                 Add an extra security layer by requiring a code from your phone during login.
               </p>
             )}
-          </motion.div>
+          </div>
 
           {/* Notification Preferences Card */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'
-          >
+          <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
@@ -1083,7 +1069,7 @@ const ProfileSettings = ({
                 : '⚠\uFE0F Notifications are off. You won\'t receive any email or in-app alerts.'
               }
             </p>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
 

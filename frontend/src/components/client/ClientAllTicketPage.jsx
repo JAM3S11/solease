@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
 import {
-  Plus, Ticket, CheckCircle,
-  Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight
+  Plus, CheckCircle,
+  Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight,
+  Tickets,
+  MessageSquare
 } from "lucide-react";
 import useTicketStore from "../../store/ticketStore";
 import SelectedTicketModal from "../ui/SelectedTicketModal";
@@ -123,10 +125,10 @@ const ClientAllTicketPage = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
+                { label: "Total Tickets", val: stats.total, icon: Tickets, color: "blue" },
                 { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
                 { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
-                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
+                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageSquare, color: "purple" },
                 { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
               ].map((stat, i) => (
                 <motion.div

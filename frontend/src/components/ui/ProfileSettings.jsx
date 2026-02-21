@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock, CheckCircle, AlertCircle, Eye, EyeOff, Upload, X, LogOut, Shield, Bell, BellOff } from "lucide-react";
+import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock, CheckCircle, AlertCircle, Eye, EyeOff, Upload, X, LogOut, Shield, Bell, BellOff, Calendar, Clock, BadgeCheck, Award, Edit3, ExternalLink, Camera, XCircle } from "lucide-react";
+import { Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from "./drawer"
 import toast from 'react-hot-toast';
 import useNotificationStore from "../../store/notificationStore";
 
@@ -20,6 +21,41 @@ const VALIDATION_RULES = {
   phone: /^[\d\-\s\+\(\)]{7,}$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
   name: /^[a-zA-Z\s]{2,}$/,
+};
+
+const getInitials = (name) => {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return 'Never';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return formatDate(dateString);
 };
 
 // Enhanced Input Field Component with validation
@@ -211,7 +247,11 @@ const ProfileSettings = ({
   onPersonalChange,
   onContactChange,
   onSave,
-  loading
+  loading,
+  verified = false,
+  createdAt = null,
+  avatar = null,
+  lastLogin = null,
 }) => {
   const { notificationsEnabled, fetchNotificationPreference, toggleNotifications } = useNotificationStore();
 
@@ -226,6 +266,8 @@ const ProfileSettings = ({
   });
   const [isDirty, setIsDirty] = useState(false);
   const [togglingNotif, setTogglingNotif] = useState(false);
+  const [showPersonalDrawer, setShowPersonalDrawer] = useState(false);
+  const [showContactDrawer, setShowContactDrawer] = useState(false);
 
   useEffect(() => {
     fetchNotificationPreference();
@@ -335,28 +377,136 @@ const ProfileSettings = ({
         </p>
       </header>
 
-      {/* User Identity Card */}
+      {/* User Identity Card - Rich Version */}
       {role === 'client' ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className='relative overflow-hidden w-full flex items-center bg-gradient-to-r from-gray-300 to-gray-400 dark:from-blue-600 dark:to-blue-700 shadow-lg rounded-2xl p-8 text-white group mb-8'>
+          className='relative overflow-hidden w-full bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 dark:from-blue-600 dark:via-blue-700 dark:to-blue-800 shadow-xl rounded-2xl p-6 sm:p-8 text-white group mb-8'
+        >
+          <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-white/10 transition-all duration-700" />
+          <div className="absolute left-1/2 bottom-0 w-60 h-60 bg-blue-400/20 rounded-full -ml-24 -mb-24 blur-3xl" />
 
-          <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-700" />
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
+              {/* Avatar Section */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 shadow-lg flex items-center justify-center overflow-hidden">
+                    {avatar ? (
+                      <img src={avatar} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl sm:text-4xl font-bold text-white">
+                        {getInitials(personalData.name || user?.name)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
+                    {verified ? (
+                      <BadgeCheck size={16} className="text-white" />
+                    ) : (
+                      <AlertCircle size={16} className="text-white" />
+                    )}
+                  </div>
+                </div>
+              </div>
 
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
-            <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
-              <Fingerprint size={40} className="text-gray-500 dark:text-white" />
+              {/* Main Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <h2 className='text-2xl sm:text-3xl font-bold tracking-wide text-white truncate'>
+                    {personalData.name || user?.name || 'Your Name'}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    {verified ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-400/30 text-green-100 text-xs font-semibold">
+                        <BadgeCheck size={14} />
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-100 text-xs font-semibold">
+                        <AlertCircle size={14} />
+                        Unverified
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
+                      <Fingerprint size={14} />
+                      CLIENT
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 text-blue-100">
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} className="text-blue-200" />
+                    <span className="text-sm truncate">{personalData.email || user?.email || 'email@example.com'}</span>
+                  </div>
+                  <div className="hidden sm:block w-1 h-1 bg-blue-300 rounded-full" />
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-blue-200" />
+                    <span className="text-sm font-medium">
+                      ID: #{user?._id?.slice(-8).toUpperCase() || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 text-xs text-blue-200">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={14} />
+                    <span>Member since {formatDate(createdAt || user?.createdAt)}</span>
+                  </div>
+                  {lastLogin && (
+                    <>
+                      <div className="hidden sm:block w-1 h-1 bg-blue-300 rounded-full" />
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={14} />
+                        <span>Last login {formatRelativeTime(lastLogin)}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex flex-row sm:flex-col gap-3 lg:ml-auto">
+                <button 
+                  onClick={() => setShowPersonalDrawer(true)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl border border-white/20 text-white text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                >
+                  <User size={16} />
+                  <span>Personal Info</span>
+                </button>
+                <button 
+                  onClick={() => setShowContactDrawer(true)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent hover:bg-white/10 rounded-xl border border-white/30 text-white text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                >
+                  <MapPin size={16} />
+                  <span>Contact Info</span>
+                </button>
+              </div>
             </div>
-            <div>
-              <h2 className='text-2xl font-bold tracking-wide uppercase text-gray-600 dark:text-white'>
-                {user?.name || user?.username}
-              </h2>
-              <div className="flex items-center gap-2 mt-2 opacity-90">
-                <ShieldCheck size={16} className="text-gray-400 dark:text-blue-100" />
-                <span className="text-sm font-semibold tracking-tight text-gray-600 dark:text-white">
-                  {role === 'client' ? 'CLIENT' : 'ADMIN'} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
-                </span>
+
+            {/* Contact Preview Strip */}
+            <div className="mt-6 pt-4 border-t border-white/20">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-blue-100">
+                {contactData?.address && (
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-blue-200" />
+                    <span className="truncate max-w-xs">{contactData.address}</span>
+                  </div>
+                )}
+                {contactData?.telephoneNumber && (
+                  <div className="flex items-center gap-2">
+                    <Phone size={14} className="text-blue-200" />
+                    <span>{contactData.telephoneNumber}</span>
+                  </div>
+                )}
+                {contactData?.country && (
+                  <div className="flex items-center gap-2">
+                    <Globe size={14} className="text-blue-200" />
+                    <span>{contactData.country}{contactData?.county ? `, ${contactData.county}` : ''}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -391,7 +541,7 @@ const ProfileSettings = ({
         className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${role === 'admin' ? 'mb-8' : ''}`}
       >
 
-        {/* Personal Information Card */}
+        {/* Personal Information Card - Display Mode */}
         <motion.div
           initial={role === 'client' ? { opacity: 0, x: -20 } : { opacity: 0 }}
           animate={{ opacity: 1, x: 0 }}
@@ -403,61 +553,71 @@ const ProfileSettings = ({
         >
 
           {/* Section Header */}
-          <div className="space-y-2 border-b border-slate-200 dark:border-slate-700 pb-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <User size={20} className="text-blue-600 dark:text-blue-400" />
-              Personal Information
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Update your basic profile information. Your full name is displayed across the platform and helps other users identify you.
-            </p>
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                <User size={20} className="text-blue-600 dark:text-blue-400" />
+                Personal Information
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Your basic profile information displayed across the platform.
+              </p>
+            </div>
+            {role === 'client' && (
+              <button
+                onClick={() => setShowPersonalDrawer(true)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                <Edit3 size={16} />
+                Edit
+              </button>
+            )}
           </div>
 
+          {/* Display Fields */}
           <div className='space-y-4'>
-            <ProfileInput
-              key="personal-name"
-              label='Full Name'
-              icon={User}
-              name="name"
-              placeholder="Enter your full name"
-              value={personalData.name || ""}
-              onChange={handlePersonalChange}
-              error={validationErrors.name}
-              success={validationSuccess.name}
-              required
-              validationType="name"
-              helpText="Used to personalize your profile and communications"
-            />
-            <ProfileInput
-              key="personal-email"
-              label='Email Address'
-              icon={Mail}
-              disabled
-              value={personalData.email || ""}
-              error={validationErrors.email}
-              success={validationSuccess.email}
-              helpText="Your verified email address used for account recovery and notifications"
-            />
-            <div className={role === 'client' ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "grid grid-cols-1 sm:grid-cols-2 gap-4"}>
-              <ProfileInput
-                key="personal-role"
-                label='Account Role'
-                disabled
-                value={personalData.role || ""}
-                helpText="Your role determines what features and permissions you have"
-              />
-              <ProfileInput
-                key="personal-status"
-                label='Account Status'
-                disabled
-                value={personalData.status || ""}
-                helpText="Shows whether your account is active, suspended, or under review"
-              />
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                Full Name
+              </label>
+              <p className="text-slate-900 dark:text-white font-medium">
+                {personalData.name || 'Not set'}
+              </p>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                Email Address
+              </label>
+              <p className="text-slate-900 dark:text-white font-medium">
+                {personalData.email || 'Not set'}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                  Account Role
+                </label>
+                <p className="text-slate-900 dark:text-white font-medium capitalize">
+                  {personalData.role || 'N/A'}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                  Account Status
+                </label>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  personalData.status?.toLowerCase() === 'active' 
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                }`}>
+                  {personalData.status || 'N/A'}
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Contact Information Card */}
+        {/* Contact Information Card - Display Mode */}
         <motion.div
           initial={role === 'client' ? { opacity: 0, x: 20 } : { opacity: 0 }}
           animate={{ opacity: 1, x: 0 }}
@@ -469,72 +629,233 @@ const ProfileSettings = ({
         >
 
           {/* Section Header */}
-          <div className="space-y-2 border-b border-slate-200 dark:border-slate-700 pb-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <MapPin size={20} className="text-blue-600 dark:text-blue-400" />
-              Contact Details
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Provide your contact information so support teams and collaborators can reach you when needed.
-            </p>
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                <MapPin size={20} className="text-blue-600 dark:text-blue-400" />
+                Contact Details
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Your contact information for communication and verification.
+              </p>
+            </div>
+            {role === 'client' && (
+              <button
+                onClick={() => setShowContactDrawer(true)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                <Edit3 size={16} />
+                Edit
+              </button>
+            )}
           </div>
 
+          {/* Display Fields */}
           <div className='space-y-4'>
-            <ProfileInput
-              key="contact-address"
-              label='Physical Address'
-              icon={MapPin}
-              name="address"
-              placeholder="Enter your address"
-              value={contactData.address || ""}
-              onChange={handleContactChange}
-              error={validationErrors.address}
-              success={validationSuccess.address}
-              required
-              helpText="Used for verification purposes and service delivery in your location"
-            />
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-              <ProfileInput
-                key="contact-country"
-                label="Country"
-                icon={Globe}
-                name="country"
-                placeholder="Your country"
-                value={contactData.country || ""}
-                onChange={handleContactChange}
-                error={validationErrors.country}
-                success={validationSuccess.country}
-                helpText="Helps determine applicable regulations and services"
-              />
-              <ProfileInput
-                key="contact-county"
-                label="County"
-                name="county"
-                placeholder="Your county"
-                value={contactData.county || ""}
-                onChange={handleContactChange}
-                error={validationErrors.county}
-                success={validationSuccess.county}
-                helpText="Your local administrative region"
-              />
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <MapPin size={14} className="inline mr-1" />
+                Physical Address
+              </label>
+              <p className="text-slate-900 dark:text-white font-medium">
+                {contactData?.address || 'Not set'}
+              </p>
             </div>
-            <ProfileInput
-              key="contact-telephone"
-              label='Telephone Number'
-              icon={Phone}
-              name="telephoneNumber"
-              placeholder="+254 700 000 000"
-              type="tel"
-              value={contactData.telephoneNumber ?? ""}
-              onChange={handleContactChange}
-              error={validationErrors.telephoneNumber}
-              success={validationSuccess.telephoneNumber}
-              validationType="phone"
-              helpText="Used for urgent communications and account verification. Keep it updated!"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                  <Globe size={14} className="inline mr-1" />
+                  Country
+                </label>
+                <p className="text-slate-900 dark:text-white font-medium">
+                  {contactData?.country || 'Not set'}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                  County
+                </label>
+                <p className="text-slate-900 dark:text-white font-medium">
+                  {contactData?.county || 'Not set'}
+                </p>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <Phone size={14} className="inline mr-1" />
+                Telephone Number
+              </label>
+              <p className="text-slate-900 dark:text-white font-medium">
+                {contactData?.telephoneNumber || 'Not set'}
+              </p>
+            </div>
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Personal Info Drawer */}
+      <Drawer open={showPersonalDrawer} onOpenChange={setShowPersonalDrawer}>
+        <DrawerOverlay className="bg-black/50" />
+        <DrawerContent className="bg-white dark:bg-slate-800 shadow-2xl">
+          <DrawerClose className="absolute right-4 top-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+            <XCircle size={24} className="text-slate-500" />
+          </DrawerClose>
+          
+          <div className="border-b border-slate-200 dark:border-slate-700 p-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <User size={24} className="text-blue-600 dark:text-blue-400" />
+              Edit Personal Information
+            </h2>
+          </div>
+          
+          <div className="p-6 space-y-6 overflow-y-auto">
+            <div className='space-y-4'>
+              <ProfileInput
+                label='Full Name'
+                icon={User}
+                name="name"
+                placeholder="Enter your full name"
+                value={personalData.name || ""}
+                onChange={handlePersonalChange}
+                error={validationErrors.name}
+                success={validationSuccess.name}
+                required
+                validationType="name"
+                helpText="Used to personalize your profile and communications"
+              />
+              <ProfileInput
+                label='Email Address'
+                icon={Mail}
+                disabled
+                value={personalData.email || ""}
+                error={validationErrors.email}
+                success={validationSuccess.email}
+                helpText="Your verified email address used for account recovery and notifications"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ProfileInput
+                  label='Account Role'
+                  disabled
+                  value={personalData.role || ""}
+                  helpText="Your role determines what features and permissions you have"
+                />
+                <ProfileInput
+                  label='Account Status'
+                  disabled
+                  value={personalData.status || ""}
+                  helpText="Shows whether your account is active, suspended, or under review"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-200 dark:border-slate-700 p-4 flex justify-end gap-3">
+            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-semibold transition-colors">
+              Cancel
+            </DrawerClose>
+            <button
+              onClick={async () => {
+                await handleSave();
+                setShowPersonalDrawer(false);
+              }}
+              disabled={loading}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+            >
+              <Save size={18} />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Contact Info Drawer */}
+      
+      {/* Contact Info Drawer */}
+      <Drawer open={showContactDrawer} onOpenChange={setShowContactDrawer}>
+        <DrawerOverlay className="bg-black/50" />
+        <DrawerContent className="bg-white dark:bg-slate-800 shadow-2xl">
+          <DrawerClose className="absolute right-4 top-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+            <XCircle size={24} className="text-slate-500" />
+          </DrawerClose>
+          
+          <div className="border-b border-slate-200 dark:border-slate-700 p-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <MapPin size={24} className="text-blue-600 dark:text-blue-400" />
+              Edit Contact Details
+            </h2>
+          </div>
+          
+          <div className="p-6 space-y-6 overflow-y-auto">
+            <div className='space-y-4'>
+              <ProfileInput
+                label='Physical Address'
+                icon={MapPin}
+                name="address"
+                placeholder="Enter your address"
+                value={contactData.address || ""}
+                onChange={handleContactChange}
+                error={validationErrors.address}
+                success={validationSuccess.address}
+                required
+                helpText="Used for verification purposes and service delivery in your location"
+              />
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <ProfileInput
+                  label="Country"
+                  icon={Globe}
+                  name="country"
+                  placeholder="Your country"
+                  value={contactData.country || ""}
+                  onChange={handleContactChange}
+                  error={validationErrors.country}
+                  success={validationSuccess.country}
+                  helpText="Helps determine applicable regulations and services"
+                />
+                <ProfileInput
+                  label="County"
+                  name="county"
+                  placeholder="Your county"
+                  value={contactData.county || ""}
+                  onChange={handleContactChange}
+                  error={validationErrors.county}
+                  success={validationSuccess.county}
+                  helpText="Your local administrative region"
+                />
+              </div>
+              <ProfileInput
+                label='Telephone Number'
+                icon={Phone}
+                name="telephoneNumber"
+                placeholder="+254 700 000 000"
+                type="tel"
+                value={contactData.telephoneNumber ?? ""}
+                onChange={handleContactChange}
+                error={validationErrors.telephoneNumber}
+                success={validationSuccess.telephoneNumber}
+                validationType="phone"
+                helpText="Used for urgent communications and account verification. Keep it updated!"
+              />
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-200 dark:border-slate-700 p-4 flex justify-end gap-3">
+            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-semibold transition-colors">
+              Cancel
+            </DrawerClose>
+            <button
+              onClick={async () => {
+                await handleSave();
+                setShowContactDrawer(false);
+              }}
+              disabled={loading}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+            >
+              <Save size={18} />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       {/* Security Section */}
       <motion.div

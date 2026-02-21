@@ -1,5 +1,5 @@
 import {
-    Home, Users, Ticket, Settings, LucideChartSpline
+    Home, Users, Tickets, Settings, LucideChartSpline, NotepadText
 } from "lucide-react";
 
 /**
@@ -16,7 +16,7 @@ export const MENU_CONFIG = {
             },
             {
                 name: "Tickets",
-                icon: Ticket,
+                icon: Tickets,
                 badge: 5,
                 submenu: [
                     { name: "All Tickets", path: "/admin-dashboard/admin-tickets", badge: 3 },
@@ -35,7 +35,7 @@ export const MENU_CONFIG = {
             { name: "Dashboard", icon: Home, path: "/reviewer-dashboard" },
             {
                 name: "Tickets",
-                icon: Ticket,
+                icon: Tickets,
                 badge: 8,
                 submenu: [
                     { name: "New Ticket", path: "/reviewer-dashboard/new-ticket" },
@@ -53,14 +53,14 @@ export const MENU_CONFIG = {
             { name: "Dashboard", icon: Home, path: "/client-dashboard" },
             {
                 name: "My Tickets",
-                icon: Ticket,
+                icon: Tickets,
                 badge: 2,
                 submenu: [
                     { name: "All Tickets", path: "/client-dashboard/all-tickets" },
                     { name: "New Ticket", path: "/client-dashboard/new-ticket" },
                 ],
             },
-            { name: "Report", icon: LucideChartSpline, path: "/client-dashboard/report" },
+            { name: "Report", icon: NotepadText, path: "/client-dashboard/report" },
         ],
         // bottom: [
         //     { name: "Profile", icon: Users, path: "/client-dashboard/profile" },

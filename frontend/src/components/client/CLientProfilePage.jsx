@@ -14,6 +14,10 @@ const ClientProfilePage = () => {
     email: "",
     role: "",
     status: "",
+    verified: false,
+    createdAt: null,
+    avatar: null,
+    lastLogin: null,
   })
 
   const [contactData, setContactData] = useState({
@@ -83,6 +87,10 @@ const ClientProfilePage = () => {
         onContactChange={handleContactChange}
         onSave={handleSave}
         loading={loading}
+        verified={user?.verified || false}
+        createdAt={user?.createdAt || null}
+        avatar={user?.avatar || null}
+        lastLogin={user?.lastLogin || null}
       />
     </DashboardLayout>
   )

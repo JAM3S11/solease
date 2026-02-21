@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Plus,
   ArrowRight,
-  Ticket,
+  Tickets,
   Clock,
   CheckCircle,
   Search,
@@ -15,6 +15,7 @@ import {
   HelpCircle,
   Headphones,
   Zap,
+  MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -168,8 +169,8 @@ const ClientDashboard = () => {
           >
             <div className="flex items-center gap-2 mb-4">
               <Zap className="size-5 text-amber-500" />
-              <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                What would like to do {userName}?
+              <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">
+                Quick actions available
               </h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -184,7 +185,7 @@ const ClientDashboard = () => {
                 { 
                   label: "My Tickets", 
                   description: "View all your tickets",
-                  icon: Ticket, 
+                  icon: Tickets, 
                   to: "/client-dashboard/all-tickets", 
                   color: "indigo" 
                 },
@@ -249,10 +250,10 @@ const ClientDashboard = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { label: "Total Tickets", val: stats.total, icon: Ticket, color: "blue" },
+                { label: "Total Tickets", val: stats.total, icon: Tickets, color: "blue" },
                 { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
                 { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
-                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageCircle, color: "purple" },
+                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageSquare, color: "purple" },
                 { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "blue" },
               ].map((stat, i) => (
                 <motion.div

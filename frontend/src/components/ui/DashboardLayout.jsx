@@ -9,7 +9,7 @@ import { NotificationBell } from "./notification-bell";
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = ({ children, hideHeader = false }) => {
   const { user } = useAuthenticationStore();
 
   return (
@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }) => {
           <AppSidebar userRole={user?.role} />
 
           <SidebarInset className="flex flex-col flex-1 min-w-0 h-full m-0 rounded-none shadow-none border-none overflow-hidden">
-            <header className="flex h-14 shrink-0 items-center gap-2 px-4 border-b border-border/50 bg-background/95 backdrop-blur">
+            <header className={`flex h-14 shrink-0 items-center gap-2 px-4 border-b border-border/50 bg-background/95 backdrop-blur ${hideHeader ? 'hidden' : ''}`}>
               <SidebarTrigger className="-ml-1" />
               <div className="h-4 w-[1px] bg-border mx-2" />
               <div className="flex-1">

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { CircleUser, KeyRound, Mail, User, Eye, EyeOff, Check, AlertCircle, ArrowRight} from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { motion } from "framer-motion";
 
 const CanvasLogo = ({ isBlurred }) => {
@@ -189,13 +189,25 @@ const SignUpForm = () => {
     validateField('confirmPasswrd', formData.confirmPassword);
 
     if (validationErrors.username || validationErrors.name || validationErrors.email || validationErrors.password || validationErrors.confirmPassword) {
-      toast.error("Please fix validation errors before submitting");
+      toast.error("Please fix validation errors before submitting", { 
+        position: "bottom-right",
+        description: "Check the form fields highlighted in red",
+        action: {
+          label: "Fix Now!"
+        }
+      });
       return;
     }
 
     try {
       await signup(formData.username, formData.name, formData.email, formData.password);
-      toast.success("Signup successful! Please verify your email.");
+      toast.success("Signup successful! Please verify your email.", {
+        position: "bottom-right",
+        description: "Check your inbox for a verification code",
+        action: {
+          label: "Verify now!"
+        }
+      });
 
       setFormData({ 
         username: "", 
@@ -206,7 +218,22 @@ const SignUpForm = () => {
       });
       navigate("/verify-email");
     } catch (err) {
-      toast.error(error || "Sign up failed!");
+      toast.error(error || "Sign up failed!", {
+        position: "bottom-right",
+        description: "Please try again or contact support.",
+        action: {
+          label: "Try again",
+          onClick: () => {
+            setFormData({
+              username: "",
+              name: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
+            })
+          }
+        }
+      });
     }
   }
 

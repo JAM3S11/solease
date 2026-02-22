@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Check, AlertCircle, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -154,13 +154,25 @@ const LoginForm = () => {
 
     // Check if there are any errors
     if (validationErrors.username || validationErrors.password) {
-      toast.error("Please fix validation errors before submitting");
+      toast.error("Please fix validation errors before submitting", {
+        position: "bottom-right",
+        description: "Check the form fields highlighted in red",
+        action: {
+          label: "Fix Now!"
+        }
+      });
       return;
     }
 
     try {
       const user = await login(formData.username, formData.password);
-      toast.success(`Welcome back, ${user.name || "User"}!`);
+      toast.success(`Welcome back, ${user.name || "User"}. Pleasure seeing you back`, {
+        position: "bottom-right",
+        description: `Its about time ${new Date().getTime()}`,
+        action: {
+          label: "Welcome back"
+        }
+      });
 
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;

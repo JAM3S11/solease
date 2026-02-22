@@ -16,7 +16,7 @@ import {
 } from "./shadcn-sidebar";
 import { Button } from "./button";
 import { useAuthenticationStore } from "../../store/authStore";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { cn } from "../../lib/utils";
 
 import { MENU_CONFIG } from "../../config/menu.config";
@@ -36,10 +36,22 @@ export function AppSidebar({ userRole }) {
   const handleLogout = useCallback(async () => {
     try {
       await logout();
-      toast.success("See you later!", { duration: 2000 });
+      toast.success(`See you later ${user.name}`, {
+        position: "bottom-right",
+        description: "It was a pleasure having you in our platform",
+        action: {
+          label: "Sign out successfully"
+        }
+      });
       navigate("/auth/login");
     } catch {
-      toast.error("Logout failed");
+      toast.error("Signing out failed.", {
+        position: "bottom-right",
+        description: "Please try again later!",
+        action: {
+          label: "Sign out unsuccessfull"
+        }
+      });
     }
   }, [logout, navigate]);
 

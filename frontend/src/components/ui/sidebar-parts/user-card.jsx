@@ -10,12 +10,15 @@ import {
     SidebarMenuButton,
 } from "../shadcn-sidebar";
 import { useNavigate } from "react-router";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
     const { notificationsEnabled, fetchNotificationPreference, toggleNotifications } =
         useNotificationStore();
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const isUseMobile = useIsMobile();
+    const position = isUseMobile ? 'top-center' : 'top-right';
 
     useEffect(() => {
         fetchNotificationPreference();
@@ -25,8 +28,13 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
         try {
             await toggleNotifications(!notificationsEnabled);
             toast.success(
-                notificationsEnabled ? "Notifications turned off" : "Notifications turned on",
-                
+                notificationsEnabled ? "Notifications turned off" : "Notifications turned on", {
+                    position,
+                    description: notificationsEnabled ? "You shall not receive any notification" : "You shall receive updates",
+                    action: {
+                        label: notificationsEnabled ? "Disabled" : "Enabled"
+                    }
+                }
             );
         } catch {
             toast.error("Failed to update notification preference");

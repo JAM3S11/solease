@@ -23,12 +23,15 @@ import { MENU_CONFIG } from "../../config/menu.config";
 import { CanvasLogo } from "./sidebar-parts/canvas-logo";
 import { UserCard } from "./sidebar-parts/user-card";
 import { NavItem } from "./sidebar-parts/nav-item";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AppSidebar({ userRole }) {
   const { logout, user } = useAuthenticationStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { state, isMobile, toggleSidebar } = useSidebar();
+  const isUseMobile = useIsMobile();
+  const position = isUseMobile ? 'top-center' : 'top-right';
 
   const isCollapsed = state === "collapsed";
   const currentMenu = MENU_CONFIG[userRole] ?? { top: [] };
@@ -37,8 +40,8 @@ export function AppSidebar({ userRole }) {
     try {
       await logout();
       toast.success(`See you later ${user.name}`, {
-        position: "bottom-right",
-        description: "It was a pleasure having you in our platform",
+        position,
+        description: `It was a pleasure having you in our platform ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
         action: {
           label: "Sign out successfully"
         }
@@ -46,7 +49,7 @@ export function AppSidebar({ userRole }) {
       navigate("/auth/login");
     } catch {
       toast.error("Signing out failed.", {
-        position: "bottom-right",
+        position,
         description: "Please try again later!",
         action: {
           label: "Sign out unsuccessfull"
@@ -101,24 +104,13 @@ export function AppSidebar({ userRole }) {
                 )}
               </div>
             </SidebarMenuButton>
-            
-            {/* {!isCollapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="h-7 w-7 absolute -right-3 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full shadow-sm z-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            )} */}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
       {/* Main nav items */}
       <SidebarContent className="py-4 bg-white dark:bg-gray-900 custom-scrollbar">
-        <SidebarMenu className={cn("gap-1 transition-all duration-300", isCollapsed ? "px-0" : "px-2")}>
+        <SidebarMenu className={cn("gap-1 transition-all duration-300", isCollapsed ? "px-2" : "px-2")}>
           {currentMenu.top.map((item) => (
             <NavItem
               key={item.name}

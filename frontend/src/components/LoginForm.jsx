@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Check, AlertCircle, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion } from "framer-motion";
-import { toast } from "sonner"
+import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -62,6 +63,8 @@ const LoginForm = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [validationSuccess, setValidationSuccess] = useState({});
   const [touched, setTouched] = useState({});
+  const isUseMobile = useIsMobile();
+  const position = isUseMobile ? 'top-center' : 'top-right';
 
   const navigate = useNavigate();
   const { isLoading, login } = useAuthenticationStore();
@@ -155,8 +158,8 @@ const LoginForm = () => {
     // Check if there are any errors
     if (validationErrors.username || validationErrors.password) {
       toast.error("Please fix validation errors before submitting", {
-        position: "bottom-right",
-        description: "Check the form fields highlighted in red",
+        position,
+        description: `Check the form fields highlighted in red ${new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}`,
         action: {
           label: "Fix Now!"
         }
@@ -167,8 +170,8 @@ const LoginForm = () => {
     try {
       const user = await login(formData.username, formData.password);
       toast.success(`Welcome back, ${user.name || "User"}. Pleasure seeing you back`, {
-        position: "bottom-right",
-        description: `Its about time ${new Date().getTime()}`,
+        position,
+        description: `Its about time ${new Date().toLocaleString()}`,
         action: {
           label: "Welcome back"
         }
@@ -181,7 +184,13 @@ const LoginForm = () => {
         default: navigate("/");
       }
     } catch (err) {
-      toast.error(err.message || "Invalid credentials.");
+      toast.error(err.message || "Invalid credentials.", {
+        position,
+        description: `Try again later ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
+        action: {
+          label: "Invalid"
+        }
+      });
     }
   };
 

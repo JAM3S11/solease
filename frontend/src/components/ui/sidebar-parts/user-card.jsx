@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
 import { ChevronsUpDown, Sparkles, CheckCircle2, CreditCard, Bell, LogOut, Settings, HelpCircle } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { Button } from "../button";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import useNotificationStore from "../../../store/notificationStore";
@@ -26,7 +26,7 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
             await toggleNotifications(!notificationsEnabled);
             toast.success(
                 notificationsEnabled ? "Notifications turned off" : "Notifications turned on",
-                { duration: 2000 }
+                
             );
         } catch {
             toast.error("Failed to update notification preference");

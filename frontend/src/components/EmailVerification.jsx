@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuthenticationStore } from "../store/authStore";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useIsMobile } from "./ui/hook/useIsMobile";
 
 const EmailVerificationPage = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -10,6 +11,9 @@ const EmailVerificationPage = () => {
 
   const { error, isLoading, verifyEmail } = useAuthenticationStore();
   const navigate = useNavigate();
+
+  const isUseMobile = useIsMobile();
+  const position = isUseMobile ? 'top-center' : 'top-right';
 
   // Focus functionality
   const handleChange = (index, value) => {
@@ -36,7 +40,7 @@ const EmailVerificationPage = () => {
     try {
       await verifyEmail(verificationCode);
       toast.success("Email verified successfully!", {
-        position: "top-right",
+        position,
         description: "Email verification process was a success.",
         action: {
           label: "Email verified"

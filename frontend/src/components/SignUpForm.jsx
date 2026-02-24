@@ -8,8 +8,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
-  const isUseMobile = useIsMobile();
-  const position = isUseMobile ? 'top-center' : 'top-right';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,6 +66,9 @@ const SignUpForm = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [validationSuccess, setValidationSuccess] = useState({});
   const [touched, setTouched] = useState({});
+
+  const isUseMobile = useIsMobile();
+  const position = isUseMobile ? 'top-center' : 'top-right';
 
   // Validation rules
   const VALIDATION_RULES = {
@@ -219,7 +220,7 @@ const SignUpForm = () => {
         password: "", 
         confirmPassword: "",
       });
-      navigate("/verify-email");
+      navigate("/auth/verify-email");
     } catch (err) {
       toast.error(error || "Sign up failed!", {
         position,

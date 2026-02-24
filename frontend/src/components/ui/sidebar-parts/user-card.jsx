@@ -109,7 +109,7 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
                         <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                             {user.name ?? "User"}
                         </span>
-                        <span className="truncate text-xs text-gray-500 dark:text-gray-400">
+                        <span className="truncate text-[10px] text-gray-500 dark:text-gray-400">
                             {user.email ?? ""}
                         </span>
                     </div>

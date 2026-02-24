@@ -16,6 +16,12 @@ import {
   Headphones,
   Zap,
   MessageSquare,
+  List,
+  Grid,
+  Table,
+  MapPin,
+  Calendar,
+  FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -33,6 +39,7 @@ const ClientDashboard = () => {
     key: null,
     direction: "asc",
   });
+  const [viewMode, setViewMode] = useState("table");
 
   const userName = user?.name || user?.username || "Client";
   const safeTickets = Array.isArray(tickets) ? tickets : [];
@@ -61,9 +68,13 @@ const ClientDashboard = () => {
           ? aUrgency - bUrgency
           : bUrgency - aUrgency;
       }
+      if (sortConfig.key === "updatedAt") {
+        return sortConfig.direction === "asc"
+          ? new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt)
+          : new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      }
       return 0;
-    })
-    .slice(0, 5);
+    });
 
   const stats = {
     total: safeTickets.length,
@@ -322,34 +333,72 @@ const ClientDashboard = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
               </span>
-              <p className="font-medium">Pro-tip: Click on Ticket ID and Urgency headers to sort.</p>
+              <p className="font-medium">Pro-tip: Click on Ticket ID, Urgency, and Updated headers to sort.</p>
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 dark:bg-gray-800/40">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Recent Tickets</h2>
-                <motion.div className="relative w-full sm:w-64" whileFocus={{ scale: 1.02 }}>
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-300"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search by subject..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
-                    aria-label="Search tickets"
-                  />
-                </motion.div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <motion.div className="relative flex-1 sm:w-64" whileFocus={{ scale: 1.02 }}>
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-300"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search by subject..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                      aria-label="Search tickets"
+                    />
+                  </motion.div>
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`p-2 rounded-md transition-all duration-200 ${
+                        viewMode === 'table'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                      title="Table view"
+                    >
+                      <Table size={18} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 rounded-md transition-all duration-200 ${
+                        viewMode === 'list'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                      title="List view"
+                    >
+                      <List size={18} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 rounded-md transition-all duration-200 ${
+                        viewMode === 'grid'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                      title="Grid view"
+                    >
+                      <Grid size={18} />
+                    </button>
+                  </div>
+                </div>
               </div>
 
+              {viewMode === 'table' ? (
               <div className="overflow-x-auto">
                 <table className="w-full table-auto border-collapse">
                   <thead className="bg-gray-50/50 dark:bg-gray-800/50">
                     <tr>
-                      {["Ticket ID", "Subject", "Urgency", "Location", "Status", "Submitted", "Attachments", "Feedback", ""].map(
+                      {["Ticket", "Subject", "Type", "Urgency", "Location", "Status", "Updated", "Attachments", "Feedback", ""].map(
                         (header) => {
-                          const sortKey = header === "Ticket ID" ? "ticketId" : header === "Urgency" ? "urgency" : null;
+                          const sortKey = header === "Ticket" ? "ticketId" : header === "Urgency" ? "urgency" : header === "Updated" ? "updatedAt" : null;
                           return (
                             <th
                               key={header}
@@ -383,15 +432,29 @@ const ClientDashboard = () => {
                         className="group transition-colors duration-200 cursor-default dark:hover:bg-blue-900/5"
                       >
                         <td className="px-6 py-4">
-                          <motion.span
-                            whileHover={{ scale: 1.05 }}
-                            className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md transition-all duration-200"
-                          >
-                            #{ticket._id.slice(-6).toUpperCase()}
-                          </motion.span>
+                          <div className="flex items-center gap-2">
+                            <motion.span
+                              whileHover={{ scale: 1.05 }}
+                              className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md transition-all duration-200"
+                            >
+                              #{ticket._id.slice(-6).toUpperCase()}
+                            </motion.span>
+                            {ticket.urgency === "Critical" && (
+                              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+                            )}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 font-normal text-gray-700 dark:text-gray-300 max-w-[200px] truncate text-sm group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200">
-                          {ticket.subject}
+                        <td className="px-6 py-4">
+                          <p className="font-normal text-gray-700 dark:text-gray-300 max-w-[200px] truncate text-sm group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-200">
+                            {ticket.subject}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{ticket.description?.slice(0, 40)}...</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            <FileText size={12} />
+                            {ticket.issueType || 'General'}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <motion.span
@@ -412,7 +475,10 @@ const ClientDashboard = () => {
                           </motion.span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 truncate font-normal group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-200">
-                          {ticket.location}
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin size={12} />
+                            {ticket.location || '-'}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -435,7 +501,10 @@ const ClientDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
-                          {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                          <span className="inline-flex items-center gap-1">
+                            <Calendar size={12} />
+                            {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           {ticket.attachments?.length > 0 ? (
@@ -497,6 +566,210 @@ const ClientDashboard = () => {
                   </tbody>
                 </table>
               </div>
+              ) : viewMode === 'grid' ? (
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {displayTickets.map((ticket) => (
+                      <motion.div
+                        key={ticket._id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        className="group bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <motion.span
+                              whileHover={{ scale: 1.05 }}
+                              className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md"
+                            >
+                              #{ticket._id.slice(-6).toUpperCase()}
+                            </motion.span>
+                            {ticket.urgency === "Critical" && (
+                              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+                            )}
+                          </div>
+                          <motion.span
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                              ticket.urgency === "Critical"
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                                : ticket.urgency === "High"
+                                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                                  : ticket.urgency === "Medium"
+                                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+                                    : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                            }`}
+                          >
+                            {ticket.urgency}
+                          </motion.span>
+                        </div>
+                        
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {ticket.subject}
+                        </h3>
+                        
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ticket.description?.slice(0, 80)}...</p>
+                        
+                        <div className="flex items-center gap-2 mb-2">
+                          <motion.span
+                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className={`w-2.5 h-2.5 rounded-full ${
+                              ticket.status === "Open"
+                                ? "bg-blue-500"
+                                : ticket.status === "In Progress"
+                                  ? "bg-yellow-500"
+                                  : ticket.status === "Resolved"
+                                    ? "bg-green-500"
+                                    : "bg-gray-400"
+                            }`}
+                          />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{ticket.status}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                            <FileText size={10} />
+                            {ticket.issueType || 'General'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin size={10} />
+                            {ticket.location || '-'}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Calendar size={10} />
+                            {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center gap-2">
+                            {ticket.attachments?.length > 0 ? (
+                              <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                                <Paperclip size={12} />
+                                <span>{ticket.attachments.length}</span>
+                              </div>
+                            ) : null}
+                            {ticket.comments && ticket.comments.length > 0 ? (
+                              <Link
+                                to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                                className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                              >
+                                <MessageCircle size={12} />
+                                <span>{ticket.comments.length}</span>
+                              </Link>
+                            ) : null}
+                          </div>
+                          <Link
+                            to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
+                          >
+                            View
+                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 space-y-3">
+                  {displayTickets.map((ticket, index) => (
+                    <motion.div
+                      key={ticket._id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ scale: 1.01 }}
+                      className="group flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm">
+                        {ticket.subject?.charAt(0) || 'T'}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <motion.span
+                            whileHover={{ scale: 1.02 }}
+                            className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded"
+                          >
+                            #{ticket._id.slice(-6).toUpperCase()}
+                          </motion.span>
+                          {ticket.urgency === "Critical" && (
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+                          )}
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            ticket.urgency === "Critical"
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                              : ticket.urgency === "High"
+                                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                                : ticket.urgency === "Medium"
+                                  ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+                                  : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                          }`}>
+                            {ticket.urgency}
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                            <FileText size={10} />
+                            {ticket.issueType || 'General'}
+                          </span>
+                          <motion.span
+                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className={`w-2 h-2 rounded-full ${
+                              ticket.status === "Open"
+                                ? "bg-blue-500"
+                                : ticket.status === "In Progress"
+                                  ? "bg-yellow-500"
+                                  : ticket.status === "Resolved"
+                                    ? "bg-green-500"
+                                    : "bg-gray-400"
+                            }`}
+                          />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{ticket.status}</span>
+                        </div>
+                        <h3 className="font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {ticket.subject}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{ticket.description?.slice(0, 60)}...</p>
+                      </div>
+                      
+                      <div className="hidden md:flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin size={10} />
+                          {ticket.location || '-'}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Calendar size={10} />
+                          {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                        </span>
+                        {ticket.attachments?.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Paperclip size={10} />
+                            <span>{ticket.attachments.length}</span>
+                          </div>
+                        )}
+                        {ticket.comments && ticket.comments.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <MessageCircle size={10} />
+                            <span>{ticket.comments.length}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Link
+                        to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                        className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        <ArrowRight size={18} />
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
               <motion.div
                 whileHover={{ backgroundColor: "rgba(249, 250, 251, 1)" }}

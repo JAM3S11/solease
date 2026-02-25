@@ -35,7 +35,7 @@ export const useAuthenticationStore = create((set) => ({
             const response = await api.post("/auth/verify-email", { code });
             set({
                 user: response.data.user,
-                isAuthenticated: true,
+                // isAuthenticated: true,
                 isLoading: false,
             });
         } catch (error) {

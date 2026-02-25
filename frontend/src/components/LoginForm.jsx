@@ -169,13 +169,6 @@ const LoginForm = () => {
 
     try {
       const user = await login(formData.username, formData.password);
-      toast.success(`Welcome back, ${user.name || "User"}. Pleasure seeing you back`, {
-        position,
-        description: `Its about time ${new Date().toLocaleString()}`,
-        action: {
-          label: "Welcome back"
-        }
-      });
 
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;
@@ -183,6 +176,14 @@ const LoginForm = () => {
         case "Manager": navigate("/admin-dashboard"); break;
         default: navigate("/");
       }
+      
+      toast.success(`Welcome back, ${user.name || "User"}. Pleasure seeing you back`, {
+        position,
+        description: `Its about time ${new Date().toLocaleString()}`,
+        action: {
+          label: "Welcome back"
+        }
+      });
     } catch (err) {
       toast.error(err.message || "Invalid credentials.", {
         position,

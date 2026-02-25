@@ -195,48 +195,18 @@ const SignUpForm = () => {
     if (validationErrors.username || validationErrors.name || validationErrors.email || validationErrors.password || validationErrors.confirmPassword) {
       toast.error("Please fix validation errors before submitting", { 
         position,
-        description: "Check the form fields highlighted in red",
-        action: {
-          label: "Fix Now!"
-        }
+        description: "Check the form fields highlighted in red"
       });
       return;
     }
 
     try {
       await signup(formData.username, formData.name, formData.email, formData.password);
-      toast.success("Signup successful! Please verify your email.", {
-        position,
-        description: `Check your inbox for a verification code ${new Date().toLocaleString()}`,
-        action: {
-          label: "Verify now!"
-        }
-      });
-
-      setFormData({ 
-        username: "", 
-        name: "", 
-        email: "", 
-        password: "", 
-        confirmPassword: "",
-      });
-      navigate("/auth/verify-email");
+      navigate("/auth/verify-email", { replace: true });
     } catch (err) {
       toast.error(error || "Sign up failed!", {
         position,
-        description: "Please try again or contact support.",
-        action: {
-          label: "Try again",
-          onClick: () => {
-            setFormData({
-              username: "",
-              name: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-            })
-          }
-        }
+        description: "Please try again or contact support."
       });
     }
   }

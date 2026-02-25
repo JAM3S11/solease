@@ -30,12 +30,14 @@ node_modules/
 /backend/.env
 /frontend/.env
 *.local
+nul
 /frontend/README.md
 /frontend/src/components/it/
 /frontend/src/components/service/
 /frontend/src/common/CanvasLogo.jsx
 /frontend/src/pages/Aboutpage_NEW.jsx
 /.cursor/plans
+/frontend/ui/NoTicketComponent.jsx/src/
 
 # Encrypted files will be released after review
 OBJECTIVE_1_ASSESSMENT.md

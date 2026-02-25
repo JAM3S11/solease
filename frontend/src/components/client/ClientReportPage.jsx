@@ -6,6 +6,7 @@ import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
 import { Ticket, Clock, CheckCircle, TrendingUp, Activity, MessageCircle, Star } from "lucide-react"; 
 import { Link } from "react-router";
+import NoReport from "../ui/NoReport";
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
 const SUCCESS_STATUSES = ['Closed', 'Resolved'];
@@ -154,30 +155,32 @@ return (
         <DashboardLayout>
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                 
-                {/* Header Section */}
-                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <motion.div 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                            {user?.name ? `${user.name.split(' ')[0]}'s Analytics` : "Report Overview"}
-                        </h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">
-                            Personal IT performance and ticket lifecycle tracking.
-                        </p>
-                    </motion.div>
+                {/* Header Section - Only show when there's data */}
+                {clientTickets.length > 0 && (
+                    <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                                {user?.name ? `${user.name.split(' ')[0]}'s Analytics` : "Report Overview"}
+                            </h1>
+                            <p className="text-gray-500 dark:text-gray-400 mt-1">
+                                Personal IT performance and ticket lifecycle tracking.
+                            </p>
+                        </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ scale: 1.02 }}
-                        className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-2xl"
-                    >
-                        <Activity size={16} /> Live Data Tracking
-                    </motion.div>
-                </div>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.02 }}
+                            className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-2xl"
+                        >
+                            <Activity size={16} /> Live Data Tracking
+                        </motion.div>
+                    </div>
+                )}
 
                 {/* Loading State */}
                 {loading ? (
@@ -190,15 +193,7 @@ return (
                         <span className="font-bold">Error:</span> {error}
                     </div>
                 ) : clientTickets.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                            <TrendingUp size={32} className="text-gray-400 dark:text-gray-500" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Analytics Data Yet</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                            Start creating support tickets to see your performance analytics and insights here.
-                        </p>
-                    </motion.div>
+                    <NoReport userName={user?.name?.split(' ')[0]} type="client" />
                 ) : (
                     <>
                         {/* Stats Grid */}

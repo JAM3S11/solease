@@ -8,6 +8,7 @@ import useTicketStore from '../../store/ticketStore'
 import TicketsTable from '../ui/TicketsTable'
 import DetailedTicketsView from '../ui/DetailedTicketsView'
 import SelectedTicketModal from '../ui/SelectedTicketModal'
+import NoTicketComponent from '../ui/NoTicketComponent'
 
 const ReviewerAssignedTickets = () => {
   const { user } = useAuthenticationStore()
@@ -109,15 +110,7 @@ const ReviewerAssignedTickets = () => {
             <span className="font-bold">Error:</span> {error}
           </div>
         ) : assignedTickets.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-10 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <Ticket size={32} className="text-gray-400 dark:text-gray-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Assigned Tickets</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              You don't have any assigned tickets at the moment.
-            </p>
-          </motion.div>
+          <NoTicketComponent noTicket={user?.name} type="reviewer" />
         ) : (
           issueTypeFilter ? (
             <DetailedTicketsView

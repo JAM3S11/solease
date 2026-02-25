@@ -92,26 +92,33 @@ const [selectedTicket, setSelectedTicket] = useState(null);
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
         {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
-        >
-          <div>
-            <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              {user?.name ? `${user.name}'s Tickets` : "My Tickets"}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Manage and track your support requests
-            </p>
-          </div>
-          <button
-            onClick={() => navigate("/client-dashboard/new-ticket")}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg font-medium"
+        {!loading && !error && safeTickets.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
           >
-            <Plus size={18} /> New Ticket
-          </button>
-        </motion.div>
+            <div>
+              <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                {user?.name ? `${user.name}'s Tickets` : "My Tickets"}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Manage and track your support requests
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/client-dashboard/new-ticket")}
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg font-medium"
+            >
+              <Plus size={18} /> New Ticket
+            </button>
+          </motion.div>
+        )}
+
+        {/* No Tickets State */}
+        {!loading && !error && safeTickets.length === 0 && (
+          <NoTicketComponent noTicket={user?.name} type="client" />
+        )}
 
         {/* Stats Section */}
         {!loading && safeTickets.length > 0 && (
@@ -173,10 +180,6 @@ const [selectedTicket, setSelectedTicket] = useState(null);
             Error fetching tickets: {error}
           </div>
         )}
-
-        {!loading && !error
-          && safeTickets.length === 0 && <NoTicketComponent noTicket={user?.name} />
-        }
 
         {!loading && !error && safeTickets.length > 0 && (
           <div className="space-y-4">

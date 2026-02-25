@@ -106,10 +106,10 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
             {!isCollapsed && (
                 <>
                     <div className="flex flex-col flex-1 min-w-0 text-left animate-in fade-in slide-in-from-left-2 duration-300">
-                        <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        <span className="truncate sm:text-sm md:text-[12px] font-semibold text-gray-900 dark:text-white">
                             {user.name ?? "User"}
                         </span>
-                        <span className="truncate text-[10px] text-gray-500 dark:text-gray-400">
+                        <span className="truncate sm:text-xs md:text-[10px] text-gray-500 dark:text-gray-400">
                             {user.email ?? ""}
                         </span>
                     </div>

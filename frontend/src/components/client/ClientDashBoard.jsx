@@ -45,6 +45,7 @@ const ClientDashboard = () => {
   const safeTickets = Array.isArray(tickets) ? tickets : [];
 
   const showWelcome = !loading && !error && safeTickets.length === 0;
+  const isNewUser = safeTickets.length === 0;
 
   useEffect(() => {
     fetchTickets("Client");
@@ -146,11 +147,11 @@ const ClientDashboard = () => {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">
-              Welcome back, {userName}!
+              {isNewUser ? `Welcome to SOLEASE, ${userName}!` : `Welcome back, ${userName}!`}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {showWelcome
-                ? "Let's submit your first support request and get started!"
+              {isNewUser
+                ? "Let's get you started with your first support request!"
                 : "Manage and track your active support requests here."}
             </p>
           </motion.div>
@@ -319,7 +320,7 @@ const ClientDashboard = () => {
             transition={{ duration: 0.6 }}
             className="py-10"
           >
-            <WelcomeMessage userName={userName} />
+            <WelcomeMessage />
           </motion.div>
         ) : (
           <motion.div

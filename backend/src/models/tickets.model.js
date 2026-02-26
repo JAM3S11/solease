@@ -136,6 +136,10 @@ const ticketSchema = new mongoose.Schema({
             required: true,
             trim: true
         },
+        originalName: {
+            type: String,
+            trim: true
+        },
         mimetype: {
             type: String,
         },

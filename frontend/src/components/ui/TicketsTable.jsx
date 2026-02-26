@@ -1,5 +1,5 @@
 import React, { Fragment, useMemo, useState } from "react";
- import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye, ArrowUp, ArrowDown, ArrowRight, Paperclip, FileText, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,10 +26,9 @@ const TicketsTable = ({
     }));
   };
 
-  // Filter logic
   const filteredTickets = tickets.filter((ticket) => {
     const matchSearch = 
-      ticket.issueType?.toLowerCase().includes(search.toLowerCase()) ||
+      ticket.subject?.toLowerCase().includes(search.toLowerCase()) ||
       ticket.description?.toLowerCase().includes(search.toLowerCase());
     const matchIssueType = issueTypeFilter ? ticket.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase() : true;
     const matchStatus = statusFilter ? ticket.status === statusFilter : true;
@@ -48,6 +47,21 @@ const TicketsTable = ({
           ? aId.localeCompare(bId)
           : bId.localeCompare(aId);
       });
+    } else if (sortConfig.key === "urgency") {
+      const urgencyOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+      arr.sort((a, b) => {
+        const aUrgency = urgencyOrder[a.urgency] || 0;
+        const bUrgency = urgencyOrder[b.urgency] || 0;
+        return sortConfig.direction === "asc"
+          ? aUrgency - bUrgency
+          : bUrgency - aUrgency;
+      });
+    } else if (sortConfig.key === "updatedAt") {
+      arr.sort((a, b) => {
+        return sortConfig.direction === "asc"
+          ? new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt)
+          : new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      });
     } else {
       arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
@@ -58,55 +72,95 @@ const TicketsTable = ({
   const issueTypes = ["Hardware Issue", "Software Issue", "Network Connectivity", "Account Access", "Other"];
   const statuses = role === 'admin' || role === 'reviewer' ? ["Open", "In Progress", "Resolved", "Closed"] : ["Open", "In Progress", "Resolved"];
 
-  // Define filters based on role
   const showIssueTypeFilter = role === 'admin' || role === 'reviewer';
   const showStatusFilter = true;
   const showDateFilter = true;
 
   const getColumns = () => {
-    // Same columns for both admin and client roles for consistency
-    return [
-      { key: 'id', label: 'TICKET ID', render: (ticket) => (
-        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-1 rounded">
-          #{ticket._id.slice(-6).toUpperCase()}
-        </span>
-      ) },
+    const baseColumns = [
+      { 
+        key: 'id', 
+        label: 'TICKET', 
+        sortable: 'ticketId',
+        render: (ticket) => (
+          <div className="flex items-center gap-2">
+            <motion.span
+              whileHover={{ scale: 1.05 }}
+              className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md transition-all duration-200"
+            >
+              #{ticket._id.slice(-6).toUpperCase()}
+            </motion.span>
+            {ticket.urgency === "Critical" && (
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+            )}
+          </div>
+        )
+      },
       {
-        key: role === 'client' ? 'subject' : 'issueType',
+        key: 'subject',
         label: role === 'client' ? 'SUBJECT' : 'ISSUE TYPE',
         render: (ticket) => role === 'client' ? (
-          <span className='font-normal text-gray-700 dark:text-gray-400 max-w-[200px] truncate text-sm' title={ticket.subject}>
-            {ticket.subject}
-          </span>
+          <div className="max-w-[200px]">
+            <p className="font-normal text-gray-700 dark:text-gray-300 text-sm truncate group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              {ticket.subject}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{ticket.description?.slice(0, 40)}...</p>
+          </div>
         ) : (
           <span className={`text-[10px] inline-flex items-center justify-center px-2 py-1 rounded-md font-bold min-w-[100px] uppercase
             ${{
-              "Hardware Issue": "bg-blue-100 text-blue-700",
-              "Software Issue": "bg-green-100 text-green-700",
-              "Network Connectivity": "bg-red-100 text-red-700",
-              "Account Access": "bg-orange-100 text-orange-700",
-            }[ticket.issueType] || "bg-slate-200 text-slate-600"}
+              "Hardware Issue": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+              "Software Issue": "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+              "Network Connectivity": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+              "Account Access": "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+            }[ticket.issueType] || "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"}
           `}>{ticket.issueType}</span>
         )
       },
-      { key: 'urgency', label: 'URGENCY', render: (ticket) => (
-        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-          ticket.urgency === "Critical" ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" :
-          ticket.urgency === "High" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" :
-          ticket.urgency === "Medium" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300" :
-          "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
-        }`}>
-          {ticket.urgency}
-        </span>
-      ) },
       {
-        key: role === 'client' ? 'location' : 'assignedTo',
+        key: 'type',
+        label: 'TYPE',
+        render: (ticket) => (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
+            <FileText size={12} />
+            {ticket.issueType || 'General'}
+          </span>
+        )
+      },
+      { 
+        key: 'urgency', 
+        label: 'URGENCY',
+        sortable: 'urgency',
+        render: (ticket) => (
+          <motion.span
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            className={`inline-block px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+              ticket.urgency === "Critical"
+                ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 shadow-sm shadow-red-200/50 dark:shadow-red-900/30"
+                : ticket.urgency === "High"
+                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 shadow-sm shadow-orange-200/50 dark:shadow-orange-900/30"
+                  : ticket.urgency === "Medium"
+                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300 shadow-sm shadow-yellow-200/50 dark:shadow-yellow-900/30"
+                    : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 shadow-sm shadow-green-200/50 dark:shadow-green-900/30"
+            }`}
+          >
+            {ticket.urgency}
+          </motion.span>
+        )
+      },
+      {
+        key: 'location',
         label: role === 'client' ? 'LOCATION' : 'ASSIGNED TO',
         render: (ticket) => role === 'client' ? (
-          <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{ticket.location}</span>
+          <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 truncate">
+            <MapPin size={12} />
+            {ticket.location || '-'}
+          </span>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-bold text-blue-600">
+            <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400">
                 {ticket.assignedTo ? ticket.assignedTo.username[0].toUpperCase() : "?"}
             </div>
             <span className='text-xs font-medium text-gray-700 dark:text-gray-300'>
@@ -115,68 +169,129 @@ const TicketsTable = ({
           </div>
         )
       },
-      { key: 'status', label: 'STATUS', render: (ticket) => (
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${
-            ticket.status === "Open" ? "bg-blue-500" :
-            ticket.status === "In Progress" ? "bg-yellow-500" :
-            ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
-          }`} />
-          <span className="text-sm font-normal text-gray-700 dark:text-gray-300 truncate">{ticket.status}</span>
-        </div>
-      ) },
-      { key: 'createdAt', label: role === 'client' ? 'SUBMITTED' : 'CREATED AT', render: (ticket) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
-        </span>
-      ) },
+      { 
+        key: 'status', 
+        label: 'STATUS',
+        render: (ticket) => (
+          <div className="flex items-center gap-2">
+            <motion.span
+              animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+              className={`w-3 h-3 rounded-full shadow-sm ${
+                ticket.status === "Open"
+                  ? "bg-blue-500 shadow-blue-500/50"
+                  : ticket.status === "In Progress"
+                    ? "bg-yellow-500 shadow-yellow-500/50"
+                    : ticket.status === "Resolved"
+                      ? "bg-green-500"
+                      : "bg-gray-400"
+              }`}
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{ticket.status}</span>
+          </div>
+        )
+      },
+      { 
+        key: 'updatedAt', 
+        label: 'UPDATED',
+        sortable: 'updatedAt',
+        render: (ticket) => (
+          <span className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+            <Calendar size={12} />
+            {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+          </span>
+        )
+      },
       {
-        key: (role === 'client' || role === 'admin' || role === 'reviewer') ? 'feedback' : 'description',
-        label: (role === 'client' || role === 'admin' || role === 'reviewer') ? 'FEEDBACK' : 'DESCRIPTION',
-        render: (ticket) => (role === 'client' || role === 'admin' || role === 'reviewer') ? (
-          ticket.comments && ticket.comments.length > 0 ? (
-            <Link
-              to={
-                role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
-                role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
-                `/client-dashboard/ticket/${ticket._id}/feedback` // admin/manager uses client route
-              }
-              className="inline-flex items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
-              title="View feedback"
-            >
-              <Eye size={16} />
-            </Link>
-          ) : (ticket.status === 'In Progress' || ticket.status === 'Resolved') ? (
-            <Link
-              to={
-                role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
-                role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
-                `/client-dashboard/ticket/${ticket._id}/feedback` // admin/manager uses client route
-              }
-              className="inline-flex items-center justify-center p-2 bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
-              title="Start feedback conversation"
-            >
-              <MessageCircle size={16} />
-            </Link>
+        key: 'attachments',
+        label: 'ATTACHMENTS',
+        render: (ticket) => (
+          ticket.attachments?.length > 0 ? (
+            <motion.div whileHover={{ scale: 1.05 }} className="flex flex-col items-center gap-1">
+              <a
+                href={`http://localhost:5001/uploads/${ticket.attachments[0].filename}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:scale-105 transition-all duration-200"
+                title={ticket.attachments[0].originalName || ticket.attachments[0].filename}
+              >
+                <Paperclip size={14} />
+                <span className="text-xs font-medium max-w-[100px] truncate">
+                  {ticket.attachments[0].originalName || ticket.attachments[0].filename}
+                </span>
+              </a>
+              {ticket.attachments.length > 1 && (
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  +{ticket.attachments.length - 1} more
+                </span>
+              )}
+            </motion.div>
           ) : (
-            <div className="inline-flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-lg">
+            <span className="text-gray-400 dark:text-gray-600">-</span>
+          )
+        )
+      },
+      {
+        key: 'feedback',
+        label: 'FEEDBACK',
+        render: (ticket) => (
+          ticket.comments && ticket.comments.length > 0 ? (
+            <motion.div whileHover={{ scale: 1.1 }}>
+              <Link
+                to={
+                  role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
+                  role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
+                  `/admin-dashboard/ticket/${ticket._id}/feedback`
+                }
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center justify-center p-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all duration-200 shadow-sm hover:shadow-md"
+                title="View feedback"
+              >
+                <Eye size={16} />
+              </Link>
+            </motion.div>
+          ) : (
+            <div className="inline-flex items-center justify-center p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-lg opacity-60">
               <MessageCircle size={16} />
             </div>
           )
-        ) : (
-          <p className='font-normal text-gray-600 dark:text-gray-400 max-w-xs md:max-w-md line-clamp-2 text-sm leading-relaxed' title={ticket.description}>
-            {ticket.description}
-          </p>
+        )
+      },
+      {
+        key: 'actions',
+        label: '',
+        render: (ticket) => (
+          <motion.div whileHover={{ x: 4 }}>
+            <Link
+              to={
+                role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
+                role === 'reviewer' ? `/reviewer-dashboard/ticket/${ticket._id}/feedback` :
+                `/admin-dashboard/ticket/${ticket._id}/feedback`
+              }
+              onClick={(e) => e.stopPropagation()}
+              className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+              aria-label="View ticket details"
+            >
+              <ArrowRight size={18} />
+            </Link>
+          </motion.div>
         )
       }
     ];
+
+    // Filter columns based on role for client
+    if (role === 'client') {
+      return baseColumns.filter(col => col.key !== 'type' && col.key !== 'assignedTo');
+    }
+    
+    return baseColumns;
   };
 
   const columns = getColumns();
 
   return (
     <div className="space-y-6">
-      {/* Filters Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -184,8 +299,8 @@ const TicketsTable = ({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search tickets..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            placeholder="Search by subject..."
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
           />
         </div>
 
@@ -264,16 +379,14 @@ const TicketsTable = ({
         </div>
       </div>
 
-      {/* Pro-tip */}
       <div className="mb-4 flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-sm text-blue-700 dark:text-blue-300">
         <span className="relative flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
         </span>
-        <p className="font-medium">Pro-tip: Click any row to view full ticket details and attachments.</p>
+        <p className="font-medium">Pro-tip: Click on Ticket ID, Urgency, and Updated headers to sort.</p>
       </div>
 
-      {/* Table Container */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -284,20 +397,23 @@ const TicketsTable = ({
             <thead className="bg-gray-50/50 dark:bg-gray-800/50">
               <tr>
                 {columns.map((col) => {
-                  const isTicketId = col.key === "id";
-
+                  const isSortable = col.sortable;
+                  const isActive = sortConfig.key === col.sortable;
+                  
                   return (
                     <th
                       key={col.key}
-                      onClick={isTicketId ? () => handleSort("ticketId") : undefined}
+                      onClick={isSortable ? () => handleSort(col.sortable) : undefined}
                       className={`px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest ${
-                        isTicketId ? "cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" : ""
+                        isSortable ? "cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" : ""
                       }`}
                     >
-                      {isTicketId ? (
+                      {isSortable ? (
                         <span className="inline-flex items-center gap-1 align-middle">
                           <span>{col.label}</span>
-                          {sortConfig.direction === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                          {isActive && (
+                            sortConfig.direction === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />
+                          )}
                         </span>
                       ) : (
                         col.label
@@ -321,7 +437,7 @@ const TicketsTable = ({
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
                       onClick={() => onRowClick(ticket)}
-                      className="hover:bg-blue-50/30 dark:hover:bg-blue-900/5 transition-colors cursor-pointer group"
+                      className="group transition-colors duration-200 cursor-default hover:bg-blue-50/30 dark:hover:bg-blue-900/5"
                     >
                       {columns.map((col) => (
                         <td key={col.key} className='px-6 py-4'>

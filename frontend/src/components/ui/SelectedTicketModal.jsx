@@ -104,35 +104,35 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
                    Attachments ({ticket.attachments.length})
                  </p>
                </div>
-               <div className="space-y-2">
-                 {ticket.attachments.map((attachment, index) => (
-                   <a
-                     key={index}
-                     href={`http://localhost:5001/uploads/${attachment.filename}`}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     download={attachment.filename}
-                     className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all group"
-                   >
-                     <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                       {attachment.mimetype?.startsWith("image/") ? (
-                         <ImageIcon size={20} className="text-blue-600 dark:text-blue-400" />
-                       ) : (
-                         <FileText size={20} className="text-blue-600 dark:text-blue-400" />
-                       )}
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                         {attachment.filename}
-                       </p>
-                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                         {(attachment.size / 1024).toFixed(1)} KB
-                       </p>
-                     </div>
-                     <Download size={18} className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-                   </a>
-                 ))}
-               </div>
+                <div className="space-y-2">
+                  {ticket.attachments.map((attachment, index) => (
+                    <a
+                      key={index}
+                      href={`http://localhost:5001/uploads/${attachment.filename}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download={attachment.originalName || attachment.filename}
+                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                        {attachment.mimetype?.startsWith("image/") ? (
+                          <ImageIcon size={20} className="text-blue-600 dark:text-blue-400" />
+                        ) : (
+                          <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {attachment.originalName || attachment.filename}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {(attachment.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <Download size={18} className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                    </a>
+                  ))}
+                </div>
              </div>
            )}
 

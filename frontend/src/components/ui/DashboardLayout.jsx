@@ -18,7 +18,7 @@ const DashboardLayout = ({ children, hideHeader = false }) => {
         <div className="flex h-screen w-full overflow-hidden bg-background">
           <AppSidebar userRole={user?.role} />
 
-          <SidebarInset className="flex flex-col flex-1 min-w-0 h-full m-0 rounded-none shadow-none border-none overflow-hidden">
+          <SidebarInset className="relative z-0 flex flex-col flex-1 min-w-0 h-full m-0 rounded-none shadow-none border-none overflow-hidden">
             <header className={`flex h-14 shrink-0 items-center gap-2 px-4 border-b border-border/50 bg-background/95 backdrop-blur ${hideHeader ? 'hidden' : ''}`}>
               <SidebarTrigger className="-ml-1" />
               <div className="h-4 w-[1px] bg-border mx-2" />

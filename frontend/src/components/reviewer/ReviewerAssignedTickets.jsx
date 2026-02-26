@@ -3,10 +3,8 @@ import { motion } from 'framer-motion'
 import { Ticket, Clock, CheckCircle, MessageCircle } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
-import { useSearchParams } from 'react-router-dom'
 import useTicketStore from '../../store/ticketStore'
 import TicketsTable from '../ui/TicketsTable'
-import DetailedTicketsView from '../ui/DetailedTicketsView'
 import SelectedTicketModal from '../ui/SelectedTicketModal'
 import NoTicketComponent from '../ui/NoTicketComponent'
 
@@ -14,11 +12,8 @@ const ReviewerAssignedTickets = () => {
   const { user } = useAuthenticationStore()
   const { tickets, fetchTickets, loading, error } = useTicketStore()
 
-  const [searchParams] = useSearchParams()
-  const initialCategory = searchParams.get("category") || ""
-
   const [search, setSearch] = useState('')
-  const [issueTypeFilter, setIssueTypeFilter] = useState(initialCategory)
+  const [issueTypeFilter, setIssueTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   const [selectedTicket, setSelectedTicket] = useState(null)
@@ -112,32 +107,19 @@ const ReviewerAssignedTickets = () => {
         ) : assignedTickets.length === 0 ? (
           <NoTicketComponent noTicket={user?.name} type="reviewer" />
         ) : (
-          issueTypeFilter ? (
-            <DetailedTicketsView
-              tickets={assignedTickets.filter(t =>
-                (!search || t.subject?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
-                (t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
-                (!statusFilter || t.status === statusFilter) &&
-                (!dateFilter || new Date(t.createdAt).toISOString().split("T")[0] === dateFilter)
-              )}
-              role="reviewer"
-              onRowClick={setSelectedTicket}
-            />
-          ) : (
-            <TicketsTable
-              tickets={assignedTickets}
-              role="reviewer"
-              search={search}
-              issueTypeFilter={issueTypeFilter}
-              statusFilter={statusFilter}
-              dateFilter={dateFilter}
-              onSearchChange={setSearch}
-              onIssueTypeChange={setIssueTypeFilter}
-              onStatusChange={setStatusFilter}
-              onDateChange={setDateFilter}
-              onRowClick={setSelectedTicket}
-            />
-          )
+          <TicketsTable
+            tickets={assignedTickets}
+            role="reviewer"
+            search={search}
+            issueTypeFilter={issueTypeFilter}
+            statusFilter={statusFilter}
+            dateFilter={dateFilter}
+            onSearchChange={setSearch}
+            onIssueTypeChange={setIssueTypeFilter}
+            onStatusChange={setStatusFilter}
+            onDateChange={setDateFilter}
+            onRowClick={setSelectedTicket}
+          />
         )}
       </div>
 

@@ -131,7 +131,7 @@ const TicketDetailModal = ({ ticket, onClose }) => {
                       <FileText size={18} className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{attachment.filename}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{attachment.originalName || attachment.filename}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{(attachment.size / 1024).toFixed(1)} KB</p>
                     </div>
                   </a>

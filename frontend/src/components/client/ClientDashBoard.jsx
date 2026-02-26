@@ -502,7 +502,7 @@ const ClientDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 truncate">
                             <Calendar size={12} />
                             {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
                           </span>
@@ -515,12 +515,12 @@ const ClientDashboard = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:scale-105 transition-all duration-200"
-                                title={ticket.attachments[0].filename}
-                                aria-label={`Download ${ticket.attachments[0].filename}`}
+                                title={ticket.attachments[0].originalName || ticket.attachments[0].filename}
+                                aria-label={`Download ${ticket.attachments[0].originalName || ticket.attachments[0].filename}`}
                               >
                                 <Paperclip size={14} />
                                 <span className="text-xs font-medium max-w-[100px] truncate">
-                                  {ticket.attachments[0].filename}
+                                  {ticket.attachments[0].originalName || ticket.attachments[0].filename}
                                 </span>
                               </a>
                               {ticket.attachments.length > 1 && (
@@ -554,9 +554,9 @@ const ClientDashboard = () => {
                         <td className="px-6 py-4 text-right">
                           <motion.div whileHover={{ x: 4 }}>
                             <Link
-                              to="/client-dashboard/all-tickets"
+                              to={`/client-dashboard/ticket/${ticket._id}/feedback`}
                               className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              aria-label="View all tickets"
+                              aria-label="View ticket feedback"
                             >
                               <ArrowRight size={18} />
                             </Link>
@@ -773,8 +773,7 @@ const ClientDashboard = () => {
               )}
 
               <motion.div
-                whileHover={{ backgroundColor: "rgba(249, 250, 251, 1)" }}
-                className="p-5 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 text-center transition-colors duration-300"
+                className="p-5 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 text-center transition-colors duration-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <Link
                   to="/client-dashboard/all-tickets"

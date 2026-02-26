@@ -75,6 +75,7 @@ export const createTicket = async (req, res) => {
         if (req.file) {
             ticket.attachments.push({
                 filename: req.file.filename,
+                originalName: req.file.originalname,
                 mimetype: req.file.mimetype,
                 size: req.file.size,
                 url: `/uploads/${req.file.filename}`,
@@ -929,6 +930,7 @@ export const uploadAttachment = async (req, res) => {
 
         ticket.attachments.push({
             filename: req.file.filename,
+            originalName: req.file.originalname,
             mimetype: req.file.mimetype,
             size: req.file.size,
             url: `/uploads/${req.file.filename}`,

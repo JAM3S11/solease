@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
 import {
   Plus, CheckCircle,
   Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight,
   Tickets,
-  MessageSquare, List, Grid, Table, MapPin, Calendar, FileText
+  MessageSquare, List, Grid, Table, MapPin, Calendar, FileText, ChevronDown, Check
 } from "lucide-react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import useTicketStore from "../../store/ticketStore";
 import SelectedTicketModal from "../ui/SelectedTicketModal";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -224,32 +225,73 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                 </div>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <select
-                  value={issueTypeFilter}
-                  onChange={(e) => setIssueTypeFilter(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">All Types</option>
-                  <option value="Technical Issue">Technical Issue</option>
-                  <option value="Billing">Billing</option>
-                  <option value="General Inquiry">General Inquiry</option>
-                </select>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">All Status</option>
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                </select>
-                <input
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+                <div className="w-full sm:w-44">
+                  <Listbox value={issueTypeFilter} onChange={setIssueTypeFilter}>
+                    <div className="relative">
+                      <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span className="block truncate">{issueTypeFilter || "All Types"}</span>
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-2"><ChevronDown className="h-4 w-4 text-gray-400" /></span>
+                      </ListboxButton>
+                      <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                        <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none text-xs z-50">
+                          <ListboxOption value="" className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
+                            All Types
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>
+                          </ListboxOption>
+                          {["Hardware Issue", "Software Issue", "Network Connectivity", "Account Access", "Other"].map((type) => (
+                            <ListboxOption key={type} value={type} className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
+                              {({ selected }) => (
+                                <>
+                                  <span className={`block truncate ${selected ? 'font-bold text-blue-600' : 'font-normal'}`}>{type}</span>
+                                  {selected && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>}
+                                </>
+                              )}
+                            </ListboxOption>
+                          ))}
+                        </ListboxOptions>
+                      </Transition>
+                    </div>
+                  </Listbox>
+                </div>
+
+                <div className="w-full sm:w-40">
+                  <Listbox value={statusFilter} onChange={setStatusFilter}>
+                    <div className="relative">
+                      <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span className="block truncate">{statusFilter || "All Status"}</span>
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-2"><ChevronDown className="h-4 w-4 text-gray-400" /></span>
+                      </ListboxButton>
+                      <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                        <ListboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none text-xs z-50">
+                          <ListboxOption value="" className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
+                            All Status
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>
+                          </ListboxOption>
+                          {["Open", "In Progress", "Resolved"].map((status) => (
+                            <ListboxOption key={status} value={status} className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
+                              {({ selected }) => (
+                                <>
+                                  <span className={`block truncate ${selected ? 'font-bold text-blue-600' : 'font-normal'}`}>{status}</span>
+                                  {selected && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>}
+                                </>
+                              )}
+                            </ListboxOption>
+                          ))}
+                        </ListboxOptions>
+                      </Transition>
+                    </div>
+                  </Listbox>
+                </div>
+
+                <div className="relative w-full sm:w-40">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  />
+                </div>
               </div>
             </div>
 
@@ -399,9 +441,14 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                               )}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                              <Link
+                                to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                aria-label="View ticket feedback"
+                              >
                                 <ArrowRight size={18} />
-                              </button>
+                              </Link>
                             </td>
                           </motion.tr>
                         ))}
@@ -513,10 +560,14 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                               <span className="text-xs text-gray-400">No feedback</span>
                             )}
                           </div>
-                          <span className="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 flex items-center gap-1">
+                          <Link
+                            to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 flex items-center gap-1 transition-colors"
+                          >
                             View Details
                             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                          </span>
+                          </Link>
                         </div>
                       </motion.div>
                     ))}
@@ -628,7 +679,14 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                       </div>
                       
                       {/* Arrow */}
-                      <ArrowRight size={18} className="flex-shrink-0 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors group-hover:translate-x-1" />
+                      <Link
+                        to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                        aria-label="View ticket feedback"
+                      >
+                        <ArrowRight size={18} />
+                      </Link>
                     </motion.div>
                   ))}
                 </div>

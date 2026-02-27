@@ -22,6 +22,9 @@ import {
   MapPin,
   Calendar,
   FileText,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -40,6 +43,10 @@ const ClientDashboard = () => {
     direction: "asc",
   });
   const [viewMode, setViewMode] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
+  const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
 
   const userName = user?.name || user?.username || "Client";
   const safeTickets = Array.isArray(tickets) ? tickets : [];
@@ -51,7 +58,12 @@ const ClientDashboard = () => {
     fetchTickets("Client");
   }, [fetchTickets]);
 
-  const displayTickets = safeTickets
+  // Reset to page 1 when search, sort, or view mode changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortConfig, viewMode]);
+
+  const filteredTickets = safeTickets
     .filter((t) => t.subject?.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
       if (sortConfig.key === "ticketId") {
@@ -76,6 +88,14 @@ const ClientDashboard = () => {
       }
       return 0;
     });
+
+  // Pagination for table view
+  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+  const paginatedTickets = viewMode === 'table' 
+    ? filteredTickets.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : filteredTickets;
+  
+  const displayTickets = paginatedTickets;
 
   const stats = {
     total: safeTickets.length,
@@ -339,56 +359,175 @@ const ClientDashboard = () => {
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 dark:bg-gray-800/40">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Recent Tickets</h2>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <motion.div className="relative flex-1 sm:w-64" whileFocus={{ scale: 1.02 }}>
-                    <Search
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-300"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search by subject..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
-                      aria-label="Search tickets"
-                    />
-                  </motion.div>
-                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                    <button
-                      onClick={() => setViewMode('table')}
-                      className={`p-2 rounded-md transition-all duration-200 ${
-                        viewMode === 'table'
-                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                      title="Table view"
-                    >
-                      <Table size={18} />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`p-2 rounded-md transition-all duration-200 ${
-                        viewMode === 'list'
-                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                      title="List view"
-                    >
-                      <List size={18} />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-md transition-all duration-200 ${
-                        viewMode === 'grid'
-                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                      title="Grid view"
-                    >
-                      <Grid size={18} />
-                    </button>
+                
+                {/* Mobile: Stack vertically, Desktop: Horizontal */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  {/* Row 1: Search + View Mode Buttons */}
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <motion.div className="relative flex-1 sm:w-64" whileFocus={{ scale: 1.02 }}>
+                      <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-300"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Search by subject..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                        aria-label="Search tickets"
+                      />
+                    </motion.div>
+                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                      <button
+                        onClick={() => setViewMode('table')}
+                        className={`p-2 rounded-md transition-all duration-200 ${
+                          viewMode === 'table'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                        title="Table view"
+                      >
+                        <Table size={18} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-md transition-all duration-200 ${
+                          viewMode === 'list'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                        title="List view"
+                      >
+                        <List size={18} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-md transition-all duration-200 ${
+                          viewMode === 'grid'
+                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                        title="Grid view"
+                      >
+                        <Grid size={18} />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Row 2 (mobile) / Inline (desktop): Pagination + Items per page */}
+                  {viewMode === 'table' && filteredTickets.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredTickets.length)} / {filteredTickets.length}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                          className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+                        
+                        {totalPages <= 5 ? (
+                          Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium transition-colors ${
+                                currentPage === page
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))
+                        ) : (
+                          <>
+                            {currentPage > 2 && (
+                              <button
+                                onClick={() => setCurrentPage(1)}
+                                className="min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                1
+                              </button>
+                            )}
+                            {currentPage > 3 && <span className="px-1 text-gray-400 text-xs">...</span>}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1)
+                              .filter(page => Math.abs(page - currentPage) <= 1)
+                              .map((page) => (
+                                <button
+                                  key={page}
+                                  onClick={() => setCurrentPage(page)}
+                                  className={`min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium transition-colors ${
+                                      currentPage === page
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                    }`}
+                                >
+                                  {page}
+                                </button>
+                              ))
+                            }
+                            {currentPage < totalPages - 2 && <span className="px-1 text-gray-400 text-xs">...</span>}
+                            {currentPage < totalPages - 1 && (
+                              <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className="min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                {totalPages}
+                              </button>
+                            )}
+                          </>
+                        )}
+
+                        <button
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          disabled={currentPage >= totalPages}
+                          className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          aria-label="Next page"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                      
+                      {/* Items per page selector */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setItemsPerPageOpen(!itemsPerPageOpen)}
+                          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                        >
+                          <span className="hidden sm:inline">{itemsPerPage}</span>
+                          <span className="sm:hidden">{itemsPerPage}/pg</span>
+                          <ChevronDown size={12} className={`transition-transform ${itemsPerPageOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {itemsPerPageOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-10" 
+                              onClick={() => setItemsPerPageOpen(false)} 
+                            />
+                            <div className="absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-20 min-w-[70px]">
+                              {ITEMS_PER_PAGE_OPTIONS.map((num) => (
+                                <button
+                                  key={num}
+                                  onClick={() => { setItemsPerPage(num); setCurrentPage(1); setItemsPerPageOpen(false); }}
+                                  className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                    itemsPerPage === num ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-400'
+                                  }`}
+                                >
+                                  {num} per page
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

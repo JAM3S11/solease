@@ -46,15 +46,15 @@ export function NotificationBell() {
     }
   }
 
-  const getAllTicketsPath = () => {
+  const getAllNotificationsPath = () => {
     const userRole = user?.role
 
     if (userRole === 'Manager' || userRole === 'Admin') {
-      return "/admin-dashboard/admin-tickets"
+      return "/admin-dashboard/notifications"
     } else if (userRole === 'Reviewer') {
-      return "/reviewer-dashboard/assigned-ticket"
+      return "/reviewer-dashboard/notifications"
     } else {
-      return "/client-dashboard/all-tickets"
+      return "/client-dashboard/notifications"
     }
   }
 
@@ -161,10 +161,10 @@ export function NotificationBell() {
 
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => navigate(getAllTicketsPath())}
+          onClick={() => navigate(getAllNotificationsPath())}
           className="text-center justify-center text-sm text-blue-600 hover:text-blue-800"
         >
-          View all tickets
+          View All Notifications
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

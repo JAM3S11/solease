@@ -58,6 +58,7 @@ import FeedbackComponent from "./components/ui/FeedbackComponent";
 // USE AUTHENTICATION STORE
 import { useAuthenticationStore } from "./store/authStore";
 import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
+import AllNotificationsPage from "./components/ui/AllNotificationsPage";
 
 // protect routes that require authentication + correct role
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -114,6 +115,9 @@ const dashboardRoutes = [
   "/admin-dashboard",
   "/reviewer-dashboard",
   "/client-dashboard",
+  "/admin-dashboard/notifications",
+  "/reviewer-dashboard/notifications",
+  "/client-dashboard/notifications",
 ];
 
 const App = () => {
@@ -320,6 +324,13 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin-dashboard/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AllNotificationsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* REVIEWER ROLES */}
         <Route path="/reviewer-dashboard"
@@ -376,6 +387,12 @@ const App = () => {
               <ReviewerReportPage />
             </ProtectedRoute>
           } />
+        <Route path="/reviewer-dashboard/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <AllNotificationsPage />
+            </ProtectedRoute>
+          } />
 
         {/* CLIENT ROUTES */}
         <Route path="/client-dashboard/all-tickets"
@@ -412,6 +429,12 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client"]}>
               <ClientDashboard />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <AllNotificationsPage />
             </ProtectedRoute>
           } />
 

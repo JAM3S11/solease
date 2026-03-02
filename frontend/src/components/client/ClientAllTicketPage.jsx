@@ -5,7 +5,7 @@ import {
   Plus, CheckCircle,
   Clock, MessageCircle, Search, Paperclip, Eye, ArrowRight,
   Tickets,
-  MessageSquare, List, Grid, Table, MapPin, Calendar, FileText, ChevronDown, Check
+  MessageSquare, List, Grid, Table, MapPin, Calendar, FileText, ChevronDown, Check, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import useTicketStore from "../../store/ticketStore";
@@ -30,12 +30,18 @@ const [selectedTicket, setSelectedTicket] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [viewMode, setViewMode] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, issueTypeFilter, statusFilter, dateFilter]);
 
   const safeTickets = Array.isArray(tickets) ? tickets : [];
 
@@ -314,6 +320,10 @@ const [selectedTicket, setSelectedTicket] = useState(null);
               }
 
               if (viewMode === 'table') {
+                const paginatedTickets = filteredTickets.slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                );
                 return (
                   <div className="overflow-x-auto">
                     <table className="w-full table-auto border-collapse bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
@@ -332,7 +342,7 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                        {filteredTickets.map((ticket) => (
+                        {paginatedTickets.map((ticket) => (
                           <motion.tr
                             key={ticket._id}
                             initial={{ opacity: 0 }}
@@ -454,6 +464,32 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                         ))}
                       </tbody>
                     </table>
+                    {filteredTickets.length > itemsPerPage && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredTickets.length)} of {filteredTickets.length}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <ChevronLeft size={16} />
+                          </button>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[50px] text-center">
+                            {currentPage} / {Math.ceil(filteredTickets.length / itemsPerPage)}
+                          </span>
+                          <button
+                            onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredTickets.length / itemsPerPage), p + 1))}
+                            disabled={currentPage >= Math.ceil(filteredTickets.length / itemsPerPage)}
+                            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               }

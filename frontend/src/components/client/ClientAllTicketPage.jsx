@@ -31,7 +31,9 @@ const [selectedTicket, setSelectedTicket] = useState(null);
   const [dateFilter, setDateFilter] = useState("");
   const [viewMode, setViewMode] = useState("table");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
+  const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -41,9 +43,18 @@ const [selectedTicket, setSelectedTicket] = useState(null);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, issueTypeFilter, statusFilter, dateFilter]);
+  }, [search, issueTypeFilter, statusFilter, dateFilter, itemsPerPage]);
 
   const safeTickets = Array.isArray(tickets) ? tickets : [];
+
+  const filteredTickets = safeTickets.filter(t =>
+    (!search || t.subject?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
+    (!issueTypeFilter || t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
+    (!statusFilter || t.status === statusFilter) &&
+    (!dateFilter || new Date(t.createdAt).toISOString().split("T")[0] === dateFilter)
+  );
+
+  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
 
   // Card stats
   const stats = {
@@ -196,7 +207,7 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                 <span className="text-sm text-gray-500 dark:text-gray-400">View:</span>
                 <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                   <button
-                    onClick={() => setViewMode('table')}
+                    onClick={() => { setViewMode('table'); setCurrentPage(1); }}
                     className={`p-2 rounded-md transition-all duration-200 ${
                       viewMode === 'table'
                         ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
@@ -207,7 +218,7 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                     <Table size={18} />
                   </button>
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => { setViewMode('list'); setCurrentPage(1); }}
                     className={`p-2 rounded-md transition-all duration-200 ${
                       viewMode === 'list'
                         ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
@@ -218,7 +229,7 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                     <List size={18} />
                   </button>
                   <button
-                    onClick={() => setViewMode('grid')}
+                    onClick={() => { setViewMode('grid'); setCurrentPage(1); }}
                     className={`p-2 rounded-md transition-all duration-200 ${
                       viewMode === 'grid'
                         ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
@@ -229,8 +240,120 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                     <Grid size={18} />
                   </button>
                 </div>
+                {viewMode === 'table' && filteredTickets.length > 0 && (
+                  <div className="hidden md:flex items-center gap-2 flex-wrap lg:flex-nowrap justify-end">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredTickets.length)} / {filteredTickets.length}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      
+                      {totalPages <= 5 ? (
+                        Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium transition-colors ${
+                              currentPage === page
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))
+                      ) : (
+                        <>
+                          {currentPage > 2 && (
+                            <button
+                              onClick={() => setCurrentPage(1)}
+                              className="min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              1
+                            </button>
+                          )}
+                          {currentPage > 3 && <span className="px-1 text-gray-400 text-xs">...</span>}
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page => Math.abs(page - currentPage) <= 1)
+                            .map((page) => (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium transition-colors ${
+                                    currentPage === page
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  }`}
+                              >
+                                {page}
+                              </button>
+                            ))
+                          }
+                          {currentPage < totalPages - 2 && <span className="px-1 text-gray-400 text-xs">...</span>}
+                          {currentPage < totalPages - 1 && (
+                            <button
+                              onClick={() => setCurrentPage(totalPages)}
+                              className="min-w-[28px] h-7 px-1.5 rounded-md text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {totalPages}
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage >= totalPages}
+                        className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        aria-label="Next page"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                    
+                    {/* Items per page selector */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setItemsPerPageOpen(!itemsPerPageOpen)}
+                        className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                      >
+                        <span className="hidden lg:inline">{itemsPerPage}</span>
+                        <span className="lg:hidden">{itemsPerPage}/pg</span>
+                        <ChevronDown size={12} className={`transition-transform ${itemsPerPageOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      {itemsPerPageOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setItemsPerPageOpen(false)} 
+                          />
+                          <div className="absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-20 min-w-[70px]">
+                            {ITEMS_PER_PAGE_OPTIONS.map((num) => (
+                              <button
+                                key={num}
+                                onClick={() => { setItemsPerPage(num); setCurrentPage(1); setItemsPerPageOpen(false); }}
+                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                  itemsPerPage === num ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-600 dark:text-gray-400'
+                                }`}
+                              >
+                                {num} per page
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
                 <div className="w-full sm:w-44">
                   <Listbox value={issueTypeFilter} onChange={setIssueTypeFilter}>
                     <div className="relative">
@@ -301,15 +424,62 @@ const [selectedTicket, setSelectedTicket] = useState(null);
               </div>
             </div>
 
+            {/* Pagination - Below filters on mobile, inline on desktop */}
+            {viewMode === 'table' && filteredTickets.length > 0 && (
+              <div className="flex md:hidden items-center justify-between gap-2 w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredTickets.length)} of {filteredTickets.length}
+                  </span>
+                  <Listbox value={itemsPerPage} onChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}>
+                    <div className="relative">
+                      <ListboxButton className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                        {itemsPerPage}/pg
+                        <ChevronDown size={12} />
+                      </ListboxButton>
+                      <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                        <ListboxOptions className="absolute mt-1 max-h-40 w-24 overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none text-xs z-50">
+                          {ITEMS_PER_PAGE_OPTIONS.map((num) => (
+                            <ListboxOption key={num} value={num} className={({ active }) => `relative cursor-pointer select-none py-1.5 pl-8 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
+                              {({ selected }) => (
+                                <>
+                                  <span className={`block truncate ${selected ? 'font-bold text-blue-600' : 'font-normal'}`}>{num}/pg</span>
+                                  {selected && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={12} /></span>}
+                                </>
+                              )}
+                            </ListboxOption>
+                          ))}
+                        </ListboxOptions>
+                      </Transition>
+                    </div>
+                  </Listbox>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[36px] text-center">
+                    {currentPage}/{totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Next page"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Filtered Tickets */}
             {(() => {
-              const filteredTickets = safeTickets.filter(t =>
-                (!search || t.subject?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
-                (!issueTypeFilter || t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
-                (!statusFilter || t.status === statusFilter) &&
-                (!dateFilter || new Date(t.createdAt).toISOString().split("T")[0] === dateFilter)
-              );
-
               if (filteredTickets.length === 0) {
                 return (
                   <div className="text-center py-12">
@@ -464,32 +634,6 @@ const [selectedTicket, setSelectedTicket] = useState(null);
                         ))}
                       </tbody>
                     </table>
-                    {filteredTickets.length > itemsPerPage && (
-                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredTickets.length)} of {filteredTickets.length}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                          >
-                            <ChevronLeft size={16} />
-                          </button>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[50px] text-center">
-                            {currentPage} / {Math.ceil(filteredTickets.length / itemsPerPage)}
-                          </span>
-                          <button
-                            onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredTickets.length / itemsPerPage), p + 1))}
-                            disabled={currentPage >= Math.ceil(filteredTickets.length / itemsPerPage)}
-                            className="p-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                          >
-                            <ChevronRight size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               }

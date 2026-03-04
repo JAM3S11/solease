@@ -17,7 +17,7 @@ const AdminPendingTickets = () => {
   const [dateGetter, setDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const [seletedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [itSupportUsers, setItSupportUsers] = useState([]);
   
   const [viewMode, setViewMode] = useState("table");
@@ -43,6 +43,10 @@ useEffect(() => {
   useEffect(() => {
     setCurrentPage(1);
   }, [search, urgencyGetter, dateGetter, statusFilter, viewMode]);
+
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
 
   const pendingAdminTickets = tickets.filter((ticket) => !ticket.assignedTo);
   const totalPendingTickets = pendingAdminTickets.length;
@@ -261,7 +265,7 @@ useEffect(() => {
           )}
         </AnimatePresence>
       </div>
-{seletedTicket && (
+      {selectedTicket && (
         <TicketDetailModal
           ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}

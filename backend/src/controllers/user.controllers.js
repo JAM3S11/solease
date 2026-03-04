@@ -10,3 +10,13 @@ export const getITSupportUsers = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch IT Support users" });
   }
 };
+
+export const getReviewers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "Reviewer" }).select("name username email role");
+    res.status(200).json({ users });
+  } catch (err) {
+    console.error("Error fetching Reviewer users:", err);
+    res.status(500).json({ message: "Failed to fetch Reviewer users" });
+  }
+};

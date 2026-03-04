@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DashboardLayout from '../ui/DashboardLayout'
-import { Plus, Ticket, CheckCircle, Clock, MessageCircle } from 'lucide-react'
+import { Plus, Ticket, CheckCircle, Clock, MessageCircle, Table, List, Grid, ChevronLeft, ChevronRight, ChevronDown, MessageSquare, Tickets } from 'lucide-react'
 import useTicketStore from '../../store/ticketStore'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import SelectedTicketModal from '../ui/SelectedTicketModal'
@@ -8,6 +8,8 @@ import ExportData from '../../document/ExportData'
 import TicketsTable from '../ui/TicketsTable'
 import DetailedTicketsView from '../ui/DetailedTicketsView'
 import { motion } from 'framer-motion';
+import { NumberTicker } from '../ui/number-ticker';
+import api from '../../lib/axios';
 
 const AdminTicketsView = () => {
   const navigate = useNavigate();
@@ -19,12 +21,35 @@ const AdminTicketsView = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedTicket, setSelectedTicket] = useState(null);
+  
+  const [viewMode, setViewMode] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
+  const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
+  const [itSupportUsers, setItSupportUsers] = useState([]);
 
   const { fetchTickets, tickets, loading, error } = useTicketStore();
 
   useEffect(() => {
+    const fetchItSupportUsers = async () => {
+      try {
+        const res = await api.get("user/get-reviewers");
+        setItSupportUsers(res.data.users);
+      } catch (err) {
+        console.error("Error fetching reviewers:", err);
+      }
+    };
+    fetchItSupportUsers();
+  }, []);
+
+  useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, issueTypeFilter, statusFilter, dateFilter, viewMode]);
 
   const safeTickets = Array.isArray(tickets) ? tickets : [];
 
@@ -45,6 +70,39 @@ const AdminTicketsView = () => {
     ).length,
   };
 
+  const getBgGradient = (color) => {
+    const maps = {
+      blue: "from-blue-50/80 to-transparent dark:from-blue-900/20",
+      orange: "from-orange-50/80 to-transparent dark:from-orange-900/20",
+      green: "from-green-50/80 to-transparent dark:from-green-900/20",
+      purple: "from-purple-50/80 to-transparent dark:from-purple-900/20",
+      indigo: "from-indigo-50/80 to-transparent dark:from-indigo-900/20",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getIconBg = (color) => {
+    const maps = {
+      blue: "bg-blue-500 shadow-blue-500/30",
+      orange: "bg-orange-500 shadow-orange-500/30",
+      green: "bg-green-500 shadow-green-500/30",
+      purple: "bg-purple-500 shadow-purple-500/30",
+      indigo: "bg-indigo-500 shadow-indigo-500/30",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getLiveDotColor = (color) => {
+    const maps = {
+      blue: "bg-blue-500",
+      orange: "bg-orange-500",
+      green: "bg-green-500",
+      purple: "bg-purple-500",
+      indigo: "bg-indigo-500",
+    };
+    return maps[color] || maps.blue;
+  };
+
 
   return (
     <DashboardLayout>
@@ -63,73 +121,64 @@ const AdminTicketsView = () => {
               Manage and analyze all support tickets
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
             <ExportData data={safeTickets} fileName="admin_tickets.csv" />
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block" />
             <button
               onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg font-medium"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg font-medium group"
             >
-              <Plus size={18} /> Create New Ticket
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+              <span>Create New Ticket</span>
             </button>
           </div>
         </motion.div>
 
         {/* Stats Section */}
         {!loading && safeTickets.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {[
-              {
-                label: "Total",
-                value: stats.total,
-                icon: <Ticket className="text-blue-500" />,
-                bg: "bg-blue-50 dark:bg-blue-900/10"
-              },
-              {
-                label: "Open",
-                value: stats.open,
-                icon: <Clock className="text-amber-500" />,
-                bg: "bg-amber-50 dark:bg-amber-900/10"
-              },
-              {
-                label: "Resolved",
-                value: stats.resolved,
-                icon: <CheckCircle className="text-green-500" />,
-                bg: "bg-green-50 dark:bg-green-900/10"
-              },
-              {
-                label: "Feedback",
-                value: stats.feedbackSubmitted,
-                icon: <MessageCircle className="text-purple-500" />,
-                bg: "bg-purple-50 dark:bg-purple-900/10"
-              },
-              {
-                label: "Active",
-                value: stats.activeChats,
-                icon: <MessageCircle className="text-indigo-500" />,
-                bg: "bg-indigo-50 dark:bg-indigo-900/10"
-              },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
-                className={`${stat.bg} p-4 rounded-2xl border border-white/50 dark:border-gray-800 shadow-sm flex items-center justify-between`}
-              >
-                <div>
-                  <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-                    {stat.label}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                  {React.cloneElement(stat.icon, { size: 20 })}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 space-y-4"
+          >
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Here's an overview of all support tickets
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: "Total Tickets", val: stats.total, icon: Tickets, color: "blue" },
+                { label: "Pending Help", val: stats.open, icon: Clock, color: "orange" },
+                { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                { label: "Feedback", val: stats.feedbackSubmitted, icon: MessageSquare, color: "purple" },
+                { label: "Active Chats", val: stats.activeChats, icon: MessageCircle, color: "indigo" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
+                >
+                  <div className="relative">
+                    <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                      <stat.icon size={22} className="text-white" />
+                    </div>
+                    <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                      <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {<NumberTicker value={stat.val} />}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         )}
 
         {/* Loading & Error States */}
@@ -171,6 +220,15 @@ const AdminTicketsView = () => {
               onStatusChange={setStatusFilter}
               onDateChange={setDateFilter}
               onRowClick={setSelectedTicket}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
+              itemsPerPageOpen={itemsPerPageOpen}
+              setItemsPerPageOpen={setItemsPerPageOpen}
+              ITEMS_PER_PAGE_OPTIONS={ITEMS_PER_PAGE_OPTIONS}
             />
           )
         )}
@@ -179,6 +237,8 @@ const AdminTicketsView = () => {
         <SelectedTicketModal
           ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}
+          itSupportUsers={itSupportUsers}
+          onUpdate={(updatedTicket) => setSelectedTicket(updatedTicket)}
         />
       }
     </DashboardLayout>

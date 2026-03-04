@@ -2,7 +2,7 @@
 import express from "express";
 import { protect } from "../middleware/authTicketTok.js";
 import { createTicket, getTickets, 
-    updateTicketStatus, submitFeedback, 
+    updateTicketStatus, assignTicket, submitFeedback, 
     addReply, editComment, deleteComment,
     editReply, deleteReply, 
     hideFeedback, unhideFeedback, 
@@ -21,6 +21,9 @@ router.get("/get-ticket", protect, getTickets);
 
 // Update ticket status router
 router.put("/:id/status", protect, updateTicketStatus);
+
+// Assign ticket to reviewer (manual or auto)
+router.put("/:id/assign", protect, assignTicket);
 
 // Submit feedback/comment on resolved or in progress ticket
 router.post("/:id/feedback", protect, submitFeedback);

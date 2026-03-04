@@ -1,35 +1,48 @@
 import React, { useEffect, useState, Fragment } from 'react'
 import DashboardLayout from '../ui/DashboardLayout'
 import useTicketStore from '../../store/ticketStore';
-import { Inbox, ChevronDown, Check } from 'lucide-react';
+import { Inbox, ChevronDown, Check, AlertTriangle, Clock, Calendar, Tickets, Table, List, Grid } from 'lucide-react';
 import api from '../../lib/axios';
 import { useNavigate } from 'react-router';
 import TicketDetailModal from '../ui/TicketDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from '@headlessui/react';
+import { NumberTicker } from '../ui/number-ticker';
+import TicketsTable from '../ui/TicketsTable';
 
 const AdminPendingTickets = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [urgencyGetter, setUrgency] = useState("");
   const [dateGetter, setDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const [seletedTicket, setSelectedTicket] = useState(null);
   const [itSupportUsers, setItSupportUsers] = useState([]);
+  
+  const [viewMode, setViewMode] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
+  const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
 
   const { fetchTickets, tickets, loading, error } = useTicketStore();
 
-  useEffect(() => {
+useEffect(() => {
     const fetchItSupportUsers = async () => {
       try {
-        const res = await api.get("user/get-it-support");
+        const res = await api.get("user/get-reviewers");
         setItSupportUsers(res.data.users);
       } catch (err) {
-        console.error("Error fetching IT support users:", err);
+        console.error("Error fetching reviewers:", err);
       }
     };
     fetchItSupportUsers();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, urgencyGetter, dateGetter, statusFilter, viewMode]);
 
   const pendingAdminTickets = tickets.filter((ticket) => !ticket.assignedTo);
   const totalPendingTickets = pendingAdminTickets.length;
@@ -62,6 +75,33 @@ const AdminPendingTickets = () => {
 
   const urgencyOptions = ["Low", "Medium", "High", "Critical"];
 
+  const getBgGradient = (color) => {
+    const maps = {
+      blue: "from-blue-50/80 to-transparent dark:from-blue-900/20",
+      orange: "from-orange-50/80 to-transparent dark:from-orange-900/20",
+      red: "from-red-50/80 to-transparent dark:from-red-900/20",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getIconBg = (color) => {
+    const maps = {
+      blue: "bg-blue-500 shadow-blue-500/30",
+      orange: "bg-orange-500 shadow-orange-500/30",
+      red: "bg-red-500 shadow-red-500/30",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getLiveDotColor = (color) => {
+    const maps = {
+      blue: "bg-blue-500",
+      orange: "bg-orange-500",
+      red: "bg-red-500",
+    };
+    return maps[color] || maps.blue;
+  };
+
   return (
     <DashboardLayout>
       <div className='p-4 sm:p-6 lg:p-8'>
@@ -79,30 +119,48 @@ const AdminPendingTickets = () => {
           </p>
         </motion.div>
 
-        {/* Stats Cards with Motion */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6'>
-          {[
-            { label: "Total Pending", value: totalPendingTickets },
-            { label: "Oldest Tickets", value: oldTickets },
-            { label: "SLA Breach", value: slaBreachingTickets }
-          ].map((stat, i) => (
-            <motion.div 
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              className='group w-full bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 flex flex-col items-center justify-center space-y-2 p-6 rounded-lg shadow-md transition cursor-pointer'
-            >
-              <p className='text-2xl text-center font-semibold text-gray-900 dark:text-white group-hover:text-white'>
-                {loading ? "..." : stat.value}
-              </p>
-              <span className='text-md text-center font-bold text-gray-700 dark:text-gray-200 uppercase group-hover:text-white'>
-                {stat.label}
-              </span>
-            </motion.div>
-          ))}
-        </div>
+{/* Stats Cards with Motion */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 space-y-4"
+        >
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Here's an overview of pending tickets awaiting assignment
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { label: "Total Pending", val: totalPendingTickets, icon: Tickets, color: "blue" },
+              { label: "Oldest Ticket", val: oldTickets, icon: Calendar, color: "orange" },
+              { label: "SLA Breach", val: slaBreachingTickets, icon: AlertTriangle, color: "red" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -2, scale: 1.01 }}
+                className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
+              >
+                <div className="relative">
+                  <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                    <stat.icon size={22} className="text-white" />
+                  </div>
+                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                    <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {loading ? "..." : <NumberTicker value={stat.val} />}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Search and Listbox Filters */}
         <div className='mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
@@ -157,7 +215,7 @@ const AdminPendingTickets = () => {
           </div>
         </div>
 
-        <div className="mb-4 flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+<div className="mb-4 flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-sm text-blue-700 dark:text-blue-300">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
@@ -172,68 +230,43 @@ const AdminPendingTickets = () => {
               <p className='text-gray-600 dark:text-gray-400 animate-pulse'>Loading tickets...</p>
             </motion.div>
           ) : filterPendingTickets.length === 0 ? (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className='flex flex-col items-center justify-center py-16 bg-gradient-to-r from-slate-300 via-slate-500 to-slate-600 rounded-2xl shadow-lg max-w-6xl mx-auto'>
-              <Inbox size={48} className="text-blue-400 mb-4" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className='flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800'>
+              <Inbox size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
               <p className='text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2'>There are no pending tickets</p>
-              <p className='text-sm text-white'>Check back later</p>
+              <p className='text-sm text-gray-500 dark:text-gray-400'>Check back later</p>
             </motion.div>
           ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden max-w-6xl mx-auto'>
-              <div className="overflow-x-auto">
-                <table className='w-full table-auto border-collapse'>
-                  <thead className='bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700'>
-                    <tr>
-                      {["TICKET ID", "ISSUE TYPE", "SUBJECT", "URGENCY", "ASSIGNED TO", "STATUS", "OLDEST"].map((col) => (
-                        <th key={col} className='px-4 py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider'>{col}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
-                    {sortPendingTickets.map((ticket, index) => (
-                      <motion.tr
-                        key={ticket._id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.03 }}
-                        onClick={() => setSelectedTicket(ticket)}
-                        className={`hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${index % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/20" : "bg-white dark:bg-gray-800"}`}
-                      >
-                        <td className='p-4 text-sm font-medium text-blue-500 dark:text-blue-400'>#{ticket._id.slice(-6).toUpperCase()}</td>
-                        <td className='p-4'>
-                          <span className={`text-xs font-bold px-2 py-1 rounded-lg uppercase
-                            ${{
-                                "Hardware issue": "bg-blue-100 text-blue-600",
-                                "Software issue": "bg-green-100 text-green-600",
-                                "Network Connectivity": "bg-red-100 text-red-600",
-                                "Account Access": "bg-orange-100 text-orange-600",
-                            }[ticket.issueType] || "bg-slate-200 text-slate-600"}
-                          `}>{ticket.issueType}</span>
-                        </td>
-                        <td className='p-4 text-sm text-gray-700 dark:text-gray-300 truncate max-w-xs'>{ticket.subject}</td>
-                        <td className='p-4'>
-                          <span className={`px-3 py-1 text-[10px] rounded-full font-bold uppercase
-                            ${{ Critical: "bg-red-500 text-white", High: "bg-orange-400 text-white", Medium: "bg-yellow-400 text-gray-800", Low: "bg-green-500 text-white" }[ticket.urgency] || "bg-gray-400 text-white"}
-                          `}>{ticket.urgency}</span>
-                        </td>
-                        <td className='p-4 text-sm font-medium text-blue-500 dark:text-blue-300'>{ticket.assignedTo ? ticket.assignedTo.username : "Pending"}</td>
-                        <td className='p-4'>
-                          <span className='px-3 py-1 text-[10px] rounded-full font-bold uppercase bg-blue-100 text-blue-600'>{ticket.status}</span>
-                        </td>
-                        <td className='p-4 text-sm font-medium text-gray-500'>{new Date(ticket.createdAt).toLocaleDateString()}</td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
+            <TicketsTable
+              tickets={sortPendingTickets}
+              role="admin"
+              search={search}
+              issueTypeFilter=""
+              statusFilter={statusFilter}
+              dateFilter={dateGetter}
+              onSearchChange={setSearch}
+              onIssueTypeChange={() => {}}
+              onStatusChange={setStatusFilter}
+              onDateChange={setDate}
+              onRowClick={setSelectedTicket}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
+              itemsPerPageOpen={itemsPerPageOpen}
+              setItemsPerPageOpen={setItemsPerPageOpen}
+              ITEMS_PER_PAGE_OPTIONS={ITEMS_PER_PAGE_OPTIONS}
+            />
           )}
         </AnimatePresence>
       </div>
-      {seletedTicket && (
+{seletedTicket && (
         <TicketDetailModal
-          ticket={seletedTicket}
+          ticket={selectedTicket}
           onClose={() => setSelectedTicket(null)}
           itSupportUsers={itSupportUsers}
+          onUpdate={(updatedTicket) => setSelectedTicket(updatedTicket)}
         />
       )}
     </DashboardLayout>

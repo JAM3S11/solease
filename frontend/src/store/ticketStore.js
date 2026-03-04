@@ -91,6 +91,28 @@ const useTicketStore = create((set) => ({
             return null;
         }
     },
+
+    // Assign ticket to a reviewer (manual or auto)
+    assignTicket: async (id, assignedTo, mode = 'manual') => {
+        set({ loading: true, error: null });
+        try {
+            const res = await api.put(`/ticket/${id}/assign`, { assignedTo, mode });
+            set((state) => ({
+                tickets: state.tickets.map((ticket) =>
+                    ticket._id === id ? res.data.ticket : ticket
+                ),
+                loading: false,
+            }));
+            return res.data.ticket;
+        } catch (error) {
+            console.error("Failed to assign ticket:", error);
+            set({
+                error: error.response?.data?.message || "Failed to assign ticket",
+                loading: false,
+            });
+            return null;
+        }
+    },
     
     // Submit feedback/comment on resolved ticket
     submitFeedback: async (ticketId, content) => {

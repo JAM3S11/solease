@@ -7,6 +7,11 @@ const ticketSchema = new mongoose.Schema({
         ref: "User", // Creator/owner of the ticket
         required: true
     },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Reviewer/Manager assigned to the ticket
+        default: null
+    },
     location: {
         type: String,
         required: true,

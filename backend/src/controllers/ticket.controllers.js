@@ -120,9 +120,10 @@ export const getTickets = async (req, res) => {
 
         const tickets = await Ticket.find(query)
             .populate("user", "username name role")
+            .populate("assignedTo", "username name role")
             .populate("comments.user", "username name role")
             .populate("comments.replies.user", "username name role")
-            .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments")
+            .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments assignedTo")
             .sort(sort);
 
         res.status(200).json({
@@ -220,6 +221,127 @@ export const updateTicketStatus = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Server error while updating ticket status"
+        });
+    }
+};
+
+// Assign ticket to a reviewer (Manager can assign, auto-assign also supported)
+export const assignTicket = async (req, res) => {
+    const { id } = req.params;
+    const { assignedTo, mode } = req.body; // mode: 'manual' or 'auto'
+
+    try {
+        const ticket = await Ticket.findById(id);
+
+        if (!ticket) {
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found",
+            });
+        }
+
+        // Authorization: Only Manager can manually assign, auto-assign can be triggered by system
+        if (mode !== 'auto' && req.user.role !== 'Manager') {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized: Only Managers can manually assign tickets",
+            });
+        }
+
+        let assignedUser = null;
+
+        if (mode === 'auto') {
+            // Auto-assign: Find reviewer with least active tickets
+            const reviewers = await User.find({ role: 'Reviewer' });
+            
+            if (reviewers.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No reviewers available for assignment",
+                });
+            }
+
+            // Get ticket counts for each reviewer
+            const reviewerStats = await Promise.all(
+                reviewers.map(async (reviewer) => {
+                    const activeTickets = await Ticket.countDocuments({
+                        assignedTo: reviewer._id,
+                        status: { $in: ['Open', 'In Progress'] }
+                    });
+                    return { reviewer, activeTickets };
+                })
+            );
+
+            // Sort by least active tickets, then alphabetically by name
+            reviewerStats.sort((a, b) => {
+                // First by active ticket count (ascending)
+                if (a.activeTickets !== b.activeTickets) {
+                    return a.activeTickets - b.activeTickets;
+                }
+                // If tie, sort alphabetically by name (or username)
+                const nameA = (a.reviewer.name || a.reviewer.username || '').toLowerCase();
+                const nameB = (b.reviewer.name || b.reviewer.username || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            
+            assignedUser = reviewerStats[0].reviewer;
+        } else {
+            // Manual assignment
+            assignedUser = await User.findById(assignedTo);
+            
+            if (!assignedUser) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Assigned user not found",
+                });
+            }
+
+            if (!['Reviewer', 'Manager'].includes(assignedUser.role)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Can only assign to Reviewer or Manager",
+                });
+            }
+        }
+
+        const previousAssignee = ticket.assignedTo;
+        ticket.assignedTo = assignedUser._id;
+        
+        // Auto-update status to In Progress when assigned
+        if (ticket.status === 'Open') {
+            ticket.status = 'In Progress';
+        }
+
+        await ticket.save();
+
+        // Notify the assigned user
+        try {
+            await createNotification(
+                assignedUser._id,
+                ticket._id,
+                "ticket_assigned",
+                `New Ticket Assigned: ${ticket.subject}`,
+                `You have been assigned to ticket "${ticket.subject}" by ${mode === 'auto' ? 'system (auto-assigned)' : req.user.name}`,
+                previousAssignee?.toString(),
+                assignedUser._id.toString()
+            );
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+        }
+
+        // Refresh ticket to get populated assignedTo
+        await ticket.populate('assignedTo');
+
+        res.status(200).json({
+            success: true,
+            message: mode === 'auto' ? "Ticket auto-assigned successfully" : "Ticket assigned successfully",
+            ticket,
+        });
+    } catch (error) {
+        console.log("Error assigning ticket", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while assigning ticket"
         });
     }
 };

@@ -1,10 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { X, Paperclip, Download, Image as ImageIcon, FileText, Ticket, MapPin, AlertCircle, Clock, Calendar, MessageSquare, Send, User, File, CheckCircle, Circle, PlayCircle, XCircle } from "lucide-react";
+import { X, Paperclip, Download, Image as ImageIcon, FileText, Ticket, MapPin, AlertCircle, Clock, Calendar, MessageSquare, Send, User, File, CheckCircle, Circle, PlayCircle, XCircle, UserPlus, Zap, ChevronDown } from "lucide-react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import useTicketStore from "../../store/ticketStore";
+import { useAuthenticationStore } from "../../store/authStore";
 
-const SelectedTicketModal = ({ ticket, onClose }) => {
-  const { fetchTickets } = useTicketStore();
+const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate }) => {
+  const { fetchTickets, assignTicket } = useTicketStore();
+  const { user } = useAuthenticationStore();
   const [activeTab, setActiveTab] = useState("details");
+  const [assignedTo, setAssignedTo] = useState(ticket?.assignedTo?._id || "");
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  const canAssign = user?.role === "Manager";
 
   const tabs = [
     { id: "details", label: "Details", icon: Ticket },
@@ -43,6 +50,22 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
       link.click();
       document.body.removeChild(link);
     });
+  };
+
+  const handleAssign = async (userId = null, mode = 'manual') => {
+    if (!canAssign) return;
+    setIsAssigning(true);
+    try {
+      const updatedTicket = await assignTicket(ticket._id, userId, mode);
+      fetchTickets();
+      if (onUpdate && updatedTicket) {
+        onUpdate(updatedTicket);
+      }
+    } catch (err) {
+      console.error("Error assigning ticket:", err);
+    } finally {
+      setIsAssigning(false);
+    }
   };
 
   return (
@@ -106,7 +129,7 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "details" && <DetailsTab ticket={ticket} />}
+          {activeTab === "details" && <DetailsTab ticket={ticket} canAssign={canAssign} itSupportUsers={itSupportUsers} assignedTo={assignedTo} isAssigning={isAssigning} handleAssign={handleAssign} />}
           {activeTab === "attachments" && <AttachmentsTab ticket={ticket} onDownloadAll={downloadAll} />}
           {activeTab === "comments" && <CommentsTab comments={visibleComments} />}
         </div>
@@ -125,7 +148,7 @@ const SelectedTicketModal = ({ ticket, onClose }) => {
   );
 };
 
-const DetailsTab = ({ ticket }) => (
+const DetailsTab = ({ ticket, canAssign, itSupportUsers, assignedTo, isAssigning, handleAssign }) => (
   <div className="space-y-6">
     <div className="p-5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-2 mb-3">
@@ -143,11 +166,76 @@ const DetailsTab = ({ ticket }) => (
       <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
     </div>
 
+    {/* Assignment Section for Manager */}
+    {canAssign && (
+      <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center gap-2 mb-3">
+          <UserPlus size={16} className="text-blue-600 dark:text-blue-400" />
+          <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Assignment</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Listbox value={assignedTo} onChange={(val) => handleAssign(val, 'manual')}>
+            <div className="relative">
+              <ListboxButton className="relative w-full cursor-default rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 px-3 py-2 text-left text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                <span className="block truncate text-gray-900 dark:text-gray-100">
+                  {itSupportUsers.find(u => u._id === assignedTo)?.name || itSupportUsers.find(u => u._id === assignedTo)?.username || "Select Reviewer..."}
+                </span>
+                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </span>
+              </ListboxButton>
+              <ListboxOptions className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 py-1 shadow-lg focus:outline-none">
+                {itSupportUsers.map((reviewer) => (
+                  <ListboxOption
+                    key={reviewer._id}
+                    value={reviewer._id}
+                    className={({ active }) =>
+                      `relative cursor-pointer select-none px-3 py-2 text-sm ${active ? "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-300"}`
+                    }
+                  >
+                    {({ selected }) => (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
+                          {(reviewer.name || reviewer.username)?.charAt(0).toUpperCase()}
+                        </div>
+                        <span>{reviewer.name || reviewer.username}</span>
+                      </div>
+                    )}
+                  </ListboxOption>
+                ))}
+              </ListboxOptions>
+            </div>
+          </Listbox>
+          <button
+            onClick={() => handleAssign(null, 'auto')}
+            disabled={isAssigning || ticket.assignedTo}
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Zap size={16} className="text-amber-500" />
+            {isAssigning ? "..." : "Auto Assign"}
+          </button>
+        </div>
+        {ticket.assignedTo && (
+          <div className="mt-3 flex items-center gap-2 p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <div className="w-6 h-6 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-300">
+              {ticket.assignedTo.name?.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Assigned to: {ticket.assignedTo.name}
+            </span>
+          </div>
+        )}
+      </div>
+    )}
+
     <div className="grid grid-cols-2 gap-4">
       <DetailCard icon={MapPin} label="Location" value={ticket.location} />
       <DetailCard icon={Calendar} label="Created" value={new Date(ticket.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} />
       <DetailCard icon={Clock} label="Updated" value={ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "N/A"} />
       <DetailCard icon={User} label="Created By" value={ticket.createdBy?.name || ticket.createdBy?.username || "Unknown"} />
+      {ticket.assignedTo && (
+        <DetailCard icon={User} label="Assigned To" value={ticket.assignedTo.name} />
+      )}
     </div>
   </div>
 );

@@ -170,6 +170,12 @@ const LoginForm = () => {
     try {
       const user = await login(formData.username, formData.password);
 
+      // Reset form after successful login
+      setFormData({ username: "", password: "", rememberMe: false });
+      setValidationErrors({});
+      setValidationSuccess({});
+      setTouched({});
+
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;
         case "Reviewer": navigate("/reviewer-dashboard"); break;
@@ -281,6 +287,7 @@ const LoginForm = () => {
                 id="username"
                 type="text"
                 name="username"
+                autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -348,6 +355,7 @@ const LoginForm = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 name="password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}

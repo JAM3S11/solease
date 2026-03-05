@@ -202,6 +202,13 @@ const SignUpForm = () => {
 
     try {
       await signup(formData.username, formData.name, formData.email, formData.password);
+      
+      // Reset form after successful signup
+      setFormData({ username: "", name: "", email: "", password: "", confirmPassword: "" });
+      setValidationErrors({});
+      setValidationSuccess({});
+      setTouched({});
+      
       navigate("/auth/verify-email", { replace: true });
     } catch (err) {
       toast.error(error || "Sign up failed!", {
@@ -296,6 +303,7 @@ const SignUpForm = () => {
                 id="username"
                 type="text"
                 name="username"
+                autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -360,6 +368,7 @@ const SignUpForm = () => {
                 id="name"
                 type="text"
                 name="name"
+                autoComplete="off"
                 value={formData.name}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -424,6 +433,7 @@ const SignUpForm = () => {
                 id="email"
                 type="email"
                 name="email"
+                autoComplete="off"
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -492,6 +502,7 @@ const SignUpForm = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 name="password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
@@ -617,6 +628,7 @@ const SignUpForm = () => {
                 id="confirmPassword"
                 type={confirmPasword ? 'text' : 'password'}
                 name="confirmPassword"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 onBlur={handleBlur}

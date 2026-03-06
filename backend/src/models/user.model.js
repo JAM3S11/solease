@@ -51,6 +51,19 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    passwordStrength: {
+        type: String,
+        enum: ['weak', 'medium', 'strong'],
+        default: null
+    },
+    passwordUpdateDeadline: {
+        type: Date,
+        default: null
+    },
+    hasUpdatedWeakPassword: {
+        type: Boolean,
+        default: false
+    },
 }, {
     timestamps: true
 });

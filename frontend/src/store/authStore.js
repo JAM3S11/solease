@@ -10,8 +10,14 @@ export const useAuthenticationStore = create((set) => ({
     isLoading: false,
     isCheckingAuth: true, //till checking authentication finishes
     message: null,
+    passwordUpdateRequired: false,
+    passwordUpdateDeadline: null,
     
     setUser: (updateUserDetail) => set({ user: updateUserDetail }),
+    setPasswordUpdateRequired: (required, deadline) => set({ 
+        passwordUpdateRequired: required, 
+        passwordUpdateDeadline: deadline 
+    }),
     signup: async (username, name, email, password) => {
         set({ isLoading: true, error: null });
         try {
@@ -50,14 +56,19 @@ export const useAuthenticationStore = create((set) => ({
         set({ isLoading: true, error: null });
         try {
             const response = await api.post("/auth/login", { username, password });
+            const { passwordUpdateRequired, passwordUpdateDeadline, user } = response.data;
+            
             set({
                 isAuthenticated: true,
-                user: response.data.user,
+                user: user,
                 error: null,
                 isLoading: false,
+                passwordUpdateRequired: passwordUpdateRequired || false,
+                passwordUpdateDeadline: passwordUpdateDeadline || null,
             });
             useNotificationStore.getState().fetchNotifications();
-            return response.data.user;
+            // Return full response data including passwordUpdateRequired
+            return { user, passwordUpdateRequired, passwordUpdateDeadline };
         } catch (error) {
             const message = error.response?.data?.message || "Error logging in";
             set({

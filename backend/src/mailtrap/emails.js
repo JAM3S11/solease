@@ -126,3 +126,72 @@ export const sendResetSuccessEmail = async (email) => {
       throw new Error(`Error sending password reset success email: ${error.message}`);
     }
 };
+
+//Send password update required email for weak passwords
+export const sendPasswordUpdateRequiredEmail = async (email, name, deadline) => {
+    try {
+      const deadlineDate = new Date(deadline).toLocaleString();
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .deadline { font-size: 18px; font-weight: bold; color: #d32f2f; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>⚠️ Password Update Required</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${name},</p>
+              <div class="warning">
+                <strong>Important Security Notice</strong>
+                <p>Your account has been flagged because your password does not meet our security requirements. For your protection, you must update your password.</p>
+              </div>
+              <p>Please update your password by:</p>
+              <p class="deadline">${deadlineDate}</p>
+              <p>After this deadline, you will be required to update your password before accessing your account.</p>
+              <center>
+                <a href="${process.env.CLIENT_URL}/auth/change-password" class="button">Update Password Now</a>
+              </center>
+              <p><strong>Password Requirements:</strong></p>
+              <ul>
+                <li>At least 8 characters</li>
+                <li>At least one uppercase letter (A-Z)</li>
+                <li>At least one lowercase letter (a-z)</li>
+                <li>At least one number (0-9)</li>
+                <li>At least one special character (!@#$%^&*)</li>
+              </ul>
+              <div class="footer">
+                <p>This is an automated message from SolEase Support System.</p>
+                <p>Please do not reply to this email.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      const info = await transporter.sendMail({
+        from: `"${sender.name}" <${sender.email}>`,
+        to: email,
+        subject: "⚠️ Action Required: Update Your Password - SolEase",
+        html: html,
+      });
+  
+      console.log("✅ Password update required email sent:", info.messageId);
+      return info;
+    } catch (error) {
+      console.error("❌ Error sending password update required email:", error);
+      throw new Error(`Error sending password update required email: ${error.message}`);
+    }
+};

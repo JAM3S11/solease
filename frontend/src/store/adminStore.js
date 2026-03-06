@@ -47,7 +47,8 @@ const useAdminStore = create((set) => ({
       }));
     } catch (error) {
       console.error("Error deleting user: ", error);
-      set({ error: "Failed to delete user", loading: false })
+      set({ error: "Failed to delete user", loading: false });
+      throw error;
     }
   },
 

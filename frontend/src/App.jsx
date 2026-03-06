@@ -14,6 +14,7 @@ import LoginForm from "./components/LoginForm";
 import ForgotPassForm from "./components/ForgotForm";
 import EmailVerificationPage from "./components/EmailVerification";
 import ResetPassword from "./components/ResetPassword";
+import PasswordChangePage from "./components/PasswordChangePage";
 
 //ADMIN DASHBOARD
 import AdminDashboard from "./components/admin/AdminDashboard";
@@ -268,6 +269,14 @@ const App = () => {
               <ForgotPassForm />
             </RedirectAuthenticatedUser>
           } />
+        <Route path="/auth/reset-password/:token"
+          element={
+            <RedirectAuthenticatedUser>
+              <ResetPassword />
+            </RedirectAuthenticatedUser>
+          } />
+        <Route path="/auth/change-password"
+          element={<PasswordChangePage />} />
         <Route path="/auth/reset-password/:token"
           element={
             <ResetPassword />

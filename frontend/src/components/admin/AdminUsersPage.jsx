@@ -4,7 +4,17 @@ import DashboardLayout from "../ui/DashboardLayout";
 import { SquarePen, Trash, Search, ChevronLeft, ChevronRight, Users, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown, Mail, Shield, Activity } from "lucide-react";
 import useAdminStore from "../../store/adminStore";
 import { Link } from "react-router";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 const PAGE_SIZE_OPTIONS = [2, 5, 10, 15, 20, 25, 50, 100];
 
@@ -15,6 +25,7 @@ const AdminUsersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [viewMode, setViewMode] = useState("table");
   const [sortConfig, setSortConfig] = useState({ key: "username", direction: "asc" });
+  const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -91,34 +102,19 @@ const AdminUsersPage = () => {
   );
 
   const handleDelete = async (user) => {
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <p className="font-medium">Delete {user.username}?</p>
-        <p className="text-sm text-gray-500">This action cannot be undone.</p>
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              try {
-                await deleteUser(user._id);
-                toast.success(`${user.username} deleted!`);
-              } catch {
-                toast.error(`Failed to delete user`);
-              }
-            }}
-            className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    ), { duration: 5000 });
+    setUserToDelete(user);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteUser(userToDelete._id);
+      toast.success(`${userToDelete.username} deleted!`);
+    } catch {
+      toast.error(`Failed to delete user`);
+    } finally {
+      setUserToDelete(null);
+    }
   };
 
   return (
@@ -403,6 +399,23 @@ const AdminUsersPage = () => {
           </motion.div>
         )}
       </motion.div>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {userToDelete?.username}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

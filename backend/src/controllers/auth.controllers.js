@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from "../util/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/emails.js";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail, sendPasswordUpdateRequiredEmail } from "../mailtrap/emails.js";
+import { calculatePasswordStrength } from "../util/passwordStrength.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 
@@ -25,6 +26,9 @@ export const signup = async (req, res) => {
         const hashedPassword = await bcryptjs.hash(password, 10);
         const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
+        // Calculate password strength
+        const passwordStrength = calculatePasswordStrength(password);
+
         //Object for the user
         const user = new User({
             username,
@@ -33,6 +37,8 @@ export const signup = async (req, res) => {
             password: hashedPassword,
             verificationToken,
             verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+            passwordStrength,
+            hasUpdatedWeakPassword: passwordStrength === 'strong' ? true : false
         });
 
         //Save
@@ -131,6 +137,41 @@ export const login = async (req, res) => {
         //Update last login
         user.lastLogin = new Date();
         
+        // Calculate password strength (use stored or calculate fresh)
+        let passwordStrength = user.passwordStrength || calculatePasswordStrength(password);
+        
+        let passwordUpdateRequired = false;
+        let passwordUpdateDeadline = user.passwordUpdateDeadline;
+        
+        // Check if password needs update
+        if (passwordStrength === 'weak' && !user.hasUpdatedWeakPassword) {
+            // If no deadline set (first time with this feature), set it
+            if (!user.passwordUpdateDeadline) {
+                const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+                user.passwordUpdateDeadline = deadline;
+                passwordUpdateDeadline = deadline;
+                
+                // Send email notification
+                try {
+                    await sendPasswordUpdateRequiredEmail(user.email, user.name, deadline);
+                } catch (emailError) {
+                    console.error("Error sending password update email:", emailError);
+                }
+            }
+            
+            // Always require password update for weak passwords (but allow login)
+            passwordUpdateRequired = true;
+        } else if (passwordStrength !== 'weak') {
+            // Strong password - clear deadline and mark as updated
+            user.passwordStrength = passwordStrength;
+            user.passwordUpdateDeadline = null;
+            user.hasUpdatedWeakPassword = true;
+            passwordUpdateDeadline = null;
+        }
+        
+        // Update password strength in user record
+        user.passwordStrength = passwordStrength;
+        
         //Save the login details
         await user.save();
 
@@ -138,6 +179,8 @@ export const login = async (req, res) => {
         res.status(200).json({
 			success: true,
 			message: "Logged in successfully",
+			passwordUpdateRequired,
+			passwordUpdateDeadline,
 			user: {
 				...user._doc,
 				password: undefined,
@@ -305,4 +348,69 @@ export const checkAuth = async (req, res) => {
 		console.log("Error in checkAuth ", error);
 		res.status(400).json({ success: false, message: error.message });
 	}
+};
+
+export const changePassword = async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    
+    try {
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+        
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New passwords do not match"
+            });
+        }
+        
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        
+        // Verify current password
+        const isPasswordValid = await bcryptjs.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect"
+            });
+        }
+        
+        // Check new password strength
+        const passwordStrength = calculatePasswordStrength(newPassword);
+        if (passwordStrength !== 'strong') {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be strong. It must have at least 8 characters, one uppercase, one lowercase, one number, and one special character."
+            });
+        }
+        
+        // Hash new password
+        const hashedPassword = await bcryptjs.hash(newPassword, 10);
+        
+        // Update user
+        user.password = hashedPassword;
+        user.passwordStrength = 'strong';
+        user.hasUpdatedWeakPassword = true;
+        user.passwordUpdateDeadline = null;
+        
+        await user.save();
+        
+        res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        });
+    } catch (error) {
+        console.log("Error in changePassword ", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

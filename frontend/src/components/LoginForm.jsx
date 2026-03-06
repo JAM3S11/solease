@@ -67,7 +67,7 @@ const LoginForm = () => {
   const position = isUseMobile ? 'top-center' : 'top-right';
 
   const navigate = useNavigate();
-  const { isLoading, login } = useAuthenticationStore();
+  const { isLoading, login, passwordUpdateRequired, passwordUpdateDeadline } = useAuthenticationStore();
 
   // Validation rules
   const VALIDATION_RULES = {
@@ -168,13 +168,28 @@ const LoginForm = () => {
     }
 
     try {
-      const user = await login(formData.username, formData.password);
+      const response = await login(formData.username, formData.password);
+      const { user, passwordUpdateRequired, passwordUpdateDeadline } = response;
 
       // Reset form after successful login
       setFormData({ username: "", password: "", rememberMe: false });
       setValidationErrors({});
       setValidationSuccess({});
       setTouched({});
+
+      // Check if password update is required
+      if (passwordUpdateRequired) {
+        toast.warning("Your password does not meet security requirements. Please update it.", {
+          position,
+          duration: 10000,
+          action: {
+            label: "Update Now",
+            onClick: () => navigate("/auth/change-password")
+          }
+        });
+        navigate("/auth/change-password");
+        return;
+      }
 
       switch (user.role) {
         case "Client": navigate("/client-dashboard"); break;

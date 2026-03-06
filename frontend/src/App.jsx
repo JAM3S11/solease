@@ -61,6 +61,9 @@ import { useAuthenticationStore } from "./store/authStore";
 import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
 import AllNotificationsPage from "./components/ui/AllNotificationsPage";
 
+// USER ACTIVITY TRACKING
+import { useUserActivity } from "./hooks/use-user-activity";
+
 // protect routes that require authentication + correct role
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthenticationStore();
@@ -123,7 +126,10 @@ const dashboardRoutes = [
 
 const App = () => {
   // Checks authentications of users
-  const { isCheckingAuth, checkAuth } = useAuthenticationStore();
+  const { isCheckingAuth, checkAuth, isAuthenticated } = useAuthenticationStore();
+
+  // Track user activity for active users count
+  useUserActivity(isAuthenticated);
 
   const location = useLocation();
   // Check if current path starts with a dashboard route

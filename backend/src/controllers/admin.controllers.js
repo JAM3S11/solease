@@ -84,3 +84,78 @@ export const deleteUserById = async (req, res) => {
     })
   }
 };
+
+// Get active users (users active in the last 5 minutes)
+export const getActiveUsers = async (req, res) => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    const activeUsers = await User.find({
+      lastActivity: { $gte: fiveMinutesAgo }
+    }).select("name email role lastActivity onlineAt");
+
+    return res.status(200).json({
+      success: true,
+      count: activeUsers.length,
+      activeUsers,
+    });
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching active users"
+    });
+  }
+};
+
+// Update user's last activity (called periodically from frontend)
+export const updateUserActivity = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { 
+        lastActivity: new Date(),
+        isOnline: true,
+        onlineAt: new Date()
+      },
+      { new: true }
+    ).select("name email role lastActivity isOnline onlineAt");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating user activity:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating activity"
+    });
+  }
+};
+
+// Mark user as offline (called when user logs out or closes browser)
+export const markUserOffline = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { isOnline: false },
+      { new: true }
+    ).select("name email role isOnline");
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Error marking user offline:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while marking offline"
+    });
+  }
+};

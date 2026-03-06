@@ -67,6 +67,40 @@ const useAdminStore = create((set) => ({
       set({ error: "Failed to create reviewer", loading: false });
       throw error;
     }
+  },
+
+  // Active users
+  activeUsers: [],
+  activeUsersLoading: false,
+
+  // Fetch active users
+  fetchActiveUsers: async () => {
+    set({ activeUsersLoading: true, error: null });
+    try {
+      const res = await api.get("/admin/active-users");
+      set({ activeUsers: res.data.activeUsers, activeUsersLoading: false });
+    } catch (err) {
+      console.error("Error fetching active users:", err);
+      set({ activeUsersLoading: false });
+    }
+  },
+
+  // Update user activity (call periodically from frontend)
+  updateActivity: async () => {
+    try {
+      await api.post("/admin/activity");
+    } catch (err) {
+      console.error("Error updating activity:", err);
+    }
+  },
+
+  // Mark user as offline
+  markOffline: async () => {
+    try {
+      await api.post("/admin/offline");
+    } catch (err) {
+      console.error("Error marking offline:", err);
+    }
   }
 }));
 

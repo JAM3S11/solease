@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
-import { Plus, Search, Ticket, Users, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowRight, BarChart3, List, Zap, Calendar, X } from "lucide-react";
+import { Plus, Search, Tickets, Users, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowRight, BarChart3, List, Zap, Calendar, X, FileText, MapPin } from "lucide-react";
 import useTicketStore from "../../store/ticketStore";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -87,17 +87,17 @@ const AdminDashboard = () => {
   };
 
   const statsCards = [
-    { label: "Total Tickets", value: totalTickets, icon: Ticket, color: "blue", bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10", path: "/admin-dashboard/tickets", clickable: true },
-    { label: "Pending", value: pendingTickets, icon: Clock, color: "orange", bgGradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/10", path: "/admin-dashboard/pending-tickets", clickable: true },
+    { label: "Total Tickets", value: totalTickets, icon: Tickets, color: "blue", bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10", path: "/admin-dashboard/admin-tickets", clickable: true },
+    { label: "Pending", value: pendingTickets, icon: Clock, color: "orange", bgGradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/10", path: "/admin-dashboard/admin-pending-tickets", clickable: true },
     { label: "In Progress", value: inProgressTickets, icon: TrendingUp, color: "violet", bgGradient: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/10", path: null, clickable: false },
     { label: "Resolved", value: resolvedTickets, icon: CheckCircle, color: "emerald", bgGradient: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10", path: null, clickable: false },
   ];
 
   const quickActions = [
     { label: "Create Ticket", icon: Plus, path: "/admin-dashboard/admin-new-ticket", color: "blue" },
-    { label: "View All Tickets", icon: List, path: "/admin-dashboard/tickets", color: "indigo" },
+    { label: "View All Tickets", icon: List, path: "/admin-dashboard/admin-tickets", color: "indigo" },
     { label: "Manage Users", icon: Users, path: "/admin-dashboard/users", color: "purple" },
-    { label: "Pending Tickets", icon: AlertTriangle, path: "/admin-dashboard/pending-tickets", color: "orange" },
+    { label: "Pending Tickets", icon: AlertTriangle, path: "/admin-dashboard/admin-pending-tickets", color: "orange" },
   ];
 
   const getBgGradient = (color) => {
@@ -214,17 +214,19 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -2, scale: 1.01 }}
-              className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
-              onClick={() => navigate("/admin-dashboard/tickets")}
+              whileHover={stat.clickable ? { y: -2, scale: 1.01 } : {}}
+              className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)} ${stat.clickable ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+              onClick={() => stat.clickable && navigate(stat.path)}
             >
               <div className="relative">
                 <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
                   <stat.icon size={22} className="text-white" />
                 </div>
-                <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
-                  <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
-                </span>
+                {stat.clickable && (
+                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                    <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                  </span>
+                )}
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
@@ -327,50 +329,209 @@ const AdminDashboard = () => {
         {/* Charts & Recent Tickets */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Tickets */}
-          <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Recent Tickets</h4>
-              <button onClick={() => navigate("/admin-dashboard/tickets")} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+          <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                  <Tickets className="text-blue-600 dark:text-blue-400" size={18} />
+                </div>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Recent Tickets</h4>
+              </div>
+              <button onClick={() => navigate("/admin-dashboard/admin-tickets")} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium">
                 View All <ArrowRight size={14} />
               </button>
             </div>
-            <div className="space-y-3">
-              {recentTickets.map((ticket) => (
-                <div key={ticket._id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer" onClick={() => navigate("/admin-dashboard/tickets")}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${ticket.status === 'Open' ? 'bg-blue-500' : ticket.status === 'In Progress' ? 'bg-yellow-500' : ticket.status === 'Resolved' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    <div>
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{ticket.subject?.slice(0, 25)}{ticket.subject?.length > 25 ? '...' : ''}</p>
-                      <p className="text-xs text-gray-500">#{ticket._id?.slice(-6).toUpperCase()}</p>
+            <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+              {recentTickets.map((ticket, idx) => (
+                <motion.div 
+                  key={ticket._id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileHover={{ scale: 1.01 }}
+                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-all cursor-pointer group"
+                  onClick={() => navigate(`/client-dashboard/ticket/${ticket._id}/feedback`)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <motion.span
+                        whileHover={{ scale: 1.05 }}
+                        className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-md"
+                      >
+                        #{ticket._id?.slice(-6).toUpperCase()}
+                      </motion.span>
+                      {ticket.urgency === "Critical" && (
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+                      )}
+                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        ticket.urgency === "Critical"
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                          : ticket.urgency === "High"
+                            ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                            : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                      }`}>
+                        {ticket.urgency}
+                      </span>
                     </div>
+                    <motion.span
+                      animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        ticket.status === "Open"
+                          ? "bg-blue-500 shadow-blue-500/50"
+                          : ticket.status === "In Progress"
+                            ? "bg-yellow-500 shadow-yellow-500/50"
+                            : ticket.status === "Resolved"
+                              ? "bg-green-500"
+                              : "bg-gray-400"
+                      }`}
+                    />
                   </div>
-                  <div className="text-right">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-md ${ticket.urgency === 'Critical' ? 'bg-red-100 text-red-700' : ticket.urgency === 'High' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`}>{ticket.urgency}</span>
+                  <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                    {ticket.subject}
+                  </h5>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="inline-flex items-center gap-1">
+                      <FileText size={12} />
+                      {ticket.issueType || 'General'}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={12} />
+                      {ticket.location || '-'}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Calendar size={12} />
+                      {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                    </span>
                   </div>
-                </div>
+                </motion.div>
               ))}
               {recentTickets.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No tickets yet</p>
+                <div className="p-8 text-center">
+                  <Tickets className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No tickets yet</p>
+                </div>
               )}
             </div>
           </motion.div>
 
           {/* Charts */}
           <div className="space-y-6">
-            <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Weekly Activity</h4>
-              <BarChart dataset={mergeData} xAxis={[{ dataKey: "day", scaleType: "band" }]} series={[{ dataKey: "open", color: "#3b82f6", label: "Open" }, { dataKey: "resolved", color: "#10b981", label: "Resolved" }]} height={200} />
+            {/* Weekly Activity */}
+            <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-violet-100 dark:bg-violet-900/40 rounded-lg">
+                    <BarChart3 className="text-violet-600 dark:text-violet-400" size={18} />
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Weekly Activity</h4>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <span className="text-gray-500 dark:text-gray-400">Open</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="text-gray-500 dark:text-gray-400">Resolved</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4">
+                <BarChart 
+                  dataset={mergeData} 
+                  xAxis={[{ 
+                    dataKey: "day", 
+                    scaleType: "band",
+                    axisLine: false,
+                    tickLine: false,
+                  }]} 
+                  series={[
+                    { dataKey: "open", color: "#3b82f6", label: "Open", barSize: 20 },
+                    { dataKey: "resolved", color: "#10b981", label: "Resolved", barSize: 20 }
+                  ]} 
+                  height={200}
+                  grid={{ horizontal: true, vertical: false }}
+                  margin={{ top: 10, right: 10, bottom: 20, left: 10 }}
+                />
+              </div>
             </motion.div>
 
-            <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Status Distribution</h4>
-              <div className="flex items-center justify-center">
-                <PieChart series={[{ data: [
-                  { value: openTickets, label: "Open", color: "#3b82f6" },
-                  { value: inProgressTickets, label: "In Progress", color: "#f59e0b" },
-                  { value: resolvedTickets, label: "Resolved", color: "#10b981" },
-                  { value: closedTickets, label: "Closed", color: "#6b7280" },
-                ] }]} height={180} width={300} />
+            {/* Status Distribution */}
+            <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
+                    <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={18} />
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Status Distribution</h4>
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{totalTickets} total</span>
+              </div>
+              <div className="p-4 flex items-center justify-center">
+                <div className="relative">
+                  <PieChart series={[{ 
+                    data: [
+                      { value: openTickets, label: "Open", color: "#3b82f6" },
+                      { value: inProgressTickets, label: "In Progress", color: "#f59e0b" },
+                      { value: resolvedTickets, label: "Resolved", color: "#10b981" },
+                      { value: closedTickets, label: "Closed", color: "#6b7280" },
+                    ],
+                    innerRadius: 50,
+                    outerRadius: 80,
+                    paddingAngle: 3,
+                    cornerRadius: 4,
+                  }]} 
+                  height={180} 
+                  width={280}
+                  slotProps={{
+                    legend: {
+                      direction: 'row',
+                      position: { vertical: 'bottom', horizontal: 'middle' },
+                      padding: 20,
+                      itemMarkWidth: 8,
+                      itemMarkHeight: 8,
+                      markGap: 8,
+                      itemGap: 12,
+                      labelStyle: {
+                        fontSize: 11,
+                        fill: '#6b7280',
+                      },
+                    },
+                  }}
+                />
+                </div>
+              </div>
+              {/* Summary Stats */}
+              <div className="px-5 pb-4 grid grid-cols-2 gap-3">
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Open</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{openTickets}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">In Progress</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{inProgressTickets}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Resolved</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{resolvedTickets}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Closed</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{closedTickets}</span>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -411,7 +572,7 @@ const AdminDashboard = () => {
                       key={ticket._id}
                       onClick={() => {
                         setShowCriticalDialog(false);
-                        navigate(`/admin-dashboard/tickets?search=${ticket._id.slice(-6)}`);
+                        navigate(`/client-dashboard/ticket/${ticket._id}/feedback`);
                       }}
                       className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md transition-all cursor-pointer"
                     >

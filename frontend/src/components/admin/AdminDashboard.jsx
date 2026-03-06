@@ -2,17 +2,19 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
-import { Plus, Search, Ticket, Users, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowRight, BarChart3, List } from "lucide-react";
+import { Plus, Search, Ticket, Users, CheckCircle, Clock, AlertTriangle, TrendingUp, ArrowRight, BarChart3, List, Zap, Calendar, X } from "lucide-react";
 import useTicketStore from "../../store/ticketStore";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { useNavigate } from "react-router-dom";
+import { NumberTicker } from "../ui/number-ticker";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuthenticationStore();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(""); 
+  const [showCriticalDialog, setShowCriticalDialog] = useState(false);
 
   const { fetchTickets, tickets: rawTickets, loading, error } = useTicketStore();
 
@@ -85,18 +87,57 @@ const AdminDashboard = () => {
   };
 
   const statsCards = [
-    { label: "Total Tickets", value: totalTickets, icon: Ticket, color: "blue", bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10" },
-    { label: "Pending", value: pendingTickets, icon: Clock, color: "orange", bgGradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/10" },
-    { label: "In Progress", value: inProgressTickets, icon: TrendingUp, color: "violet", bgGradient: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/10" },
-    { label: "Resolved", value: resolvedTickets, icon: CheckCircle, color: "emerald", bgGradient: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10" },
+    { label: "Total Tickets", value: totalTickets, icon: Ticket, color: "blue", bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10", path: "/admin-dashboard/tickets", clickable: true },
+    { label: "Pending", value: pendingTickets, icon: Clock, color: "orange", bgGradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/10", path: "/admin-dashboard/pending-tickets", clickable: true },
+    { label: "In Progress", value: inProgressTickets, icon: TrendingUp, color: "violet", bgGradient: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/10", path: null, clickable: false },
+    { label: "Resolved", value: resolvedTickets, icon: CheckCircle, color: "emerald", bgGradient: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10", path: null, clickable: false },
   ];
 
   const quickActions = [
-    { label: "Create Ticket", icon: Plus, path: "/admin-dashboard/admin-new-ticket", color: "bg-blue-600 hover:bg-blue-700" },
-    { label: "View All Tickets", icon: List, path: "/admin-dashboard/tickets", color: "bg-gray-600 hover:bg-gray-700" },
-    { label: "Manage Users", icon: Users, path: "/admin-dashboard/users", color: "bg-purple-600 hover:bg-purple-700" },
-    { label: "Pending Tickets", icon: AlertTriangle, path: "/admin-dashboard/pending-tickets", color: "bg-orange-600 hover:bg-orange-700" },
+    { label: "Create Ticket", icon: Plus, path: "/admin-dashboard/admin-new-ticket", color: "blue" },
+    { label: "View All Tickets", icon: List, path: "/admin-dashboard/tickets", color: "indigo" },
+    { label: "Manage Users", icon: Users, path: "/admin-dashboard/users", color: "purple" },
+    { label: "Pending Tickets", icon: AlertTriangle, path: "/admin-dashboard/pending-tickets", color: "orange" },
   ];
+
+  const getBgGradient = (color) => {
+    const maps = {
+      blue: "from-blue-50/80 to-transparent dark:from-blue-900/20",
+      orange: "from-orange-50/80 to-transparent dark:from-orange-900/20",
+      green: "from-green-50/80 to-transparent dark:from-green-900/20",
+      purple: "from-purple-50/80 to-transparent dark:from-purple-900/20",
+      indigo: "from-indigo-50/80 to-transparent dark:from-indigo-900/20",
+      violet: "from-violet-50/80 to-transparent dark:from-violet-900/20",
+      emerald: "from-emerald-50/80 to-transparent dark:from-emerald-900/20",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getIconBg = (color) => {
+    const maps = {
+      blue: "bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30",
+      orange: "bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30",
+      green: "bg-gradient-to-br from-green-500 to-green-600 shadow-green-500/30",
+      purple: "bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/30",
+      indigo: "bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30",
+      violet: "bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30",
+      emerald: "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30",
+    };
+    return maps[color] || maps.blue;
+  };
+
+  const getLiveDotColor = (color) => {
+    const maps = {
+      blue: "bg-blue-500",
+      orange: "bg-orange-500",
+      green: "bg-green-500",
+      purple: "bg-purple-500",
+      indigo: "bg-indigo-500",
+      violet: "bg-violet-500",
+      emerald: "bg-emerald-500",
+    };
+    return maps[color] || maps.blue;
+  };
 
   if (loading && tickets.length === 0) {
       return (
@@ -159,7 +200,7 @@ const AdminDashboard = () => {
                 <p className="text-sm text-red-600 dark:text-red-300">{criticalTickets.length} critical ticket{criticalTickets.length > 1 ? 's' : ''} need{criticalTickets.length === 1 ? 's' : ''} attention</p>
               </div>
             </div>
-            <button onClick={() => navigate("/admin-dashboard/pending-tickets")} className="text-red-600 dark:text-red-300 font-medium text-sm hover:underline">
+            <button onClick={() => setShowCriticalDialog(true)} className="text-red-600 dark:text-red-300 font-medium text-sm hover:underline">
               View Now →
             </button>
           </motion.div>
@@ -167,39 +208,68 @@ const AdminDashboard = () => {
 
         {/* Stats Cards */}
         <motion.div variants={itemVars} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {statsCards.map((stat, idx) => (
+          {statsCards.map((stat, i) => (
             <motion.div
               key={stat.label}
-              whileHover={{ y: -4, scale: 1.02 }}
-              className={`bg-gradient-to-br ${stat.bgGradient} dark:from-gray-800 dark:to-gray-900 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all cursor-pointer`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ y: -2, scale: 1.01 }}
+              className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
               onClick={() => navigate("/admin-dashboard/tickets")}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2.5 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/40`}>
-                  <stat.icon className={`text-${stat.color}-600 dark:text-${stat.color}-400`} size={20} />
+              <div className="relative">
+                <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                  <stat.icon size={22} className="text-white" />
                 </div>
-                <span className="text-2xl font-bold text-gray-800 dark:text-white">{loading ? "..." : stat.value}</span>
+                <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                  <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                </span>
               </div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{stat.label}</p>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {loading ? "..." : <NumberTicker value={stat.value} />}
+                </p>
+              </div>
             </motion.div>
           ))}
         </motion.div>
 
         {/* Quick Actions */}
         <motion.div variants={itemVars}>
-          <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Quick Actions</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {quickActions.map((action) => (
-              <motion.button
-                key={action.label}
-                whileHover={{ scale: 1.03 }}
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="size-5 text-amber-500" />
+            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Quick actions available</h4>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((link, i) => (
+              <motion.div
+                key={link.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={{ y: -4, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(action.path)}
-                className={`${action.color} text-white p-4 rounded-xl flex flex-col items-center gap-2 shadow-lg transition-all`}
+                className="group"
               >
-                <action.icon size={24} />
-                <span className="text-sm font-medium">{action.label}</span>
-              </motion.button>
+                <div
+                  onClick={() => navigate(link.path)}
+                  className="flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 h-full relative overflow-hidden cursor-pointer"
+                >
+                  <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'purple' ? 'bg-purple-500' : 'bg-orange-500'}`} />
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'purple' ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/30' : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'}`}>
+                    <link.icon size={22} className="text-white" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {link.label}
+                  </h3>
+                  <div className="mt-auto pt-3 flex items-center text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    <span>Click to open</span>
+                    <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -305,6 +375,89 @@ const AdminDashboard = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Critical Tickets Dialog */}
+        {showCriticalDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCriticalDialog(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-2xl max-h-[80vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700 bg-red-50 dark:bg-red-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg">
+                    <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-red-800 dark:text-red-200">Critical Tickets</h3>
+                    <p className="text-sm text-red-600 dark:text-red-300">{criticalTickets.length} ticket{criticalTickets.length > 1 ? 's' : ''} requiring immediate attention</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowCriticalDialog(false)} 
+                  className="p-2 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                >
+                  <X className="text-red-600 dark:text-red-400" size={20} />
+                </button>
+              </div>
+              
+              <div className="overflow-y-auto max-h-[60vh] p-4">
+                <div className="space-y-3">
+                  {criticalTickets.map((ticket) => (
+                    <div 
+                      key={ticket._id}
+                      onClick={() => {
+                        setShowCriticalDialog(false);
+                        navigate(`/admin-dashboard/tickets?search=${ticket._id.slice(-6)}`);
+                      }}
+                      className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md transition-all cursor-pointer"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-1 rounded">
+                            #{ticket._id.slice(-6).toUpperCase()}
+                          </span>
+                          <span className="px-2 py-1 rounded-md text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                            {ticket.urgency}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                            ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' :
+                            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                          }`}>
+                            {ticket.status}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                          <Calendar size={12} />
+                          {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">{ticket.subject}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{ticket.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <button 
+                  onClick={() => {
+                    setShowCriticalDialog(false);
+                    navigate("/admin-dashboard/pending-tickets");
+                  }}
+                  className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  View All Pending Tickets
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </motion.div>
     </DashboardLayout>
   );

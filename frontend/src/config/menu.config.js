@@ -24,7 +24,7 @@ export const MENU_CONFIG = {
                     { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
                 ],
             },
-            { name: "Reports", icon: LucideChartSpline, path: "/admin-dashboard/admin-reports" },
+            { name: "Reports", icon: NotepadText, path: "/admin-dashboard/admin-reports" },
         ],
         // bottom: [
         //     { name: "Settings", icon: Settings, path: "/admin-dashboard/admin-settings" },
@@ -42,7 +42,7 @@ export const MENU_CONFIG = {
                     { name: "Assigned", path: "/reviewer-dashboard/assigned-ticket", badge: 8 },
                 ],
             },
-            { name: "Reports", icon: LucideChartSpline, path: "/reviewer-dashboard/report" },
+            { name: "Reports", icon: NotepadText, path: "/reviewer-dashboard/report" },
         ],
         // bottom: [
         //     { name: "Settings", icon: Settings, path: "/reviewer-dashboard/settings" },

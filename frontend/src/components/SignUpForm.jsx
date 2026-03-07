@@ -524,8 +524,8 @@ const SignUpForm = () => {
               <motion.button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                // whileHover={{ scale: 1.05 }}
+                // whileTap={{ scale: 0.95 }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                 disabled={isLoading}
@@ -651,8 +651,8 @@ const SignUpForm = () => {
               <motion.button
                 type="button"
                 onClick={() => setConfirmPassword(!confirmPasword)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                // whileHover={{ scale: 1.05 }}
+                // whileTap={{ scale: 0.95 }}
                 aria-label={confirmPasword ? "Hide Confirm Password" : "Show Confirm Password"}
                 className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                 disabled={isLoading}

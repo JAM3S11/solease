@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Check, AlertCircle, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Check, AlertCircle, Mail, ArrowRight, Lock } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -392,8 +392,8 @@ const LoginForm = () => {
               <motion.button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                // whileHover={{ scale: 1.05 }}
+                // whileTap={{ scale: 0.95 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >

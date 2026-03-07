@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2, RefreshCw } from 'lucide-react';
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import DashboardLayout from '../ui/DashboardLayout';
 import { useAuthenticationStore } from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
@@ -14,6 +15,8 @@ const ISSUE_TYPE_INITIALS = {
   'Account Access': 'AA',
   'Other': 'OT'
 };
+
+const STATUS_OPTIONS = ['Open', 'In Progress', 'Resolved', 'Closed'];
 
 const FeedbackComponent = () => {
   const { id } = useParams();
@@ -33,7 +36,8 @@ const FeedbackComponent = () => {
     hideFeedback,
     unhideFeedback,
     approveHiddenForManager,
-    managerIntervention
+    managerIntervention,
+    updateTicket
   } = useTicketStore();
 
   const [newMessage, setNewMessage] = useState('');
@@ -46,6 +50,7 @@ const FeedbackComponent = () => {
   const [copiedId, setCopiedId] = useState(false);
   const [editModal, setEditModal] = useState({ show: false, message: null, content: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, message: null });
+  const [statusLoading, setStatusLoading] = useState(false);
 
 
   useEffect(() => {
@@ -73,6 +78,28 @@ const FeedbackComponent = () => {
 
   // This checks if the user can moderate (Reviewer/Manager roles)
   const canModerate = ['Reviewer', 'Manager'].includes(user?.role);
+
+  // Check if user can change status (Reviewer/Manager assigned to this ticket)
+  const canChangeStatus = ticket && ['Reviewer', 'Manager'].includes(user?.role) && (
+    ticket.assignedTo?._id === user?._id ||
+    ticket.assignedTo?.id === user?._id ||
+    ticket.assignedTo === user?._id ||
+    user?.role === 'Manager'
+  );
+
+  const handleStatusChange = async (newStatus) => {
+    if (!newStatus || newStatus === ticket.status) return;
+    setStatusLoading(true);
+    try {
+      await updateTicket(id, { status: newStatus });
+      toast.success(`Ticket status updated to ${newStatus}`);
+      fetchTickets();
+    } catch (error) {
+      toast.error('Failed to update status');
+    } finally {
+      setStatusLoading(false);
+    }
+  };
 
   const handleSubmitMessage = async () => {
     if (!newMessage.trim()) return;
@@ -338,15 +365,52 @@ const FeedbackComponent = () => {
               {/* Status Badges */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 justify-end">
-                  <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                    ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                    ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                    ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
-                    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                  }`}>
-                    <CheckCircle size={14} />
-                    {ticket.status}
-                  </span>
+                  {canChangeStatus ? (
+                    <Listbox value={ticket.status} onChange={handleStatusChange}>
+                      <div className="relative">
+                        <ListboxButton className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity ${
+                          ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                          ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
+                          'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                        }`}>
+                          <CheckCircle size={14} />
+                          <span>{ticket.status}</span>
+                          <ChevronDown size={12} />
+                        </ListboxButton>
+                        <ListboxOptions className="absolute z-50 mt-1 w-40 right-0 overflow-auto rounded-lg bg-white dark:bg-slate-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none border border-slate-200 dark:border-slate-700">
+                          {STATUS_OPTIONS.map((status) => (
+                            <ListboxOption
+                              key={status}
+                              value={status}
+                              disabled={status === ticket.status}
+                              className={({ active, disabled }) =>
+                                `relative cursor-pointer select-none py-2 pl-8 pr-4 text-xs font-semibold ${active ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200' : 'text-slate-700 dark:text-slate-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`
+                              }
+                            >
+                              {({ selected }) => (
+                                <>
+                                  {selected && <CheckCircle size={14} className="absolute left-2 text-blue-600 dark:text-blue-400" />}
+                                  <span className={selected ? 'font-bold text-blue-600 dark:text-blue-400' : ''}>{status}</span>
+                                </>
+                              )}
+                            </ListboxOption>
+                          ))}
+                        </ListboxOptions>
+                      </div>
+                    </Listbox>
+                  ) : (
+                    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                      ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                      ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                      ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
+                      'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                    }`}>
+                      <CheckCircle size={14} />
+                      {ticket.status}
+                    </span>
+                  )}
+                  {statusLoading && <RefreshCw size={14} className="animate-spin text-blue-600" />}
                   {chatEnabled && (
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                       💬 Chat Active

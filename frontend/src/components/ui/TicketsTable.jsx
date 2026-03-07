@@ -1,8 +1,20 @@
 import React, { Fragment, useMemo, useState } from "react";
-import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye, ArrowUp, ArrowDown, ArrowRight, Paperclip, FileText, MapPin, List, Grid, ChevronLeft, ChevronRight as ChevronRightIcon, Table } from "lucide-react";
+import { Search, Calendar, ChevronDown, Check, MessageCircle, Eye, ArrowUp, ArrowDown, ArrowRight, Paperclip, FileText, MapPin, List, Grid, ChevronLeft, ChevronRight as ChevronRightIcon, Table, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
+import toast from "react-hot-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+} from "./alert-dialog";
 
 const TicketsTable = ({
   tickets = [],
@@ -25,14 +37,29 @@ const TicketsTable = ({
   itemsPerPageOpen = false,
   setItemsPerPageOpen = () => {},
   ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25],
+  onDelete = null,
+  deleteLoading = null,
+  showDelete = false,
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [ticketToDelete, setTicketToDelete] = useState(null);
 
   const handleSort = (columnKey) => {
     setSortConfig((prev) => ({
       key: columnKey,
       direction: prev.key === columnKey && prev.direction === "asc" ? "desc" : "asc",
     }));
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticketToDelete || !onDelete) return;
+    try {
+      await onDelete(ticketToDelete);
+      toast.success("Ticket deleted successfully");
+      setTicketToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete ticket");
+    }
   };
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -107,15 +134,30 @@ const TicketsTable = ({
       },
       {
         key: 'subject',
-        label: role === 'client' ? 'SUBJECT' : 'ISSUE TYPE',
-        render: (ticket) => role === 'client' ? (
+        label: 'SUBJECT',
+        render: (ticket) => (
           <div className="max-w-[200px]">
-            <p className="font-normal text-gray-700 dark:text-gray-300 text-sm truncate group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+            <p className="font-medium text-gray-800 dark:text-gray-200 text-sm truncate">
               {ticket.subject}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{ticket.description?.slice(0, 40)}...</p>
           </div>
-        ) : (
+        )
+      },
+      {
+        key: 'description',
+        label: 'DESCRIPTION',
+        render: (ticket) => (
+          <div className="max-w-[250px]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {ticket.description?.slice(0, 60)}...
+            </p>
+          </div>
+        )
+      },
+      {
+        key: 'issueType',
+        label: 'ISSUE TYPE',
+        render: (ticket) => (
           <span className={`text-[10px] inline-flex items-center justify-center px-2 py-1 rounded-md font-bold min-w-[100px] uppercase
             ${{
               "Hardware Issue": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
@@ -124,16 +166,6 @@ const TicketsTable = ({
               "Account Access": "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
             }[ticket.issueType] || "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"}
           `}>{ticket.issueType}</span>
-        )
-      },
-      {
-        key: 'type',
-        label: 'TYPE',
-        render: (ticket) => (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
-            <FileText size={12} />
-            {ticket.issueType || 'General'}
-          </span>
         )
       },
       { 
@@ -271,7 +303,22 @@ const TicketsTable = ({
         key: 'actions',
         label: '',
         render: (ticket) => (
-          <motion.div whileHover={{ x: 4 }}>
+          <div className="flex items-center justify-end gap-1">
+            {showDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setTicketToDelete(ticket._id); }}
+                disabled={deleteLoading === ticket._id}
+                className="p-2 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                aria-label="Delete ticket"
+                title="Delete ticket"
+              >
+                {deleteLoading === ticket._id ? (
+                  <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                ) : (
+                  <Trash2 size={18} />
+                )}
+              </button>
+            )}
             <Link
               to={
                 role === 'client' ? `/client-dashboard/ticket/${ticket._id}/feedback` :
@@ -284,14 +331,14 @@ const TicketsTable = ({
             >
               <ArrowRight size={18} />
             </Link>
-          </motion.div>
+          </div>
         )
       }
     ];
 
     // Filter columns based on role for client
     if (role === 'client') {
-      return baseColumns.filter(col => col.key !== 'type' && col.key !== 'assignedTo');
+      return baseColumns.filter(col => col.key !== 'issueType' && col.key !== 'assignedTo');
     }
     
     return baseColumns;
@@ -591,6 +638,21 @@ const TicketsTable = ({
                     
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                       <div className="flex items-center gap-2">
+                        {showDelete && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setTicketToDelete(ticket._id); }}
+                            disabled={deleteLoading === ticket._id}
+                            className="p-1.5 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                            aria-label="Delete ticket"
+                            title="Delete ticket"
+                          >
+                            {deleteLoading === ticket._id ? (
+                              <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        )}
                         {ticket.attachments?.length > 0 ? (
                           <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                             <Paperclip size={12} />
@@ -609,9 +671,9 @@ const TicketsTable = ({
                         ) : null}
                       </div>
                       <Link
-to={`/client-dashboard/ticket/${ticket._id}/feedback`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
+                        to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
                       >
                         View
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -710,14 +772,31 @@ to={`/client-dashboard/ticket/${ticket._id}/feedback`}
                       </div>
                     )}
                   </div>
-                  
-                  <Link
-                    to={`/client-dashboard/ticket/${ticket._id}/feedback`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    <ArrowRight size={18} />
-                  </Link>
+
+                  <div className="flex items-center gap-1">
+                    {showDelete && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setTicketToDelete(ticket._id); }}
+                        disabled={deleteLoading === ticket._id}
+                        className="p-2 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                        aria-label="Delete ticket"
+                        title="Delete ticket"
+                      >
+                        {deleteLoading === ticket._id ? (
+                          <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
+                    )}
+                    <Link
+                      to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      <ArrowRight size={18} />
+                    </Link>
+                  </div>
                 </motion.div>
               ))
             )}
@@ -835,6 +914,32 @@ to={`/client-dashboard/ticket/${ticket._id}/feedback`}
             )}
           </div>
         </div>
+      )}
+
+      {showDelete && (
+        <AlertDialog open={!!ticketToDelete} onOpenChange={() => setTicketToDelete(null)}>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogMedia className="bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                <Trash2 size={24} />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Delete ticket?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete this ticket. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                variant="destructive"
+                onClick={handleDeleteTicket}
+                disabled={deleteLoading === ticketToDelete}
+              >
+                {deleteLoading === ticketToDelete ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );

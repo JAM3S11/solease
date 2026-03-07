@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../ui/DashboardLayout';
 import useTicketStore from "../../store/ticketStore";
 import useAdminStore from "../../store/adminStore";
 import { useAuthenticationStore } from "../../store/authStore";
 import { useDarkMode } from "../../hooks/use-dark-mode";
 import { PieChart, BarChart } from "@mui/x-charts";
+import html2pdf from 'html2pdf.js';
 import { 
   CheckCircle, Clock, BarChart3, AlertCircle, 
   Calendar, ArrowUpRight, Inbox, ClipboardX,
@@ -36,6 +37,180 @@ const AdminReportPage = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ role: '', status: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const reportRef = useRef(null);
+
+  const handleSyncData = async () => {
+    await Promise.all([
+      fetchTickets(),
+      fetchUsers(),
+      fetchActiveUsers()
+    ]);
+  };
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const tabLabels = {
+        overview: 'Overview',
+        users: 'User Operations', 
+        system: 'Infrastructure',
+        ai: 'AI & MCP (Beta)'
+      };
+
+      const generateTabHTML = () => {
+        let content = '';
+        
+        if (activeTab === 'overview') {
+          content = `
+            <div style="padding: 20px;">
+              <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">Key Metrics</h2>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Total Tickets</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.total}</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Resolution Rate</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.resolutionRate}%</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Pending</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.pending}</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">In Progress</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.inProgress}</div>
+                </div>
+              </div>
+              <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Status Distribution</h2>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Resolved</span><strong>${stats.resolved}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Pending</span><strong>${stats.pending}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>In Progress</span><strong>${stats.inProgress}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span>Closed</span><strong>${stats.closed}</strong></div>
+              </div>
+              <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Urgency Breakdown</h2>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Critical</span><strong style="color: #dc2626;">${stats.urgencyBreakdown.critical}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>High</span><strong style="color: #ea580c;">${stats.urgencyBreakdown.high}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Medium</span><strong style="color: #ca8a04;">${stats.urgencyBreakdown.medium}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span>Low</span><strong style="color: #16a34a;">${stats.urgencyBreakdown.low}</strong></div>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'users') {
+          content = `
+            <div style="padding: 20px;">
+              <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">User Statistics</h2>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Total Users</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.users.total}</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Active Users</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.users.active}</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Verified</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.users.verified}</div>
+                </div>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+                  <div style="font-size: 11px; color: #666;">Active Today</div>
+                  <div style="font-size: 28px; font-weight: bold;">${stats.users.activeToday}</div>
+                </div>
+              </div>
+              <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Role Distribution</h2>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Managers</span><strong>${stats.users.roles.manager}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Reviewers</span><strong>${stats.users.roles.reviewer}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span>Clients</span><strong>${stats.users.roles.client}</strong></div>
+              </div>
+              <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Security Status</h2>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Verified Users</span><strong>${stats.users.verified} / ${stats.users.total}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Active Accounts</span><strong>${stats.users.active} / ${stats.users.total}</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span>Rejected</span><strong>${stats.users.rejected}</strong></div>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'system') {
+          content = `
+            <div style="padding: 20px;">
+              <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">Infrastructure Status</h2>
+              <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 15px;">
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+                  <div style="font-size: 14px; font-weight: bold;">Database Status</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #10b981;">Healthy</div>
+                  <div style="font-size: 12px; color: #666;">4.2 GB / 10 GB (42% used)</div>
+                </div>
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+                  <div style="font-size: 14px; font-weight: bold;">Storage Usage</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #10b981;">Optimal</div>
+                  <div style="font-size: 12px; color: #666;">128 GB / 512 GB (25% used)</div>
+                </div>
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981;">
+                  <div style="font-size: 14px; font-weight: bold;">API Latency</div>
+                  <div style="font-size: 24px; font-weight: bold; color: #10b981;">Excellent</div>
+                  <div style="font-size: 12px; color: #666;">48ms Average</div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (activeTab === 'ai') {
+          content = `
+            <div style="padding: 20px;">
+              <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">AI & MCP Features</h2>
+              <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">MCP Status</div>
+                <div style="font-size: 16px; color: #d97706; font-weight: bold;">STAGING_READY</div>
+              </div>
+              <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">AI Agent</div>
+                <div style="font-size: 16px; color: #10b981; font-weight: bold;">READY_TO_DEPLOY</div>
+              </div>
+              <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">Predicted Automation Impact</h2>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><span>Response Time Reduction</span><strong>~65%</strong></div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;"><span>Auto-Categorization Accuracy</span><strong>~92%</strong></div>
+              </div>
+            </div>
+          `;
+        }
+        
+        return content;
+      };
+
+      const container = document.createElement('div');
+      container.innerHTML = `
+        <div style="width: 100%; padding: 30px; background: white; font-family: Arial, sans-serif;">
+          <div style="border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px;">
+            <h1 style="font-size: 24px; font-weight: bold; margin: 0; color: #1f2937;">SolEase - ${tabLabels[activeTab]}</h1>
+            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 12px;">Generated: ${new Date().toLocaleString()}</p>
+          </div>
+          ${generateTabHTML()}
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 10px; color: #9ca3af;">
+            SolEase System Manager Dashboard
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 5,
+        filename: `SolEase_${tabLabels[activeTab].replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdf().set(opt).from(container).save();
+    } catch (error) {
+      console.error('Export error:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Filter users based on search
   const filteredUsers = useMemo(() => {
@@ -204,11 +379,19 @@ const AdminReportPage = () => {
           </motion.div>
           
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent transition-all shadow-sm">
+            <button 
+              onClick={handleSyncData}
+              disabled={usersLoading}
+              className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent transition-all shadow-sm disabled:opacity-50"
+            >
               <RefreshCw size={18} className={usersLoading ? "animate-spin" : ""} /> Sync Data
             </button>
-            <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md">
-              <FileDown size={18} /> Export System Audit
+            <button 
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md disabled:opacity-50"
+            >
+              <FileDown size={18} className={isExporting ? "animate-pulse" : ""} /> {isExporting ? 'Exporting...' : 'Export System Audit'}
             </button>
           </div>
         </div>
@@ -236,10 +419,12 @@ const AdminReportPage = () => {
           ))}
         </div>
 
+        <div id="report-content">
         <AnimatePresence mode="wait">
           {activeTab === 'overview' && (
             <motion.div 
               key="overview"
+              data-tab="overview"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -509,6 +694,7 @@ const AdminReportPage = () => {
           {activeTab === 'users' && (
             <motion.div 
               key="users"
+              data-tab="users"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -736,6 +922,7 @@ const AdminReportPage = () => {
           {activeTab === 'system' && (
             <motion.div 
               key="system"
+              data-tab="system"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -750,6 +937,7 @@ const AdminReportPage = () => {
           {activeTab === 'ai' && (
             <motion.div 
               key="ai"
+              data-tab="ai"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -839,6 +1027,7 @@ const AdminReportPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
 
         {/* User Detail Dialog */}
         <Dialog open={isUserDialogOpen} onClose={() => setIsUserDialogOpen(false)} className="relative z-50">

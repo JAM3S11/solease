@@ -10,6 +10,7 @@ import DetailedTicketsView from '../ui/DetailedTicketsView'
 import { motion } from 'framer-motion';
 import { NumberTicker } from '../ui/number-ticker';
 import api from '../../lib/axios';
+import toast from 'react-hot-toast';
 
 const AdminTicketsView = () => {
   const navigate = useNavigate();
@@ -29,7 +30,21 @@ const AdminTicketsView = () => {
   const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
   const [itSupportUsers, setItSupportUsers] = useState([]);
 
-  const { fetchTickets, tickets, loading, error } = useTicketStore();
+  const { fetchTickets, tickets, loading, error, deleteTicket } = useTicketStore();
+
+  const [deleteLoading, setDeleteLoading] = useState(null);
+
+  const handleDeleteTicket = async (ticketId) => {
+    setDeleteLoading(ticketId);
+    try {
+      await deleteTicket(ticketId);
+      toast.success("Ticket deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete ticket");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
 
   useEffect(() => {
     const fetchItSupportUsers = async () => {
@@ -229,6 +244,9 @@ const AdminTicketsView = () => {
               itemsPerPageOpen={itemsPerPageOpen}
               setItemsPerPageOpen={setItemsPerPageOpen}
               ITEMS_PER_PAGE_OPTIONS={ITEMS_PER_PAGE_OPTIONS}
+              showDelete={true}
+              onDelete={handleDeleteTicket}
+              deleteLoading={deleteLoading}
             />
           )
         )}

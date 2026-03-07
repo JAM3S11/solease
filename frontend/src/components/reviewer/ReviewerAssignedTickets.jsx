@@ -7,10 +7,25 @@ import useTicketStore from '../../store/ticketStore'
 import TicketsTable from '../ui/TicketsTable'
 import SelectedTicketModal from '../ui/SelectedTicketModal'
 import NoTicketComponent from '../ui/NoTicketComponent'
+import toast from 'react-hot-toast'
 
 const ReviewerAssignedTickets = () => {
   const { user } = useAuthenticationStore()
-  const { tickets, fetchTickets, loading, error } = useTicketStore()
+  const { tickets, fetchTickets, loading, error, deleteTicket } = useTicketStore()
+
+  const [deleteLoading, setDeleteLoading] = useState(null);
+
+  const handleDeleteTicket = async (ticketId) => {
+    setDeleteLoading(ticketId);
+    try {
+      await deleteTicket(ticketId);
+      toast.success("Ticket deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete ticket");
+    } finally {
+      setDeleteLoading(null);
+    }
+  }
 
   const [search, setSearch] = useState('')
   const [issueTypeFilter, setIssueTypeFilter] = useState('')
@@ -24,8 +39,16 @@ const ReviewerAssignedTickets = () => {
 
   const safeTickets = Array.isArray(tickets) ? tickets : []
 
-  // Reviewers typically only see tickets NOT closed
-  const assignedTickets = safeTickets.filter(t => t.status !== 'Closed')
+  // Filter to only show tickets assigned to this reviewer
+  const assignedTickets = safeTickets.filter(t => {
+    // Only show tickets where assignedTo matches the current user
+    const isAssignedToMe = t.assignedTo && (
+      t.assignedTo._id === user?._id || 
+      t.assignedTo.id === user?._id ||
+      t.assignedTo === user?._id
+    );
+    return isAssignedToMe && t.status !== 'Closed';
+  });
 
   // Stats
   const stats = {
@@ -119,6 +142,9 @@ const ReviewerAssignedTickets = () => {
             onStatusChange={setStatusFilter}
             onDateChange={setDateFilter}
             onRowClick={setSelectedTicket}
+            showDelete={true}
+            onDelete={handleDeleteTicket}
+            deleteLoading={deleteLoading}
           />
         )}
       </div>

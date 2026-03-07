@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from '@headlessui/react';
 import { NumberTicker } from '../ui/number-ticker';
 import TicketsTable from '../ui/TicketsTable';
+import toast from 'react-hot-toast';
 
 const AdminPendingTickets = () => {
   const navigate = useNavigate();
@@ -26,7 +27,21 @@ const AdminPendingTickets = () => {
   const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
   const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
 
-  const { fetchTickets, tickets, loading, error } = useTicketStore();
+  const { fetchTickets, tickets, loading, error, deleteTicket } = useTicketStore();
+
+  const [deleteLoading, setDeleteLoading] = useState(null);
+
+  const handleDeleteTicket = async (ticketId) => {
+    setDeleteLoading(ticketId);
+    try {
+      await deleteTicket(ticketId);
+      toast.success("Ticket deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete ticket");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
 
 useEffect(() => {
     const fetchItSupportUsers = async () => {
@@ -261,6 +276,9 @@ useEffect(() => {
               itemsPerPageOpen={itemsPerPageOpen}
               setItemsPerPageOpen={setItemsPerPageOpen}
               ITEMS_PER_PAGE_OPTIONS={ITEMS_PER_PAGE_OPTIONS}
+              showDelete={true}
+              onDelete={handleDeleteTicket}
+              deleteLoading={deleteLoading}
             />
           )}
         </AnimatePresence>

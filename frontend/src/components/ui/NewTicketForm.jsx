@@ -11,7 +11,7 @@ import api from "../../lib/axios";
 
 const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', tickets = [] }) => {
   const { user } = useAuthenticationStore();
-  const { createTicket, loading, uploadLoading } = useTicketStore();
+  const { createTicket, loading, uploadLoading, deleteTicket } = useTicketStore();
   
   const showWelcome = role === 'client' && (!tickets || tickets.length === 0);
 
@@ -157,7 +157,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
     }
     
     try {
-      let response;
+      let ticket;
       
       if (selectedFile && role === 'client') {
         setUploadPercent(0);
@@ -169,27 +169,24 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
         formDataToSend.append("urgency", formData.urgency);
         formDataToSend.append("attachment", selectedFile);
         
-        response = await api.post("/ticket/create-ticket", formDataToSend, {
+        const response = await api.post("/ticket/create-ticket", formDataToSend, {
           headers: { "Content-Type": "multipart/form-data" },
           onUploadProgress: (progressEvent) => {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadPercent(progress);
           }
         });
+        ticket = response.data.ticket;
       } else {
-        response = await createTicket(formData);
+        ticket = await createTicket(formData);
       }
       
-      if (response) {
+      if (ticket) {
         toast.success("Ticket created successfully!");
-        if (role === 'client') {
-          setFormData({ location: "", issueType: "", subject: "", description: "", urgency: "" });
-          setSelectedFile(null);
-          setFilePreview(null);
-          setTimeout(() => navigate(navigatePath), 500);
-        } else {
-          navigate(navigatePath);
-        }
+        setFormData({ location: "", issueType: "", subject: "", description: "", urgency: "" });
+        setSelectedFile(null);
+        setFilePreview(null);
+        setTimeout(() => navigate(navigatePath), 500);
       }
     } catch (error) {
       console.error("Error creating ticket:", error);

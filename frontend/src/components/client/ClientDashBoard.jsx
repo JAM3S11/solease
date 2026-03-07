@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -33,11 +34,25 @@ import { Link } from "react-router-dom";
 import useTicketStore from "../../store/ticketStore";
 import WelcomeMessage from "../ui/WelcomeMessage";
 import { NumberTicker } from "../ui/number-ticker";
+import toast from "react-hot-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+} from "../ui/alert-dialog";
 
 const ClientDashboard = () => {
   const { user } = useAuthenticationStore();
-  const { tickets, fetchTickets, loading, error } = useTicketStore();
+  const { tickets, fetchTickets, loading, error, deleteTicket } = useTicketStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "asc",
@@ -155,6 +170,21 @@ const ClientDashboard = () => {
       direction = sortConfig.direction === "asc" ? "desc" : "asc";
     }
     setSortConfig({ key: columnKey, direction });
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticketToDelete) return;
+    
+    setDeleteLoading(ticketToDelete);
+    try {
+      await deleteTicket(ticketToDelete);
+      toast.success("Ticket deleted successfully");
+      setTicketToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete ticket");
+    } finally {
+      setDeleteLoading(null);
+    }
   };
 
   return (
@@ -536,7 +566,7 @@ const ClientDashboard = () => {
                 <table className="w-full table-auto border-collapse">
                   <thead className="bg-gray-50/50 dark:bg-gray-800/50">
                     <tr>
-                      {["Ticket", "Subject", "Type", "Urgency", "Location", "Status", "Updated", "Attachments", "Feedback", ""].map(
+                      {["Ticket", "Subject", "Type", "Urgency", "Location", "Status", "Updated", "Attachments", "Feedback", "Actions", "Delete"].map(
                         (header) => {
                           const sortKey = header === "Ticket" ? "ticketId" : header === "Urgency" ? "urgency" : header === "Updated" ? "updatedAt" : null;
                           return (
@@ -701,6 +731,23 @@ const ClientDashboard = () => {
                             </Link>
                           </motion.div>
                         </td>
+                        <td className="px-6 py-4 text-right">
+                          <motion.div whileHover={{ scale: 1.1 }}>
+                            <button
+                              onClick={() => setTicketToDelete(ticket._id)}
+                              disabled={deleteLoading === ticket._id}
+                              className="p-2 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                              aria-label="Delete ticket"
+                              title="Delete ticket"
+                            >
+                              {deleteLoading === ticket._id ? (
+                                <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                              ) : (
+                                <Trash2 size={18} />
+                              )}
+                            </button>
+                          </motion.div>
+                        </td>
                       </motion.tr>
                     ))}
                   </tbody>
@@ -803,13 +850,27 @@ const ClientDashboard = () => {
                               </Link>
                             ) : null}
                           </div>
-                          <Link
-                            to={`/client-dashboard/ticket/${ticket._id}/feedback`}
-                            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
-                          >
-                            View
-                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                          </Link>
+<Link
+                             to={`/client-dashboard/ticket/${ticket._id}/feedback`}
+                             className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
+                           >
+                             View
+                             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                           </Link>
+                           <button
+                             onClick={() => setTicketToDelete(ticket._id)}
+                             disabled={deleteLoading === ticket._id}
+                             className="text-sm font-medium text-red-500 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-1 transition-colors disabled:opacity-50"
+                           >
+                             {deleteLoading === ticket._id ? (
+                               <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                             ) : (
+                               <>
+                                 <Trash2 size={14} />
+                                 Delete
+                               </>
+                             )}
+                           </button>
                         </div>
                       </motion.div>
                     ))}
@@ -906,6 +967,18 @@ const ClientDashboard = () => {
                       >
                         <ArrowRight size={18} />
                       </Link>
+                      <button
+                        onClick={() => setTicketToDelete(ticket._id)}
+                        disabled={deleteLoading === ticket._id}
+                        className="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                        title="Delete ticket"
+                      >
+                        {deleteLoading === ticket._id ? (
+                          <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
                     </motion.div>
                   ))}
                 </div>
@@ -1060,6 +1133,30 @@ const ClientDashboard = () => {
           </motion.div>
         )}
       </div>
+
+      <AlertDialog open={!!ticketToDelete} onOpenChange={() => setTicketToDelete(null)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+              <Trash2 size={24} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete ticket?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this ticket. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              variant="destructive"
+              onClick={handleDeleteTicket}
+              disabled={deleteLoading === ticketToDelete}
+            >
+              {deleteLoading === ticketToDelete ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

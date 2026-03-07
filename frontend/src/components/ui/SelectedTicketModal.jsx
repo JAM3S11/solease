@@ -232,7 +232,7 @@ const DetailsTab = ({ ticket, canAssign, itSupportUsers, assignedTo, isAssigning
       <DetailCard icon={MapPin} label="Location" value={ticket.location} />
       <DetailCard icon={Calendar} label="Created" value={new Date(ticket.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} />
       <DetailCard icon={Clock} label="Updated" value={ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "N/A"} />
-      <DetailCard icon={User} label="Created By" value={ticket.createdBy?.name || ticket.createdBy?.username || "Unknown"} />
+      <DetailCard icon={User} label="Created By" value={ticket.user?.name || ticket.user?.username || "Unknown"} />
       {ticket.assignedTo && (
         <DetailCard icon={User} label="Assigned To" value={ticket.assignedTo.name} />
       )}

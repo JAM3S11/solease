@@ -8,7 +8,7 @@ import { createTicket, getTickets,
     hideFeedback, unhideFeedback, 
     viewHiddenFeedback, approveHiddenForManager, 
     managerIntervention, triggerAIResponse, 
-    uploadMiddleware, uploadAttachment 
+    uploadMiddleware, uploadAttachment, deleteTicket 
 } from "../controllers/ticket.controllers.js";
 
 const router = express.Router();
@@ -63,5 +63,8 @@ router.post("/:ticketId/comment/:commentId/ai-response", protect, triggerAIRespo
 
 // Upload attachment to ticket
 router.post("/:id/attachment", protect, uploadMiddleware, uploadAttachment);
+
+// Delete ticket
+router.delete("/:id", protect, deleteTicket);
 
 export default router;

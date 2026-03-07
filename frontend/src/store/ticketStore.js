@@ -53,10 +53,31 @@ const useTicketStore = create((set) => ({
                 tickets: [ ...state.tickets, res.data.ticket ],
                 loading: false,
             }));
+            return res.data.ticket;
         } catch (error) {
             console.error("Failed to create a ticket:", error);
             set({
                 error: error.response?.data?.message || "Failed to create a ticket",
+                loading: false,
+            });
+            throw error;
+        }
+    },
+    
+    // Delete ticket
+    deleteTicket: async (ticketId) => {
+        set({ loading: true, error: null });
+        try {
+            await api.delete(`/ticket/${ticketId}`);
+            set((state) => ({
+                tickets: state.tickets.filter(ticket => ticket._id !== ticketId),
+                loading: false,
+            }));
+            return true;
+        } catch (error) {
+            console.error("Failed to delete ticket:", error);
+            set({
+                error: error.response?.data?.message || "Failed to delete ticket",
                 loading: false,
             });
             throw error;

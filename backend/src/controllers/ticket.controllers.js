@@ -1075,3 +1075,45 @@ export const uploadAttachment = async (req, res) => {
         });
     }
 };
+
+// Delete a ticket
+export const deleteTicket = async (req, res) => {
+    try {
+        const ticketId = req.params.id;
+        
+        const ticket = await Ticket.findById(ticketId);
+        
+        if (!ticket) {
+            return res.status(404).json({
+                success: false,
+                message: "Ticket not found"
+            });
+        }
+
+        // Check if the user is the owner of the ticket or an admin/reviewer
+        const userId = req.user._id.toString();
+        const ticketOwnerId = ticket.user.toString();
+        const userRole = req.user.role;
+        
+        // Only allow ticket owner, reviewer, or manager to delete
+        if (userId !== ticketOwnerId && userRole !== "Reviewer" && userRole !== "Manager") {
+            return res.status(403).json({
+                success: false,
+                message: "You don't have permission to delete this ticket"
+            });
+        }
+
+        await Ticket.findByIdAndDelete(ticketId);
+
+        res.status(200).json({
+            success: true,
+            message: "Ticket deleted successfully"
+        });
+    } catch (error) {
+        console.log("Error deleting ticket", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while deleting ticket"
+        });
+    }
+};

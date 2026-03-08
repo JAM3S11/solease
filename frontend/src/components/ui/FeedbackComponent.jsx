@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2, RefreshCw } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2, RefreshCw, ThumbsUp, Search } from 'lucide-react';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import DashboardLayout from '../ui/DashboardLayout';
 import { useAuthenticationStore } from '../../store/authStore';
@@ -40,6 +40,8 @@ const FeedbackComponent = () => {
     updateTicket
   } = useTicketStore();
 
+  const ticket = tickets.find(t => t?._id === id);
+
   const [newMessage, setNewMessage] = useState('');
   const [moderating, setModerating] = useState(null);
   const [interventionContent, setInterventionContent] = useState('');
@@ -51,6 +53,16 @@ const FeedbackComponent = () => {
   const [editModal, setEditModal] = useState({ show: false, message: null, content: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, message: null });
   const [statusLoading, setStatusLoading] = useState(false);
+  const [messageSearch, setMessageSearch] = useState('');
+  const [messageReactions, setMessageReactions] = useState({});
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [ticket?.comments]);
 
 
   useEffect(() => {
@@ -69,15 +81,19 @@ const FeedbackComponent = () => {
     return () => clearInterval(interval);
   }, [fetchTickets]);
 
-  const ticket = tickets.find(t => t?._id === id);
+  // Allow all authenticated users to provide feedback
+  const canProvideFeedback = ticket && (
+    user?.role === 'Client' || 
+    user?.role === 'Reviewer' || 
+    user?.role === 'Manager' ||
+    user?.role === 'IT Support'
+  );
 
-  // This checks if the user can provide a feedback
-  const canProvideFeedback = ticket && (user?.role === 'Client'
-    ? (ticket.status === 'Resolved' || ticket.status === 'In Progress')
-    : (user?.role === 'Reviewer' || user?.role === 'Manager'));
+  // Internal notes visible to Manager and IT Support
+  const canViewInternalNotes = ticket && ['Manager', 'IT Support'].includes(user?.role);
 
-  // This checks if the user can moderate (Reviewer/Manager roles)
-  const canModerate = ['Reviewer', 'Manager'].includes(user?.role);
+  // This checks if the user can moderate (Reviewer/Manager/IT Support roles)
+  const canModerate = ['Reviewer', 'Manager', 'IT Support'].includes(user?.role);
 
   // Check if user can change status (Reviewer/Manager assigned to this ticket)
   const canChangeStatus = ticket && ['Reviewer', 'Manager'].includes(user?.role) && (
@@ -212,15 +228,23 @@ const FeedbackComponent = () => {
      try {
        const latestComment = ticket.comments[ticket.comments.length - 1];
        await managerIntervention(id, latestComment?._id, interventionContent);
-       toast.success('Manager intervention added');
+       toast.success('Internal note added');
        setInterventionContent('');
      } catch (error) {
-       toast.error('Failed to add intervention');
+       toast.error('Failed to add note');
      }
      setModerating(null);
    };
 
-  // Helper function to format relative time
+   // Toggle message reaction (helpful)
+   const toggleReaction = (messageId) => {
+     setMessageReactions(prev => ({
+       ...prev,
+       [messageId]: !prev[messageId]
+     }));
+   };
+
+   // Helper function to format relative time
   const getRelativeTime = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
     const intervals = {

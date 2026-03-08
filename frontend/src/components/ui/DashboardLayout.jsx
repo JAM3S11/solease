@@ -1,5 +1,5 @@
 // components/DashboardLayout.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "./shadcn-sidebar";
 import { AppSidebar } from "./Sidebar";
 import { ThemeProvider } from "./theme-provider";
@@ -11,7 +11,13 @@ import PasswordWarningBanner from "./PasswordWarningBanner";
 import { useAuthenticationStore } from "../../store/authStore";
 
 const DashboardLayout = ({ children, hideHeader = false }) => {
-  const { user } = useAuthenticationStore();
+  const { user, updateActivity } = useAuthenticationStore();
+
+  useEffect(() => {
+    updateActivity();
+    const intervalId = setInterval(updateActivity, 30000);
+    return () => clearInterval(intervalId);
+  }, [updateActivity]);
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="solease-ui-theme">

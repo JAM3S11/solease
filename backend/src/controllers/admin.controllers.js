@@ -4,14 +4,29 @@ import { User } from "../models/user.model.js";
 // Get all users in the system
 export const getAllUsers = async (req, res) => {
   try {
-    // The select part removes the highlighted regments in the User model
+    const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    const now = new Date();
+
+    // First, find all users and update their isOnline status based on lastActivity
     const users = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
+
+    // Update users who haven't been active in the last 5 minutes
+    const updatePromises = users
+      .filter(user => user.isOnline && user.lastActivity && (now - new Date(user.lastActivity) > INACTIVE_TIMEOUT))
+      .map(user => 
+        User.findByIdAndUpdate(user._id, { isOnline: false }, { new: true })
+      );
+
+    await Promise.all(updatePromises);
+
+    // Fetch updated users
+    const updatedUsers = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
 
     // Return a response
     return res.status(200).json({
       success: true,
-      count: users.length,
-      users,
+      count: updatedUsers.length,
+      users: updatedUsers,
     });
   } catch (error) {
     console.error("Error Fetching users from the admin panel:", error);

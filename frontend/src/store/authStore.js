@@ -154,4 +154,12 @@ export const useAuthenticationStore = create((set) => ({
             throw error;
         }
     },
+
+    updateActivity: async () => {
+        try {
+            await api.post("/admin/activity");
+        } catch (error) {
+            console.error("Error updating activity:", error);
+        }
+    },
 }))

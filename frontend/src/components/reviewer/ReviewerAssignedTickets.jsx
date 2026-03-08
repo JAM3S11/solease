@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Ticket, Clock, CheckCircle, MessageCircle } from 'lucide-react'
+import { Ticket, Clock, CheckCircle, MessageCircle, List, Grid, Table } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import useTicketStore from '../../store/ticketStore'
@@ -28,6 +28,7 @@ const ReviewerAssignedTickets = () => {
   }
 
   const [search, setSearch] = useState('')
+  const [viewMode, setViewMode] = useState('table')
   const [issueTypeFilter, setIssueTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
@@ -130,22 +131,63 @@ const ReviewerAssignedTickets = () => {
         ) : assignedTickets.length === 0 ? (
           <NoTicketComponent noTicket={user?.name} type="reviewer" />
         ) : (
-          <TicketsTable
-            tickets={assignedTickets}
-            role="reviewer"
-            search={search}
-            issueTypeFilter={issueTypeFilter}
-            statusFilter={statusFilter}
-            dateFilter={dateFilter}
-            onSearchChange={setSearch}
-            onIssueTypeChange={setIssueTypeFilter}
-            onStatusChange={setStatusFilter}
-            onDateChange={setDateFilter}
-            onRowClick={setSelectedTicket}
-            showDelete={true}
-            onDelete={handleDeleteTicket}
-            deleteLoading={deleteLoading}
-          />
+          <>
+            {/* <div className="flex justify-end mb-4">
+              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`p-2 rounded-md transition-all duration-200 ${
+                    viewMode === 'table'
+                      ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                  title="Table view"
+                >
+                  <Table size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-all duration-200 ${
+                    viewMode === 'list'
+                      ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                  title="List view"
+                >
+                  <List size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-all duration-200 ${
+                    viewMode === 'grid'
+                      ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                  title="Grid view"
+                >
+                  <Grid size={18} />
+                </button>
+              </div>
+            </div> */}
+            <TicketsTable
+              tickets={assignedTickets}
+              role="reviewer"
+              search={search}
+              issueTypeFilter={issueTypeFilter}
+              statusFilter={statusFilter}
+              dateFilter={dateFilter}
+              onSearchChange={setSearch}
+              onIssueTypeChange={setIssueTypeFilter}
+              onStatusChange={setStatusFilter}
+              onDateChange={setDateFilter}
+              onRowClick={setSelectedTicket}
+              showDelete={true}
+              onDelete={handleDeleteTicket}
+              deleteLoading={deleteLoading}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          </>
         )}
       </div>
 

@@ -1,7 +1,24 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
-import { SquarePen, Trash, Search, ChevronLeft, ChevronRight, Users, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown, Mail, Shield, Activity } from "lucide-react";
+import { 
+  SquarePen, 
+  Trash, 
+  Search, 
+  ChevronLeft, 
+  ChevronRight, 
+  Users, 
+  LayoutGrid, 
+  List, 
+  ArrowUpDown, 
+  ArrowUp, 
+  ArrowDown, 
+  Mail, 
+  Shield, 
+  Activity,
+  Calendar,
+  CheckCircle2
+} from "lucide-react";
 import useAdminStore from "../../store/adminStore";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -15,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 const PAGE_SIZE_OPTIONS = [2, 5, 10, 15, 20, 25, 50, 100];
 
@@ -29,6 +47,8 @@ const AdminUsersPage = () => {
 
   useEffect(() => {
     fetchUsers();
+    const intervalId = setInterval(fetchUsers, 30000);
+    return () => clearInterval(intervalId);
   }, [fetchUsers]);
 
   useEffect(() => {
@@ -101,7 +121,8 @@ const AdminUsersPage = () => {
     </th>
   );
 
-  const handleDelete = async (user) => {
+  const handleDelete = async (user, e) => {
+    if (e) e.stopPropagation();
     setUserToDelete(user);
   };
 
@@ -118,7 +139,8 @@ const AdminUsersPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <TooltipProvider>
+      <DashboardLayout>
       <motion.div 
         initial="hidden" 
         animate="visible" 
@@ -160,18 +182,29 @@ const AdminUsersPage = () => {
               </span>
             </div>
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === "table" ? "bg-white dark:bg-gray-700 shadow-sm" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}
-              >
-                <List size={16} className={viewMode === "table" ? "text-blue-600" : "text-gray-500"} />
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-white dark:bg-gray-700 shadow-sm" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}
-              >
-                <LayoutGrid size={16} className={viewMode === "grid" ? "text-blue-600" : "text-gray-500"} />
-              </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setViewMode("table")}
+                      className={`p-1.5 rounded-md transition-colors ${viewMode === "table" ? "bg-white dark:bg-gray-700 shadow-sm" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                    >
+                      <List size={16} className={viewMode === "table" ? "text-blue-600" : "text-gray-500"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Table View</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-white dark:bg-gray-700 shadow-sm" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                    >
+                      <LayoutGrid size={16} className={viewMode === "grid" ? "text-blue-600" : "text-gray-500"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Grid View</TooltipContent>
+                </Tooltip>
             </div>
           </div>
         </motion.div>
@@ -201,13 +234,11 @@ const AdminUsersPage = () => {
               )}
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              <AnimatePresence mode="popLayout">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {paginatedUsers.map((user) => (
-                  <UserCard key={user._id} user={user} onDelete={() => handleDelete(user)} />
+                  <UserCard key={user._id} user={user} onDelete={(e) => handleDelete(user, e)} />
                 ))}
-              </AnimatePresence>
-            </div>
+              </div>
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
@@ -239,40 +270,49 @@ const AdminUsersPage = () => {
                         >
                           <td className="px-4 py-3.5 pl-5">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                <span className="text-sm font-bold text-white">{user.username?.charAt(0).toUpperCase()}</span>
-                              </div>
-                              <div>
-                                <div className="font-semibold text-gray-800 dark:text-white">
-                                  {user.username}
+                              <div className="relative flex-shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
+                                  <span className="text-sm font-bold text-white">
+                                    {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
+                                  </span>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                  <Mail size={12} />
-                                  {user.email}
+                                {/* Online Indicator */}
+                                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${user.isOnline ? "bg-green-500" : "bg-red-500"}`}>
+                                  {user.isOnline && <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />}
+                                </div>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-gray-900 dark:text-white truncate flex items-center gap-1">
+                                  {user.name || user.username}
+                                  {user.isVerified && <CheckCircle2 size={14} className="text-blue-500" />}
+                                </div>
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">
+                                  @{user.username}
                                 </div>
                               </div>
                             </div>
                           </td>
 
                           <td className="px-4 py-3.5">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider
-                              ${user.role === "Manager" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
-                                user.role === "Service Desk" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
-                                user.role === "IT Support" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" :
-                                user.role === "Client" ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" :
-                                "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"}`}
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border
+                              ${user.role === "Manager" ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800" :
+                                user.role === "Service Desk" ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800" :
+                                user.role === "IT Support" ? "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800" :
+                                user.role === "Client" ? "bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" :
+                                "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800"}`}
                             >
+                              <Shield size={10} className="mr-1" />
                               {user.role}
                             </span>
                           </td>
 
                           <td className="px-4 py-3.5">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold 
-                              ${user.status === "Active" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" :
-                                user.status === "Pending" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" :
-                                "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"}`}
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border
+                              ${user.status === "Active" ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800/50" :
+                                user.status === "Pending" ? "bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800/50" :
+                                "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800/50"}`}
                             >
-                              <span className={`w-2 h-2 rounded-full ${
+                              <span className={`w-1.5 h-1.5 rounded-full ${
                                 user.status === "Active" ? "bg-green-500" :
                                 user.status === "Pending" ? "bg-orange-500" : "bg-red-500"
                               }`} />
@@ -282,20 +322,28 @@ const AdminUsersPage = () => {
 
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1">
-                              <Link 
-                                to={`/admin-dashboard/users/${user.username}`}
-                                className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
-                                title="Edit user"
-                              >
-                                <SquarePen size={16} />
-                              </Link>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(user); }}
-                                className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
-                                title="Delete user"
-                              >
-                                <Trash size={16} />
-                              </button>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Link 
+                                      to={`/admin-dashboard/users/${user.username}`}
+                                      className="p-2 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all border border-transparent hover:border-blue-100 dark:hover:border-blue-800"
+                                    >
+                                      <SquarePen size={16} />
+                                    </Link>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Edit Profile</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleDelete(user, e); }}
+                                      className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all border border-transparent hover:border-red-100 dark:hover:border-red-800"
+                                    >
+                                      <Trash size={16} />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete User</TooltipContent>
+                                </Tooltip>
                             </div>
                           </td>
                         </motion.tr>
@@ -417,70 +465,117 @@ const AdminUsersPage = () => {
         </AlertDialogContent>
       </AlertDialog>
     </DashboardLayout>
+  </TooltipProvider>
   );
 };
 
 const UserCard = ({ user, onDelete }) => {
   const getRoleStyles = (role) => {
     switch (role) {
-      case "Manager": return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400";
-      case "Service Desk": return "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400";
-      case "IT Support": return "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400";
-      case "Client": return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
-      default: return "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400";
+      case "Manager": return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800";
+      case "Service Desk": return "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800";
+      case "IT Support": return "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800";
+      case "Client": return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700";
+      default: return "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800";
     }
   };
 
   const getStatusStyles = (status) => {
     switch (status) {
-      case "Active": return { bg: "bg-green-100/50 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", dot: "bg-green-500" };
-      case "Pending": return { bg: "bg-orange-100/50 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400", dot: "bg-orange-500" };
-      default: return { bg: "bg-red-100/50 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400", dot: "bg-red-500" };
+      case "Active": return { bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-700 dark:text-green-400", dot: "bg-green-500", border: "border-green-100 dark:border-green-800/50" };
+      case "Pending": return { bg: "bg-orange-50 dark:bg-orange-900/20", text: "text-orange-700 dark:text-orange-400", dot: "bg-orange-500", border: "border-orange-100 dark:border-orange-800/50" };
+      default: return { bg: "bg-red-50 dark:bg-red-900/20", text: "text-red-700 dark:text-red-400", dot: "bg-red-500", border: "border-red-100 dark:border-red-800/50" };
     }
   };
 
   const statusStyles = getStatusStyles(user.status);
+  const formattedDate = user.createdAt ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(user.createdAt)) : "N/A";
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all group"
+      transition={{ duration: 0.2 }}
+      className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 p-6 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xl transition-all group relative overflow-hidden"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-          <span className="text-lg font-bold text-white">{user.username?.charAt(0).toUpperCase()}</span>
+      {/* Background Decorative Element */}
+      <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
+      
+      <div className="flex items-start justify-between mb-5">
+        <div className="relative">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <span className="text-xl font-bold text-white tracking-tighter">
+              {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          {/* Online Indicator */}
+          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${user.isOnline ? "bg-green-500" : "bg-red-500"}`}>
+            {user.isOnline && <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />}
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Link 
-            to={`/admin-dashboard/users/${user.username}`}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-          >
-            <SquarePen size={16} />
-          </Link>
-          <button
-            onClick={onDelete}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-          >
-            <Trash size={16} />
-          </button>
+
+        <div className="flex items-center gap-1.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link 
+                to={`/admin-dashboard/users/${user.username}`}
+                className="p-2 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all border border-transparent hover:border-blue-100 dark:hover:border-blue-800"
+              >
+                <SquarePen size={18} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Edit Profile</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onDelete}
+                className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all border border-transparent hover:border-red-100 dark:hover:border-red-800 cursor-pointer"
+              >
+                <Trash size={18} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Delete User</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
-      <h3 className="font-bold text-gray-800 dark:text-white mb-1">{user.username}</h3>
-      <p className="text-sm text-gray-500 mb-3">{user.email}</p>
+      <div className="space-y-1 mb-5">
+        <h3 className="font-extrabold text-gray-900 dark:text-white text-lg leading-tight flex items-center gap-1.5">
+          {user.name || user.username}
+          {user.isVerified && (
+            <CheckCircle2 size={16} className="text-blue-500" />
+          )}
+        </h3>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">@{user.username}</p>
+      </div>
 
-      <div className="flex items-center gap-2 mb-3">
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${getRoleStyles(user.role)}`}>
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider border ${getRoleStyles(user.role)}`}>
+          <Shield size={10} className="inline mr-1 -mt-0.5" />
           {user.role}
+        </span>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${statusStyles.bg} ${statusStyles.text} ${statusStyles.border}`}>
+          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusStyles.dot}`} />
+          {user.status}
         </span>
       </div>
 
-      <div className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold ${statusStyles.bg} ${statusStyles.text}`}>
-        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusStyles.dot}`} />
-        {user.status}
+      <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 gap-2.5 group/info">
+          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 group-hover/info:bg-blue-50 dark:group-hover/info:bg-blue-900/20 transition-colors">
+            <Mail size={14} className="text-gray-400 group-hover/info:text-blue-500 transition-colors" />
+          </div>
+          <span className="truncate flex-1">{user.email}</span>
+        </div>
+        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 gap-2.5 group/info">
+          <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 group-hover/info:bg-emerald-50 dark:group-hover/info:bg-emerald-900/20 transition-colors">
+            <Calendar size={14} className="text-gray-400 group-hover/info:text-emerald-500 transition-colors" />
+          </div>
+          <span>Joined {formattedDate}</span>
+        </div>
       </div>
     </motion.div>
   );

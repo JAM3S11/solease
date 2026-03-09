@@ -1,24 +1,112 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, ArrowLeft, User, Bot, Clock, CheckCircle, Eye, EyeOff, Calendar, AlertCircle, MoreVertical, Copy, Check, ChevronDown, ChevronUp, X, Shield, HelpCircle, Edit2, Trash2, RefreshCw, ThumbsUp, Search } from 'lucide-react';
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import DashboardLayout from '../ui/DashboardLayout';
-import { useAuthenticationStore } from '../../store/authStore';
-import useTicketStore from '../../store/ticketStore';
-import toast from 'react-hot-toast';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  Clipboard,
+  Clock3,
+  Eye,
+  EyeOff,
+  Grid2x2,
+  MapPin,
+  MessageCircle,
+  Paperclip,
+  Pencil,
+  Phone,
+  Search,
+  Send,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import toast from "react-hot-toast";
+import DashboardLayout from "../ui/DashboardLayout";
+import { useAuthenticationStore } from "../../store/authStore";
+import useTicketStore from "../../store/ticketStore";
+
+const STATUS_OPTIONS = ["Open", "In Progress", "Resolved", "Closed"];
 
 const ISSUE_TYPE_INITIALS = {
-  'Software Issue': 'SI',
-  'Hardware Issue': 'HI',
-  'Network Connectivity': 'NC',
-  'Account Access': 'AA',
-  'Other': 'OT'
+  "software issue": "SI",
+  "hardware issue": "HI",
+  "network connectivity": "NC",
+  "account access": "AA",
+  other: "OT",
 };
 
-const STATUS_OPTIONS = ['Open', 'In Progress', 'Resolved', 'Closed'];
+const getStatusPillClass = (status) => {
+  if (status === "Resolved") return "bg-emerald-500/15 text-emerald-300 border-emerald-500/40";
+  if (status === "In Progress") return "bg-sky-500/15 text-sky-300 border-sky-500/40";
+  if (status === "Closed") return "bg-slate-500/15 text-slate-300 border-slate-500/40";
+  return "bg-amber-500/15 text-amber-300 border-amber-500/40";
+};
+
+const getPriorityDotClass = (urgency) => {
+  if (urgency === "Critical") return "bg-red-500";
+  if (urgency === "High") return "bg-orange-500";
+  if (urgency === "Medium") return "bg-yellow-400";
+  return "bg-emerald-500";
+};
+
+const formatShortTime = (value) => {
+  if (!value) return "--:--";
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const formatReadableDate = (value) => {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
+};
+
+const getUserDisplayName = (message, fallbackUser) => {
+  if (message.user?.name) return message.user.name;
+  if (message.user?.username) return message.user.username;
+  if (message.user?._id === fallbackUser?._id) return fallbackUser?.name || fallbackUser?.username || "You";
+  return "Support Team";
+};
+
+const getIssueTypeInitials = (issueType) => {
+  if (!issueType) return "OT";
+  const normalized = issueType.toLowerCase();
+  if (ISSUE_TYPE_INITIALS[normalized]) return ISSUE_TYPE_INITIALS[normalized];
+  return issueType
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+};
 
 const FeedbackComponent = () => {
+  const [isDarkTheme, setIsDarkTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("solease-ui-theme");
+      if (stored === "dark") return true;
+      if (stored === "light") return false;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const stored = localStorage.getItem("solease-ui-theme");
+    if (stored === "dark") {
+      setIsDarkTheme(true);
+    } else if (stored === "light") {
+      setIsDarkTheme(false);
+    } else {
+      setIsDarkTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+
+    const observer = new MutationObserver(() => {
+      setIsDarkTheme(root.classList.contains("dark"));
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthenticationStore();
@@ -35,276 +123,261 @@ const FeedbackComponent = () => {
     loading,
     hideFeedback,
     unhideFeedback,
-    approveHiddenForManager,
     managerIntervention,
-    updateTicket
+    updateTicket,
   } = useTicketStore();
 
-  const ticket = tickets.find(t => t?._id === id);
-
-  const [newMessage, setNewMessage] = useState('');
+  const ticket = tickets.find((entry) => entry?._id === id);
+  const [newMessage, setNewMessage] = useState("");
   const [moderating, setModerating] = useState(null);
-  const [interventionContent, setInterventionContent] = useState('');
-  const [moderationMenu, setModerationMenu] = useState(null);
-  const [showTicketDetails, setShowTicketDetails] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [messageSearch, setMessageSearch] = useState("");
   const [hideModal, setHideModal] = useState({ show: false, commentId: null });
   const [unhideModal, setUnhideModal] = useState({ show: false, commentId: null });
-  const [copiedId, setCopiedId] = useState(false);
-  const [editModal, setEditModal] = useState({ show: false, message: null, content: '' });
+  const [editModal, setEditModal] = useState({ show: false, message: null, content: "" });
   const [deleteModal, setDeleteModal] = useState({ show: false, message: null });
-  const [statusLoading, setStatusLoading] = useState(false);
-  const [messageSearch, setMessageSearch] = useState('');
-  const [messageReactions, setMessageReactions] = useState({});
+  const [hideCode, setHideCode] = useState("");
+  const [unhideCode, setUnhideCode] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [ticket?.comments]);
+  // Personal notes state
+  const [draft, setDraft] = useState("");
+  const [notes, setNotes] = useState([]);
+  const storageKey = `solease-personal-notes-${id}`;
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setNotes(raw ? JSON.parse(raw) : []);
+    } catch {
+      setNotes([]);
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(notes));
+  }, [storageKey, notes]);
+
+  const handleSaveLocal = () => {
+    if (!draft.trim()) return;
+    setNotes((prev) => [
+      {
+        id: crypto.randomUUID(),
+        content: draft.trim(),
+        createdAt: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+    setDraft("");
+    toast.success("Personal note saved");
+  };
 
   useEffect(() => {
     if (!tickets.length) {
       fetchTickets();
-    } else if (!tickets.find(t => t?._id === id)) {
+    } else if (!ticket) {
       fetchSingleTicket(id);
     }
-  }, [fetchTickets, fetchSingleTicket, tickets, id]);
+  }, [fetchSingleTicket, fetchTickets, id, ticket, tickets.length]);
 
-  // Polling for real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       fetchTickets();
-    }, 10000); // Fetch every 10 seconds
+    }, 10000);
     return () => clearInterval(interval);
   }, [fetchTickets]);
 
-  // Allow all authenticated users to provide feedback
-  const canProvideFeedback = ticket && (
-    user?.role === 'Client' || 
-    user?.role === 'Reviewer' || 
-    user?.role === 'Manager' ||
-    user?.role === 'IT Support'
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [ticket?.comments]);
+
+  const canProvideFeedback = Boolean(
+    ticket && ["Client", "Reviewer", "Manager", "IT Support"].includes(user?.role)
   );
+  const canModerate = ["Reviewer", "Manager", "IT Support"].includes(user?.role);
+  const canCreateInternalNotes = user?.role === "Manager";
+  const canChangeStatus =
+    ticket &&
+    ["Reviewer", "Manager"].includes(user?.role) &&
+    (ticket.assignedTo?._id === user?._id ||
+      ticket.assignedTo?.id === user?._id ||
+      ticket.assignedTo === user?._id ||
+      user?.role === "Manager");
 
-  // Internal notes visible to Manager and IT Support
-  const canViewInternalNotes = ticket && ['Manager', 'IT Support'].includes(user?.role);
+  const allMessages = useMemo(() => {
+    if (!ticket?.comments?.length) return [];
+    const list = [];
 
-  // This checks if the user can moderate (Reviewer/Manager/IT Support roles)
-  const canModerate = ['Reviewer', 'Manager', 'IT Support'].includes(user?.role);
+    ticket.comments.forEach((comment) => {
+      const hiddenForThisUser = comment.isHidden && !canModerate;
+      if (hiddenForThisUser) return;
 
-  // Check if user can change status (Reviewer/Manager assigned to this ticket)
-  const canChangeStatus = ticket && ['Reviewer', 'Manager'].includes(user?.role) && (
-    ticket.assignedTo?._id === user?._id ||
-    ticket.assignedTo?.id === user?._id ||
-    ticket.assignedTo === user?._id ||
-    user?.role === 'Manager'
-  );
+      list.push({
+        ...comment,
+        type: "comment",
+        id: comment._id,
+        createdAt: comment.createdAt,
+      });
 
-  const handleStatusChange = async (newStatus) => {
-    if (!newStatus || newStatus === ticket.status) return;
+      comment.replies?.forEach((reply) => {
+        list.push({
+          ...reply,
+          type: "reply",
+          commentId: comment._id,
+          id: reply._id,
+          createdAt: reply.createdAt,
+        });
+      });
+    });
+
+    return list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }, [canModerate, ticket?.comments]);
+
+  const filteredMessages = useMemo(() => {
+    const query = messageSearch.trim().toLowerCase();
+    if (!query) return allMessages;
+    return allMessages.filter((message) => {
+      const content = message.content?.toLowerCase() || "";
+      const author = getUserDisplayName(message, user).toLowerCase();
+      return content.includes(query) || author.includes(query);
+    });
+  }, [allMessages, messageSearch, user]);
+
+  const handleStatusChange = async (nextStatus) => {
+    if (!ticket || !nextStatus || nextStatus === ticket.status) return;
     setStatusLoading(true);
     try {
-      await updateTicket(id, { status: newStatus });
-      toast.success(`Ticket status updated to ${newStatus}`);
+      await updateTicket(id, { status: nextStatus });
+      toast.success(`Status changed to ${nextStatus}`);
       fetchTickets();
-    } catch (error) {
-      toast.error('Failed to update status');
+    } catch {
+      toast.error("Failed to update status");
     } finally {
       setStatusLoading(false);
     }
   };
 
   const handleSubmitMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!ticket || !newMessage.trim()) return;
 
     try {
-      if (!ticket.comments || ticket.comments.length === 0) {
-        if (user?.role === 'Client') {
-          // First message - submit as feedback
-          await submitFeedback(id, newMessage);
-          toast.success('Feedback submitted successfully');
-        } else {
-          toast.error('Only clients can submit initial feedback');
+      if (!ticket.comments?.length) {
+        if (user?.role !== "Client") {
+          toast.error("Only clients can submit the first message");
           return;
         }
+        await submitFeedback(id, newMessage.trim());
       } else {
-        // Subsequent messages - add as reply to the latest comment
         const latestComment = ticket.comments[ticket.comments.length - 1];
-        await addReply(id, latestComment._id, newMessage);
-        toast.success('Message sent successfully');
+        await addReply(id, latestComment._id, newMessage.trim());
       }
-      setNewMessage('');
+
+      setNewMessage("");
+      toast.success("Message sent");
+      fetchTickets();
     } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to send message';
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || "Failed to send message");
     }
   };
 
-  const handleHide = async (unhideCode) => {
-    if (!unhideCode) return;
+  const handleCreateInternal = async (content, resetDraft) => {
+    if (!ticket?.comments?.length) {
+      toast.error("Add a conversation message first, then create an internal note.");
+      return;
+    }
+    if (!content.trim()) return;
+    setModerating("intervention");
+    try {
+      const latestComment = ticket.comments[ticket.comments.length - 1];
+      await managerIntervention(id, latestComment._id, content.trim());
+      toast.success("Internal note added");
+      resetDraft("");
+      fetchTickets();
+    } catch {
+      toast.error("Failed to add internal note");
+    } finally {
+      setModerating(null);
+    }
+  };
+
+  const handleHide = async () => {
+    if (!hideCode.trim() || !hideModal.commentId) return;
     setModerating(hideModal.commentId);
     try {
-      await hideFeedback(id, hideModal.commentId, unhideCode);
-      toast.success('Comment hidden successfully');
-    } catch (error) {
-      toast.error('Failed to hide comment. Check your code.');
+      await hideFeedback(id, hideModal.commentId, hideCode.trim());
+      toast.success("Comment hidden");
+      fetchTickets();
+      setHideModal({ show: false, commentId: null });
+      setHideCode("");
+    } catch {
+      toast.error("Failed to hide comment. Check your code.");
+    } finally {
+      setModerating(null);
     }
-    setModerating(null);
-    setHideModal({ show: false, commentId: null });
   };
 
-  const handleUnhide = async (code) => {
-    if (!code) return;
+  const handleUnhide = async () => {
+    if (!unhideCode.trim() || !unhideModal.commentId) return;
     setModerating(unhideModal.commentId);
     try {
-      await unhideFeedback(id, unhideModal.commentId, code);
-      toast.success('Comment unhidden successfully');
-    } catch (error) {
-      toast.error('Failed to unhide comment. Check your code.');
+      await unhideFeedback(id, unhideModal.commentId, unhideCode.trim());
+      toast.success("Comment unhidden");
+      fetchTickets();
+      setUnhideModal({ show: false, commentId: null });
+      setUnhideCode("");
+    } catch {
+      toast.error("Failed to unhide comment. Check your code.");
+    } finally {
+      setModerating(null);
     }
-    setModerating(null);
-    setUnhideModal({ show: false, commentId: null });
-  };
-
-  const openHideModal = (commentId) => {
-    setHideModal({ show: true, commentId });
-  };
-
-  const openUnhideModal = (commentId) => {
-    setUnhideModal({ show: true, commentId });
-  };
-
-  const openEditModal = (message) => {
-    setEditModal({ show: true, message, content: message.content });
-  };
-
-  const openDeleteModal = (message) => {
-    setDeleteModal({ show: true, message });
   };
 
   const handleEditMessage = async () => {
     if (!editModal.content.trim() || !editModal.message) return;
-    setModerating('edit');
+    setModerating("edit");
     try {
       const { message } = editModal;
-      if (message.type === 'comment') {
-        await editComment(id, message.id, editModal.content);
+      if (message.type === "comment") {
+        await editComment(id, message.id, editModal.content.trim());
       } else {
-        await editReply(id, message.commentId, message.id, editModal.content);
+        await editReply(id, message.commentId, message.id, editModal.content.trim());
       }
-      toast.success('Message updated successfully');
-      setEditModal({ show: false, message: null, content: '' });
-    } catch (error) {
-      toast.error('Failed to update message');
+      toast.success("Message updated");
+      setEditModal({ show: false, message: null, content: "" });
+      fetchTickets();
+    } catch {
+      toast.error("Failed to update message");
+    } finally {
+      setModerating(null);
     }
-    setModerating(null);
   };
 
   const handleDeleteMessage = async () => {
     if (!deleteModal.message) return;
-    setModerating('delete');
+    setModerating("delete");
     try {
       const { message } = deleteModal;
-      if (message.type === 'comment') {
+      if (message.type === "comment") {
         await deleteComment(id, message.id);
       } else {
         await deleteReply(id, message.commentId, message.id);
       }
-      toast.success('Message deleted successfully');
+      toast.success("Message deleted");
       setDeleteModal({ show: false, message: null });
-    } catch (error) {
-      toast.error('Failed to delete message');
-    }
-    setModerating(null);
-  };
-
-   const handleIntervention = async () => {
-     if (!interventionContent.trim()) return;
-     setModerating('intervention');
-     try {
-       const latestComment = ticket.comments[ticket.comments.length - 1];
-       await managerIntervention(id, latestComment?._id, interventionContent);
-       toast.success('Internal note added');
-       setInterventionContent('');
-     } catch (error) {
-       toast.error('Failed to add note');
-     }
-     setModerating(null);
-   };
-
-   // Toggle message reaction (helpful)
-   const toggleReaction = (messageId) => {
-     setMessageReactions(prev => ({
-       ...prev,
-       [messageId]: !prev[messageId]
-     }));
-   };
-
-   // Helper function to format relative time
-  const getRelativeTime = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    const intervals = {
-      year: 31536000,
-      month: 2592000,
-      week: 604800,
-      day: 86400,
-      hour: 3600,
-      minute: 60,
-      second: 1
-    };
-    
-    for (const [name, secondsInInterval] of Object.entries(intervals)) {
-      const interval = Math.floor(seconds / secondsInInterval);
-      if (interval >= 1) {
-        return `${interval} ${name}${interval > 1 ? 's' : ''} ago`;
-      }
-    }
-    return 'just now';
-  };
-
-  // Helper to get urgency color
-  const getUrgencyColor = (urgency) => {
-    switch(urgency) {
-      case 'Critical': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
-      case 'High': return 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20';
-      case 'Medium': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20';
-      default: return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20';
+      fetchTickets();
+    } catch {
+      toast.error("Failed to delete message");
+    } finally {
+      setModerating(null);
     }
   };
-
-  // Helper to get urgency icon
-  const getUrgencyIcon = (urgency) => {
-    switch(urgency) {
-      case 'Critical': return '🔴';
-      case 'High': return '🟠';
-      case 'Medium': return '🟡';
-      default: return '🟢';
-    }
-  };
-
-  // Helper to get issue type initials
-  const getIssueTypeInitials = (issueType) => {
-    return ISSUE_TYPE_INITIALS[issueType] || issueType?.slice(0, 2).toUpperCase() || '?';
-  };
-
-  // Copy ticket ID to clipboard
-  const copyTicketId = () => {
-    navigator.clipboard.writeText(ticket._id);
-    setCopiedId(true);
-    toast.success('Ticket ID copied!');
-    setTimeout(() => setCopiedId(false), 2000);
-  };
-
-
 
   if (loading && !ticket) {
     return (
       <DashboardLayout>
-        <div className="p-8 text-center">Loading ticket details...</div>
+        <div className="p-8 text-center text-slate-500 dark:text-slate-400">Loading ticket details...</div>
       </DashboardLayout>
     );
   }
@@ -312,789 +385,580 @@ const FeedbackComponent = () => {
   if (!ticket) {
     return (
       <DashboardLayout>
-        <div className="p-8 text-center text-red-600">Ticket not found</div>
+        <div className="p-8 text-center text-red-500">Ticket not found</div>
       </DashboardLayout>
     );
   }
 
-  // Sort comments by createdAt
-  if (ticket.comments) {
-    ticket.comments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }
-
-  // Count messages per user for chat conversion logic
-  const relevantMessages = ticket.comments ? ticket.comments.filter(c => ['Client', 'Reviewer', 'Manager'].includes(c.user?.role)) : [];
-  const chatEnabled = relevantMessages.length >= 4;
-
-  // Collect all messages (comments and replies) from all tickets
-  const allMessages = [];
-  if (ticket.comments) {
-    ticket.comments.filter(comment => !comment.isHidden).forEach(comment => {
-      allMessages.push({
-        ...comment,
-        type: 'comment',
-        id: comment._id,
-        createdAt: comment.createdAt
-      });
-      if (comment.replies) {
-        comment.replies.forEach(reply => {
-          allMessages.push({
-            ...reply,
-            type: 'reply',
-            commentId: comment._id,
-            id: reply._id,
-            createdAt: reply.createdAt
-          });
-        });
-      }
-    });
-  }
-  allMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
   return (
     <DashboardLayout>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
-        {/* Enhanced Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 mb-4 transition-colors"
-          >
-            <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Back</span>
-          </button>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Column - Ticket Summary */}
+        <aside className="w-72 shrink-0 border-r border-slate-200 dark:border-slate-800 flex flex-col overflow-y-auto bg-white dark:bg-[#0d121f]">
+          <div className="p-6">
+            <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Current View</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+              Ticket #{ticket._id.slice(-6).toUpperCase()}
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-6">
+              <MapPin size={12} />
+              <span>{ticket.location || "No location"}</span>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            {/* Title Section */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <MessageCircle size={24} className="text-blue-600 dark:text-blue-400" />
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-                    {chatEnabled ? 'Live Chat' : 'Ticket Feedback'}
-                  </h1>
-                  <span className="text-xs uppercase tracking-widest font-semibold text-slate-500 dark:text-slate-400">
-                    #{ticket._id.slice(-6).toUpperCase()}
+            <div className="space-y-4 mb-8">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Status</p>
+                {canChangeStatus ? (
+                  <Listbox value={ticket.status} onChange={handleStatusChange}>
+                    <div className="relative inline-block">
+                      <ListboxButton
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(
+                          ticket.status
+                        )}`}
+                      >
+                        {ticket.status}
+                        <ChevronDown size={12} />
+                      </ListboxButton>
+                      <ListboxOptions className="absolute left-0 z-20 mt-2 min-w-[150px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1 shadow-xl">
+                        {STATUS_OPTIONS.map((status) => (
+                          <ListboxOption
+                            key={status}
+                            value={status}
+                            disabled={status === ticket.status}
+                            className={({ active, disabled }) =>
+                              `cursor-pointer rounded-md px-3 py-2 text-sm ${
+                                active ? "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100" : "text-slate-700 dark:text-slate-300"
+                              } ${disabled ? "cursor-not-allowed opacity-50" : ""}`
+                            }
+                          >
+                            {status}
+                          </ListboxOption>
+                        ))}
+                      </ListboxOptions>
+                    </div>
+                  </Listbox>
+                ) : (
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(
+                      ticket.status
+                    )}`}
+                  >
+                    {ticket.status}
                   </span>
-                </div>
-                <p className="text-slate-600 dark:text-slate-400 text-sm ml-9">
-                  {user?.role === 'Client' ? (chatEnabled ? 'Real-time conversation with support team' : 'Share your feedback on this ticket') : 'Respond to client inquiries and provide support'}
-                </p>
+                )}
+                {statusLoading && (
+                  <span className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Updating...</span>
+                )}
               </div>
 
-              {/* Status Badges */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 justify-end">
-                  {canChangeStatus ? (
-                    <Listbox value={ticket.status} onChange={handleStatusChange}>
-                      <div className="relative">
-                        <ListboxButton className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity ${
-                          ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                          ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                          ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
-                          'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                        }`}>
-                          <CheckCircle size={14} />
-                          <span>{ticket.status}</span>
-                          <ChevronDown size={12} />
-                        </ListboxButton>
-                        <ListboxOptions className="absolute z-50 mt-1 w-40 right-0 overflow-auto rounded-lg bg-white dark:bg-slate-800 py-1 shadow-lg ring-1 ring-black/5 focus:outline-none border border-slate-200 dark:border-slate-700">
-                          {STATUS_OPTIONS.map((status) => (
-                            <ListboxOption
-                              key={status}
-                              value={status}
-                              disabled={status === ticket.status}
-                              className={({ active, disabled }) =>
-                                `relative cursor-pointer select-none py-2 pl-8 pr-4 text-xs font-semibold ${active ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200' : 'text-slate-700 dark:text-slate-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`
-                              }
-                            >
-                              {({ selected }) => (
-                                <>
-                                  {selected && <CheckCircle size={14} className="absolute left-2 text-blue-600 dark:text-blue-400" />}
-                                  <span className={selected ? 'font-bold text-blue-600 dark:text-blue-400' : ''}>{status}</span>
-                                </>
-                              )}
-                            </ListboxOption>
-                          ))}
-                        </ListboxOptions>
-                      </div>
-                    </Listbox>
-                  ) : (
-                    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                      ticket.status === 'Resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                      ticket.status === 'In Progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                      ticket.status === 'Closed' ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300' :
-                      'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                    }`}>
-                      <CheckCircle size={14} />
-                      {ticket.status}
-                    </span>
-                  )}
-                  {statusLoading && <RefreshCw size={14} className="animate-spin text-blue-600" />}
-                  {chatEnabled && (
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                      💬 Chat Active
-                    </span>
-                  )}
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Priority</p>
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <span className={`w-2.5 h-2.5 rounded-full ${getPriorityDotClass(ticket.urgency)}`} />
+                  <span>{ticket.urgency || "Low"}</span>
                 </div>
               </div>
-            </div>
 
-            {/* Metadata Bar */}
-            <div className="flex flex-wrap items-center gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={16} className="text-slate-400" />
-                <span className={`text-sm font-medium ${getUrgencyColor(ticket.urgency)}`}>
-                  {getUrgencyIcon(ticket.urgency)} {ticket.urgency} Priority
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                <Clock size={16} className="text-slate-400" />
-                <span className="text-sm font-medium">Created {getRelativeTime(ticket.createdAt)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                <Calendar size={16} className="text-slate-400" />
-                <span className="text-sm font-medium">Updated {getRelativeTime(ticket.updatedAt)}</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Ticket Info - Compact Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-4 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm"
-        >
-          {/* Quick Info Row */}
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Issue Type Badge */}
-            <div className="flex items-center gap-2" title={ticket.issueType}>
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                  {getIssueTypeInitials(ticket.issueType)}
-                </span>
-              </div>
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Type</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.issueType}</p>
+                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Type</p>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{ticket.issueType || "Other"}</p>
               </div>
             </div>
 
-            {/* Location */}
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <span className="text-sm">📍</span>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Location</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.location}</p>
-              </div>
-            </div>
+            <nav className="space-y-2">
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+                <Grid2x2 size={18} />
+                <span className="text-sm font-semibold">Overview</span>
+              </button>
+              <button className="flex w-full items-center gap-3 px-4 py-3 bg-orange-500 text-white rounded-lg shadow-lg shadow-orange-500/20">
+                <MessageCircle size={18} />
+                <span className="text-sm font-semibold">Ticket Feedback</span>
+              </button>
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+                <Clock3 size={18} />
+                <span className="text-sm font-semibold">Audit Trail</span>
+              </button>
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+                <Paperclip size={18} />
+                <span className="text-sm font-semibold">Documents</span>
+              </button>
+            </nav>
+          </div>
 
-            {/* Priority */}
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <span className="text-sm">{getUrgencyIcon(ticket.urgency)}</span>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Priority</p>
-                <p className={`text-sm font-medium ${getUrgencyColor(ticket.urgency)}`}>{ticket.urgency}</p>
-              </div>
-            </div>
-
-            {/* Created */}
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <Clock size={16} className="text-slate-500" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Created</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{getRelativeTime(ticket.createdAt)}</p>
-              </div>
-            </div>
-
-            {/* Copy ID Button */}
+          <div className="mt-auto p-6">
             <button
-              onClick={copyTicketId}
-              className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-              title="Copy Ticket ID"
+              onClick={() => handleStatusChange("Closed")}
+              disabled={ticket.status === "Closed" || statusLoading}
+              className="w-full py-3 px-4 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-500 rounded-lg flex items-center justify-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {copiedId ? <Check size={16} className="text-green-500" /> : <Copy size={16} className="text-slate-500" />}
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                #{ticket._id.slice(-6).toUpperCase()}
+              <X size={16} />
+              <span className="text-sm font-bold">Close Ticket</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Center Column - Conversation */}
+        <section className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0a0f1a] overflow-hidden">
+          {/* Chat Header */}
+          <div className="h-14 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0d121f]/50 shrink-0">
+            <div className="flex items-center gap-3">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xl">Conversation</h3>
+              <span className="text-[10px] bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-500 px-2 py-0.5 rounded border border-green-200 dark:border-green-500/20 font-bold uppercase tracking-wider">
+                Live Support
               </span>
-            </button>
-
-            {/* Expand/Collapse Details */}
-            <button
-              onClick={() => setShowTicketDetails(!showTicketDetails)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-            >
-              {showTicketDetails ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Details</span>
-            </button>
-          </div>
-
-          {/* Subject - Always Visible */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{ticket.subject}</p>
-          </div>
-
-          {/* Expanded Details */}
-          <AnimatePresence>
-            {showTicketDetails && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="grid grid-cols-2 gap-4 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-                  <div>
-                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Created</label>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Last Updated</label>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(ticket.updatedAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 block">Description</label>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{ticket.description}</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Manager Intervention (Manager only) */}
-        {user?.role === 'Manager' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 dark:bg-amber-900/15 rounded-xl p-6 mb-6 border border-amber-200 dark:border-amber-800 shadow-sm"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <AlertCircle size={20} className="text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-amber-900 dark:text-amber-100">Manager Intervention</h3>
-                <p className="text-xs text-amber-700 dark:text-amber-200 mt-1">💡 This message will only be visible to IT support staff</p>
-              </div>
             </div>
-            <textarea
-              value={interventionContent}
-              onChange={(e) => setInterventionContent(e.target.value)}
-              placeholder="Add internal notes or manager guidance..."
-              className="w-full p-3 border border-amber-300 dark:border-amber-700 rounded-lg bg-white dark:bg-slate-800 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              rows={3}
-            />
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={handleIntervention}
-                disabled={moderating === 'intervention' || !interventionContent.trim()}
-                className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {moderating === 'intervention' ? 'Adding...' : 'Add Internal Note'}
+            <div className="flex items-center gap-2">
+              <button className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-lg">
+                <Video size={16} />
+              </button>
+              <button className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-lg">
+                <Phone size={16} />
               </button>
             </div>
-          </motion.div>
-        )}
-
-        {/* Messages/Feedback Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {chatEnabled ? 'Chat Messages' : 'Feedback & Comments'}
-            </h3>
-            <span className="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {allMessages.length} message{allMessages.length !== 1 ? 's' : ''}
-            </span>
           </div>
 
-          {/* Messages Display with Enhanced Styling */}
-          <div className="space-y-4 mb-6 max-h-96 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
-            {allMessages.length > 0 ? (
-              (() => {
-                const groupedMessages = [];
-                let currentGroup = [];
-                let currentDate = null;
+          {/* Search Bar */}
+          <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800">
+            <label className="relative block">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <input
+                value={messageSearch}
+                onChange={(event) => setMessageSearch(event.target.value)}
+                placeholder="Search messages..."
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-orange-500 dark:focus:border-slate-500"
+              />
+            </label>
+          </div>
 
-                allMessages.forEach((message, idx) => {
-                  const messageDate = new Date(message.createdAt).toLocaleDateString();
-                  
-                  if (currentDate !== messageDate) {
-                    if (currentGroup.length > 0) {
-                      groupedMessages.push({ type: 'group', messages: currentGroup, date: currentDate });
-                    }
-                    currentDate = messageDate;
-                    currentGroup = [message];
-                  } else {
-                    currentGroup.push(message);
-                  }
-                });
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex justify-center">
+              <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600 bg-slate-100 dark:bg-[#161b2a] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
+              </span>
+            </div>
 
-                if (currentGroup.length > 0) {
-                  groupedMessages.push({ type: 'group', messages: currentGroup, date: currentDate });
-                }
+            <div className="space-y-6">
+              {filteredMessages.length === 0 && (
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b2a] p-6 text-center text-slate-500 dark:text-slate-400">
+                  No messages found for this conversation.
+                </div>
+              )}
 
-                return groupedMessages.map((group, groupIdx) => (
-                  <div key={groupIdx} className="space-y-3">
-                    {/* Date Separator */}
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 border-t border-slate-300 dark:border-slate-600"></div>
-                      <span className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 px-2">
-                        📅 {group.date}
-                      </span>
-                      <div className="flex-1 border-t border-slate-300 dark:border-slate-600"></div>
+              {filteredMessages.map((message) => {
+                const isSelf = message.user?._id === user?._id;
+                const isComment = message.type === "comment";
+                const isHidden = Boolean(message.isHidden);
+                const messageOwner = getUserDisplayName(message, user);
+                const canEditOwn = isSelf;
+                const canModerateComment = canModerate && isComment && !isSelf;
+
+                return (
+                  <div
+                    key={`${message.type}-${message.id}`}
+                    className={`flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
+                  >
+                    <div className={`w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-600 flex items-center justify-center shrink-0 ${isSelf ? "" : ""}`}>
+                      {isSelf ? (
+                        <span className="font-bold text-xs text-indigo-600 dark:text-white">
+                          {user?.name?.slice(0, 2)?.toUpperCase() || "DJ"}
+                        </span>
+                      ) : (
+                        <MessageCircle size={20} className="text-indigo-600 dark:text-white" />
+                      )}
                     </div>
+                    <div className={isSelf ? "flex flex-col items-end" : ""}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {!isSelf && (
+                          <>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">{messageOwner}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatShortTime(message.createdAt)}</span>
+                          </>
+                        )}
+                        {isSelf && (
+                          <>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatShortTime(message.createdAt)}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">You</span>
+                          </>
+                        )}
+                      </div>
 
-                    {/* Messages in Group */}
-                    {group.messages.map((message, idx) => {
-                      const isSelf = message.user?._id === user?._id;
-                      const isReply = message.type === 'reply';
-                      const isAI = message.aiGenerated;
+                      <div
+                        className={`border p-4 rounded-2xl ${
+                          isSelf
+                            ? "bg-orange-500 text-white rounded-tr-none"
+                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] text-slate-700 dark:text-slate-100 rounded-tl-none"
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed">{message.content}</p>
+                      </div>
 
-                      return (
-                        <motion.div 
-                          key={`${message.type}-${message.id}`} 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`flex ${isSelf ? 'justify-end' : 'justify-start'} group/message`}
+                      {isHidden && canModerate && (
+                        <p className="text-xs font-semibold text-amber-500 dark:text-amber-300 mt-1">This comment is hidden.</p>
+                      )}
+
+                      <div className="flex items-center gap-1 mt-2 opacity-0 transition group-hover:opacity-100">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(message.content || "");
+                            toast.success("Copied to clipboard");
+                          }}
+                          className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
-                          <div className={`max-w-sm ${isSelf ? '' : 'flex items-start gap-2.5'}`}>
-                            {/* Sender Avatar */}
-                            {!isSelf && (
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                isAI ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
-                              }`}>
-                                <span className="text-xs font-bold">
-                                  {isAI ? '🤖' : (message.user?.name?.charAt(0) || message.user?.username?.charAt(0) || '?')}
-                                </span>
-                              </div>
-                            )}
-
-                            <div className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
-                              {/* Sender Name & Role Badge */}
-                              {!isSelf && (
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                    {message.user?.name || message.user?.username || 'Unknown'}
-                                  </span>
-                                  {message.user?.role && (
-                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                                      isAI ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
-                                      message.user?.role === 'Manager' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
-                                      message.user?.role === 'Reviewer' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                                      'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300'
-                                    }`}>
-                                      {isAI ? 'AI' : message.user?.role}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Message Bubble */}
-                              <div className={`px-4 py-3 rounded-lg ${
-                                isSelf 
-                                  ? 'bg-blue-600 text-white' 
-                                  : isAI 
-                                  ? 'bg-purple-100 dark:bg-purple-900/30 text-slate-900 dark:text-slate-100 border border-purple-300 dark:border-purple-700'
-                                  : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
-                              }`}>
-                                <p className="text-sm leading-relaxed">{message.content}</p>
-
-                                {/* Timestamp & Actions */}
-                                <div className="flex items-center justify-between mt-2 gap-2">
-                                  <span className={`text-xs ${isSelf ? 'text-blue-100' : 'text-slate-600 dark:text-slate-400'}`}>
-                                    {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-
-                                  {/* Own Message Actions - Edit/Delete */}
-                                  {isSelf && (
-                                    <div className="flex gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity">
-                                      <button
-                                        onClick={() => openEditModal(message)}
-                                        disabled={moderating === 'edit' || moderating === 'delete'}
-                                        className="p-1 hover:bg-white/20 rounded transition-colors"
-                                        title="Edit message"
-                                      >
-                                        <Edit2 size={14} />
-                                      </button>
-                                      <button
-                                        onClick={() => openDeleteModal(message)}
-                                        disabled={moderating === 'edit' || moderating === 'delete'}
-                                        className="p-1 hover:bg-red-500 hover:text-white rounded transition-colors"
-                                        title="Delete message"
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    </div>
-                                  )}
-
-                                  {/* Moderation Actions - Always Visible */}
-                                  {canModerate && message.type === 'comment' && !isSelf && (
-                                    <div className="flex gap-1 opacity-70 hover:opacity-100 transition-opacity">
-                                      <button
-                                        onClick={() => openHideModal(message._id)}
-                                        disabled={moderating === message._id}
-                                        className="p-1 hover:bg-red-500 hover:text-white rounded transition-colors"
-                                        title="Hide inappropriate comment"
-                                      >
-                                        <EyeOff size={14} />
-                                      </button>
-                                      {message.isHidden && (
-                                        <button
-                                          onClick={() => openUnhideModal(message._id)}
-                                          disabled={moderating === message._id}
-                                          className="p-1 hover:bg-green-500 hover:text-white rounded transition-colors"
-                                          title="Unhide comment"
-                                        >
-                                          <Eye size={14} />
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Hidden Comment Indicator */}
-                              {message.isHidden && (
-                                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 italic">
-                                  ⛔ This comment has been hidden by a moderator
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Self Avatar */}
-                            {isSelf && (
-                              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-bold text-white">
-                                  {user?.name?.charAt(0) || user?.username?.charAt(0) || '?'}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      );
-                    })}
+                          <Clipboard size={14} />
+                        </button>
+                        {canEditOwn && (
+                          <>
+                            <button
+                              onClick={() =>
+                                setEditModal({ show: true, message, content: message.content || "" })
+                              }
+                              className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => setDeleteModal({ show: true, message })}
+                              className="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/30 p-1.5 text-red-500 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
+                        {canModerateComment && !isHidden && (
+                          <button
+                            onClick={() => setHideModal({ show: true, commentId: message._id })}
+                            disabled={moderating === message._id}
+                            className="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/25 p-1.5 text-red-500 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/45 disabled:opacity-50"
+                          >
+                            <EyeOff size={14} />
+                          </button>
+                        )}
+                        {canModerateComment && isHidden && (
+                          <button
+                            onClick={() => setUnhideModal({ show: true, commentId: message._id })}
+                            disabled={moderating === message._id}
+                            className="rounded-md border border-green-200 dark:border-emerald-500/40 bg-green-50 dark:bg-emerald-900/20 p-1.5 text-green-600 dark:text-emerald-300 hover:bg-green-100 dark:hover:bg-emerald-900/40 disabled:opacity-50"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                ));
-              })()
-            ) : (
-              <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                <MessageCircle size={48} className="mx-auto mb-4 opacity-30" />
-                <p className="font-medium">No {chatEnabled ? 'messages' : 'feedback'} yet</p>
-                <p className="text-sm mt-1">
-                  {user?.role === 'Client' ? 'Start the conversation!' : 'Waiting for client feedback...'}
-                </p>
-              </div>
-            )}
+                );
+              })}
+            </div>
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Message Input */}
-          {canProvideFeedback && (
-            <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4">
-              <div className="flex gap-3">
+          {/* Chat Input */}
+          {canProvideFeedback ? (
+            <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0d121f]/30">
+              <div className="bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <textarea
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={user?.role === 'Client' ? (chatEnabled ? "Type your message..." : "Share your feedback...") : "Respond to client..."}
-                  className="flex-1 p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  onChange={(event) => setNewMessage(event.target.value)}
                   rows={3}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
+                  placeholder="Type your message to the support team..."
+                  className="w-full bg-transparent border-none text-sm text-slate-900 dark:text-slate-200 focus:ring-0 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
                       handleSubmitMessage();
                     }
                   }}
                 />
-                <button
-                  onClick={handleSubmitMessage}
-                  disabled={loading || !newMessage.trim()}
-                  className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center gap-2 self-end"
-                >
-                  <Send size={16} />
-                  <span className="hidden sm:inline">Send</span>
-                </button>
+                <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+                  <div className="flex gap-4">
+                    <button className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors">
+                      <Paperclip size={18} />
+                    </button>
+                    <button className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors">
+                      <Search size={18} />
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleSubmitMessage}
+                    disabled={loading || !newMessage.trim()}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span>Send Message</span>
+                    <Send size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 text-sm text-amber-600 dark:text-amber-300">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} />
+                Feedback is available only for ticket participants.
               </div>
             </div>
           )}
+        </section>
 
-          {!canProvideFeedback && (
-            <div className="text-center py-4 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-              <p className="text-sm font-medium">ℹ️ Feedback available when ticket is "Resolved" or "In Progress"</p>
+        {/* Right Column - Personal Notes */}
+        <aside className="w-80 shrink-0 border-l border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50 dark:bg-[#0d121f]/20 overflow-y-auto">
+          <div className="p-6 flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Pencil size={18} className="text-orange-500" />
+              <h3 className="font-bold text-slate-900 dark:text-white text-xl">Personal Notes</h3>
             </div>
-          )}
-        </motion.div>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mb-6">
+              Add private notes for your own reference. These are not visible to the support team.
+            </p>
 
-        {/* Hide Comment Modal */}
-        <AnimatePresence>
-          {hideModal.show && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setHideModal({ show: false, commentId: null })}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <EyeOff size={20} className="text-red-600 dark:text-red-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Hide Comment</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Enter the hide code</p>
-                  </div>
+            <div className="bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-8">
+              <textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Enter private note..."
+                rows={5}
+                className="w-full bg-transparent border-none text-xs text-slate-900 dark:text-slate-200 focus:ring-0 resize-none p-4 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+              />
+              <div className="p-2 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2">
+                <button
+                  onClick={handleSaveLocal}
+                  disabled={!draft.trim()}
+                  className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[10px] font-bold text-slate-700 dark:text-white py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Save Note
+                </button>
+                {canCreateInternalNotes && (
                   <button
-                    onClick={() => setHideModal({ show: false, commentId: null })}
-                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
-                  >
-                    <X size={20} className="text-slate-500" />
-                  </button>
-                </div>
-                
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    id="hideCode"
-                    placeholder="Enter hide code"
-                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleHide(e.target.value);
+                    onClick={() => {
+                      if (ticket?.comments?.length) {
+                        handleCreateInternal(draft, setDraft);
+                      } else {
+                        toast.error("Add a conversation message first");
                       }
                     }}
-                  />
-                  <p className="text-xs text-slate-500 mt-2">💡 Hint: The code is SOLEASEHIDE</p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setHideModal({ show: false, commentId: null })}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    disabled={!draft.trim() || moderating === "intervention"}
+                    className="bg-orange-500 hover:bg-orange-600 text-[10px] font-bold text-white py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Cancel
+                    {moderating === "intervention" ? "Saving..." : "Save Internal"}
                   </button>
-                  <button
-                    onClick={() => handleHide(document.getElementById('hideCode')?.value)}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
-                  >
-                    Hide Comment
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                )}
+              </div>
+            </div>
 
-        {/* Unhide Comment Modal */}
-        <AnimatePresence>
-          {unhideModal.show && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setUnhideModal({ show: false, commentId: null })}
+            <div className="space-y-4">
+              <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600">Your Saved Notes</p>
+              {notes.length === 0 ? (
+                <div className="bg-slate-100 dark:bg-[#161b2a]/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-sm text-slate-500 dark:text-slate-500">
+                  No personal notes yet.
+                </div>
+              ) : (
+                notes.map((note) => (
+                  <div key={note.id} className="bg-slate-100 dark:bg-[#161b2a]/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-500 mb-2">{formatReadableDate(note.createdAt)}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 italic">"{note.content}"</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
+            <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600 mb-4">Associated Entities</p>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                {ticket.location || "Location"}
+              </span>
+              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                {ticket.issueType || "Issue"}
+              </span>
+              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                {getIssueTypeInitials(ticket.issueType)}
+              </span>
+              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                {ticket.status}
+              </span>
+            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="mt-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <Eye size={20} className="text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Unhide Comment</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Enter the unhide code</p>
-                  </div>
-                  <button
-                    onClick={() => setUnhideModal({ show: false, commentId: null })}
-                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
-                  >
-                    <X size={20} className="text-slate-500" />
-                  </button>
-                </div>
-                
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    id="unhideCode"
-                    placeholder="Enter unhide code"
-                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleUnhide(e.target.value);
-                      }
-                    }}
-                  />
-                  <p className="text-xs text-slate-500 mt-2">💡 Hint: The code is SOLEASEUNHIDE</p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setUnhideModal({ show: false, commentId: null })}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => handleUnhide(document.getElementById('unhideCode')?.value)}
-                    className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
-                  >
-                    Unhide Comment
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Edit Message Modal */}
-        <AnimatePresence>
-          {editModal.show && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setEditModal({ show: false, message: null, content: '' })}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Edit2 size={20} className="text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Message</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Update your message</p>
-                  </div>
-                  <button
-                    onClick={() => setEditModal({ show: false, message: null, content: '' })}
-                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
-                  >
-                    <X size={20} className="text-slate-500" />
-                  </button>
-                </div>
-                
-                <div className="mb-4">
-                  <textarea
-                    value={editModal.content}
-                    onChange={(e) => setEditModal({ ...editModal, content: e.target.value })}
-                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                    autoFocus
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setEditModal({ show: false, message: null, content: '' })}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleEditMessage}
-                    disabled={!editModal.content.trim() || moderating === 'edit'}
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {moderating === 'edit' ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Delete Message Modal */}
-        <AnimatePresence>
-          {deleteModal.show && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setDeleteModal({ show: false, message: null })}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <Trash2 size={20} className="text-red-600 dark:text-red-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Message</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Are you sure you want to delete this message?</p>
-                  </div>
-                  <button
-                    onClick={() => setDeleteModal({ show: false, message: null })}
-                    className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
-                  >
-                    <X size={20} className="text-slate-500" />
-                  </button>
-                </div>
-                
-                <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{deleteModal.message?.content}</p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setDeleteModal({ show: false, message: null })}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteMessage}
-                    disabled={moderating === 'delete'}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {moderating === 'delete' ? 'Deleting...' : 'Delete Message'}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <CheckCircle2 size={16} />
+              Back to tickets
+            </button>
+          </div>
+        </aside>
       </div>
+
+      {/* Modals */}
+      {hideModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setHideModal({ show: false, commentId: null })}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Hide Comment</h3>
+              <button
+                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={() => setHideModal({ show: false, commentId: null })}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <input
+              value={hideCode}
+              onChange={(event) => setHideCode(event.target.value)}
+              placeholder="Enter hide code"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+            />
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">Hint: SOLEASEHIDE</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                onClick={() => setHideModal({ show: false, commentId: null })}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-lg bg-red-500 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                onClick={handleHide}
+                disabled={!hideCode.trim() || moderating === hideModal.commentId}
+              >
+                {moderating === hideModal.commentId ? "Hiding..." : "Hide"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {unhideModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setUnhideModal({ show: false, commentId: null })}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Unhide Comment</h3>
+              <button
+                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={() => setUnhideModal({ show: false, commentId: null })}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <input
+              value={unhideCode}
+              onChange={(event) => setUnhideCode(event.target.value)}
+              placeholder="Enter unhide code"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+            />
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">Hint: SOLEASEUNHIDE</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                onClick={() => setUnhideModal({ show: false, commentId: null })}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-lg bg-emerald-500 hover:bg-emerald-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                onClick={handleUnhide}
+                disabled={!unhideCode.trim() || moderating === unhideModal.commentId}
+              >
+                {moderating === unhideModal.commentId ? "Unhiding..." : "Unhide"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setEditModal({ show: false, message: null, content: "" })}
+        >
+          <div
+            className="w-full max-w-lg rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit Message</h3>
+              <button
+                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={() => setEditModal({ show: false, message: null, content: "" })}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <textarea
+              value={editModal.content}
+              onChange={(event) => setEditModal((prev) => ({ ...prev, content: event.target.value }))}
+              rows={4}
+              className="w-full resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                onClick={() => setEditModal({ show: false, message: null, content: "" })}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-lg bg-sky-500 hover:bg-sky-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                onClick={handleEditMessage}
+                disabled={!editModal.content.trim() || moderating === "edit"}
+              >
+                {moderating === "edit" ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setDeleteModal({ show: false, message: null })}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Delete Message</h3>
+              <button
+                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={() => setDeleteModal({ show: false, message: null })}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3 text-sm text-slate-700 dark:text-slate-300">
+              {deleteModal.message?.content}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                onClick={() => setDeleteModal({ show: false, message: null })}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-lg bg-red-500 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                onClick={handleDeleteMessage}
+                disabled={moderating === "delete"}
+              >
+                {moderating === "delete" ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

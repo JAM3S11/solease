@@ -37,15 +37,15 @@ const ISSUE_TYPE_INITIALS = {
 };
 
 const getStatusPillClass = (status) => {
-  if (status === "Resolved") return "bg-emerald-500/15 text-emerald-300 border-emerald-500/40";
-  if (status === "In Progress") return "bg-sky-500/15 text-sky-300 border-sky-500/40";
-  if (status === "Closed") return "bg-slate-500/15 text-slate-300 border-slate-500/40";
-  return "bg-amber-500/15 text-amber-300 border-amber-500/40";
+  if (status === "Resolved") return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40";
+  if (status === "In Progress") return "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40";
+  if (status === "Closed") return "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/40";
+  return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40";
 };
 
 const getPriorityDotClass = (urgency) => {
   if (urgency === "Critical") return "bg-red-500";
-  if (urgency === "High") return "bg-orange-500";
+  if (urgency === "High") return "bg-blue-500";
   if (urgency === "Medium") return "bg-yellow-400";
   return "bg-emerald-500";
 };
@@ -377,7 +377,7 @@ const FeedbackComponent = () => {
   if (loading && !ticket) {
     return (
       <DashboardLayout>
-        <div className="p-8 text-center text-slate-500 dark:text-slate-400">Loading ticket details...</div>
+        <div className="p-8 text-center text-muted-foreground">Loading ticket details...</div>
       </DashboardLayout>
     );
   }
@@ -394,20 +394,20 @@ const FeedbackComponent = () => {
     <DashboardLayout>
       <div className="flex flex-1 overflow-hidden">
         {/* Left Column - Ticket Summary */}
-        <aside className="w-72 shrink-0 border-r border-slate-200 dark:border-slate-800 flex flex-col overflow-y-auto bg-white dark:bg-[#0d121f]">
+        <aside className="w-72 shrink-0 border-r border-border bg-card">
           <div className="p-6">
-            <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Current View</p>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Current View</p>
+            <h2 className="text-xl font-bold text-foreground mb-1">
               Ticket #{ticket._id.slice(-6).toUpperCase()}
             </h2>
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-6">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">
               <MapPin size={12} />
               <span>{ticket.location || "No location"}</span>
             </div>
 
             <div className="space-y-4 mb-8">
               <div>
-                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Status</p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Status</p>
                 {canChangeStatus ? (
                   <Listbox value={ticket.status} onChange={handleStatusChange}>
                     <div className="relative inline-block">
@@ -419,7 +419,7 @@ const FeedbackComponent = () => {
                         {ticket.status}
                         <ChevronDown size={12} />
                       </ListboxButton>
-                      <ListboxOptions className="absolute left-0 z-20 mt-2 min-w-[150px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1 shadow-xl">
+                      <ListboxOptions className="absolute left-0 z-20 mt-2 min-w-[150px] rounded-lg border border-border bg-card p-1 shadow-xl">
                         {STATUS_OPTIONS.map((status) => (
                           <ListboxOption
                             key={status}
@@ -427,7 +427,7 @@ const FeedbackComponent = () => {
                             disabled={status === ticket.status}
                             className={({ active, disabled }) =>
                               `cursor-pointer rounded-md px-3 py-2 text-sm ${
-                                active ? "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100" : "text-slate-700 dark:text-slate-300"
+                                active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"
                               } ${disabled ? "cursor-not-allowed opacity-50" : ""}`
                             }
                           >
@@ -447,38 +447,38 @@ const FeedbackComponent = () => {
                   </span>
                 )}
                 {statusLoading && (
-                  <span className="ml-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Updating...</span>
+                  <span className="ml-2 text-xs font-semibold text-muted-foreground">Updating...</span>
                 )}
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Priority</p>
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Priority</p>
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span className={`w-2.5 h-2.5 rounded-full ${getPriorityDotClass(ticket.urgency)}`} />
                   <span>{ticket.urgency || "Low"}</span>
                 </div>
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-2">Type</p>
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{ticket.issueType || "Other"}</p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Type</p>
+                <p className="text-sm font-semibold text-muted-foreground">{ticket.issueType || "Other"}</p>
               </div>
             </div>
 
             <nav className="space-y-2">
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
                 <Grid2x2 size={18} />
                 <span className="text-sm font-semibold">Overview</span>
               </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 bg-orange-500 text-white rounded-lg shadow-lg shadow-orange-500/20">
+              <button className="flex w-full items-center gap-3 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg">
                 <MessageCircle size={18} />
                 <span className="text-sm font-semibold">Ticket Feedback</span>
               </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
                 <Clock3 size={18} />
                 <span className="text-sm font-semibold">Audit Trail</span>
               </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg">
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
                 <Paperclip size={18} />
                 <span className="text-sm font-semibold">Documents</span>
               </button>
@@ -489,7 +489,7 @@ const FeedbackComponent = () => {
             <button
               onClick={() => handleStatusChange("Closed")}
               disabled={ticket.status === "Closed" || statusLoading}
-              className="w-full py-3 px-4 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-500 rounded-lg flex items-center justify-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full py-3 px-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg flex items-center justify-center gap-2 hover:bg-destructive/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               <X size={16} />
               <span className="text-sm font-bold">Close Ticket</span>
@@ -498,34 +498,34 @@ const FeedbackComponent = () => {
         </aside>
 
         {/* Center Column - Conversation */}
-        <section className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0a0f1a] overflow-hidden">
+        <section className="flex-1 flex flex-col bg-background overflow-hidden">
           {/* Chat Header */}
-          <div className="h-14 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0d121f]/50 shrink-0">
+          <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
             <div className="flex items-center gap-3">
-              <h3 className="font-bold text-slate-900 dark:text-white text-xl">Conversation</h3>
-              <span className="text-[10px] bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-500 px-2 py-0.5 rounded border border-green-200 dark:border-green-500/20 font-bold uppercase tracking-wider">
+              <h3 className="font-bold text-foreground text-xl">Conversation</h3>
+              <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider">
                 Live Support
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-lg">
+              <button className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg">
                 <Video size={16} />
               </button>
-              <button className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-lg">
+              <button className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg">
                 <Phone size={16} />
               </button>
             </div>
           </div>
 
           {/* Search Bar */}
-          <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="px-6 py-3 border-b border-border">
             <label className="relative block">
-              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={messageSearch}
                 onChange={(event) => setMessageSearch(event.target.value)}
                 placeholder="Search messages..."
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-orange-500 dark:focus:border-slate-500"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 pl-9 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
               />
             </label>
           </div>
@@ -533,14 +533,14 @@ const FeedbackComponent = () => {
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="flex justify-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600 bg-slate-100 dark:bg-[#161b2a] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
                 Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
               </span>
             </div>
 
             <div className="space-y-6">
               {filteredMessages.length === 0 && (
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b2a] p-6 text-center text-slate-500 dark:text-slate-400">
+                <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
                   No messages found for this conversation.
                 </div>
               )}
@@ -558,27 +558,27 @@ const FeedbackComponent = () => {
                     key={`${message.type}-${message.id}`}
                     className={`flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
                   >
-                    <div className={`w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-600 flex items-center justify-center shrink-0 ${isSelf ? "" : ""}`}>
+                    <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0`}>
                       {isSelf ? (
-                        <span className="font-bold text-xs text-indigo-600 dark:text-white">
+                        <span className="font-bold text-xs text-primary">
                           {user?.name?.slice(0, 2)?.toUpperCase() || "DJ"}
                         </span>
                       ) : (
-                        <MessageCircle size={20} className="text-indigo-600 dark:text-white" />
+                        <MessageCircle size={20} className="text-primary" />
                       )}
                     </div>
                     <div className={isSelf ? "flex flex-col items-end" : ""}>
                       <div className="flex items-center gap-2 mb-1">
                         {!isSelf && (
                           <>
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">{messageOwner}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatShortTime(message.createdAt)}</span>
+                            <span className="text-sm font-bold text-foreground">{messageOwner}</span>
+                            <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
                           </>
                         )}
                         {isSelf && (
                           <>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatShortTime(message.createdAt)}</span>
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">You</span>
+                            <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
+                            <span className="text-sm font-bold text-foreground">You</span>
                           </>
                         )}
                       </div>
@@ -586,15 +586,15 @@ const FeedbackComponent = () => {
                       <div
                         className={`border p-4 rounded-2xl ${
                           isSelf
-                            ? "bg-orange-500 text-white rounded-tr-none"
-                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] text-slate-700 dark:text-slate-100 rounded-tl-none"
+                            ? "bg-primary text-primary-foreground rounded-tr-none"
+                            : "border-border bg-card text-foreground rounded-tl-none"
                         }`}
                       >
                         <p className="text-sm leading-relaxed">{message.content}</p>
                       </div>
 
                       {isHidden && canModerate && (
-                        <p className="text-xs font-semibold text-amber-500 dark:text-amber-300 mt-1">This comment is hidden.</p>
+                        <p className="text-xs font-semibold text-amber-500 mt-1">This comment is hidden.</p>
                       )}
 
                       <div className="flex items-center gap-1 mt-2 opacity-0 transition group-hover:opacity-100">
@@ -603,7 +603,7 @@ const FeedbackComponent = () => {
                             navigator.clipboard.writeText(message.content || "");
                             toast.success("Copied to clipboard");
                           }}
-                          className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
                         >
                           <Clipboard size={14} />
                         </button>
@@ -613,13 +613,13 @@ const FeedbackComponent = () => {
                               onClick={() =>
                                 setEditModal({ show: true, message, content: message.content || "" })
                               }
-                              className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#161b2a] p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
                             >
                               <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => setDeleteModal({ show: true, message })}
-                              className="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/30 p-1.5 text-red-500 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                              className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -629,7 +629,7 @@ const FeedbackComponent = () => {
                           <button
                             onClick={() => setHideModal({ show: true, commentId: message._id })}
                             disabled={moderating === message._id}
-                            className="rounded-md border border-red-200 dark:border-red-500/40 bg-red-50 dark:bg-red-900/25 p-1.5 text-red-500 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/45 disabled:opacity-50"
+                            className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20 disabled:opacity-50"
                           >
                             <EyeOff size={14} />
                           </button>
@@ -638,7 +638,7 @@ const FeedbackComponent = () => {
                           <button
                             onClick={() => setUnhideModal({ show: true, commentId: message._id })}
                             disabled={moderating === message._id}
-                            className="rounded-md border border-green-200 dark:border-emerald-500/40 bg-green-50 dark:bg-emerald-900/20 p-1.5 text-green-600 dark:text-emerald-300 hover:bg-green-100 dark:hover:bg-emerald-900/40 disabled:opacity-50"
+                            className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-1.5 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50"
                           >
                             <Eye size={14} />
                           </button>
@@ -654,14 +654,14 @@ const FeedbackComponent = () => {
 
           {/* Chat Input */}
           {canProvideFeedback ? (
-            <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-[#0d121f]/30">
-              <div className="bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+            <div className="p-6 border-t border-border bg-card/50">
+              <div className="bg-card border border-border rounded-xl p-4">
                 <textarea
                   value={newMessage}
                   onChange={(event) => setNewMessage(event.target.value)}
                   rows={3}
                   placeholder="Type your message to the support team..."
-                  className="w-full bg-transparent border-none text-sm text-slate-900 dark:text-slate-200 focus:ring-0 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                  className="w-full bg-transparent border-none text-sm text-foreground focus:ring-0 resize-none placeholder:text-muted-foreground"
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
                       event.preventDefault();
@@ -669,19 +669,19 @@ const FeedbackComponent = () => {
                     }
                   }}
                 />
-                <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+                <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/50">
                   <div className="flex gap-4">
-                    <button className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
                       <Paperclip size={18} />
                     </button>
-                    <button className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors">
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
                       <Search size={18} />
                     </button>
                   </div>
                   <button
                     onClick={handleSubmitMessage}
                     disabled={loading || !newMessage.trim()}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span>Send Message</span>
                     <Send size={16} />
@@ -690,7 +690,7 @@ const FeedbackComponent = () => {
               </div>
             </div>
           ) : (
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-amber-50 dark:bg-amber-900/20 text-sm text-amber-600 dark:text-amber-300">
+            <div className="p-4 border-t border-border bg-amber-500/10 text-sm text-amber-500">
               <div className="flex items-center gap-2">
                 <AlertCircle size={16} />
                 Feedback is available only for ticket participants.
@@ -700,29 +700,29 @@ const FeedbackComponent = () => {
         </section>
 
         {/* Right Column - Personal Notes */}
-        <aside className="w-80 shrink-0 border-l border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50 dark:bg-[#0d121f]/20 overflow-y-auto">
+        <aside className="w-80 shrink-0 border-l border-border flex flex-col bg-card/50 overflow-y-auto">
           <div className="p-6 flex-1">
             <div className="flex items-center gap-2 mb-4">
-              <Pencil size={18} className="text-orange-500" />
-              <h3 className="font-bold text-slate-900 dark:text-white text-xl">Personal Notes</h3>
+              <Pencil size={18} className="text-primary" />
+              <h3 className="font-bold text-foreground text-xl">Personal Notes</h3>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-500 mb-6">
+            <p className="text-xs text-muted-foreground mb-6">
               Add private notes for your own reference. These are not visible to the support team.
             </p>
 
-            <div className="bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-8">
+            <div className="bg-card border border-border rounded-xl overflow-hidden mb-8">
               <textarea
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder="Enter private note..."
                 rows={5}
-                className="w-full bg-transparent border-none text-xs text-slate-900 dark:text-slate-200 focus:ring-0 resize-none p-4 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                className="w-full bg-transparent border-none text-xs text-foreground focus:ring-0 resize-none p-4 placeholder:text-muted-foreground"
               />
-              <div className="p-2 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2">
+              <div className="p-2 border-t border-border flex justify-end gap-2">
                 <button
                   onClick={handleSaveLocal}
                   disabled={!draft.trim()}
-                  className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[10px] font-bold text-slate-700 dark:text-white py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[10px] font-bold py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Save Note
                 </button>
@@ -736,7 +736,7 @@ const FeedbackComponent = () => {
                       }
                     }}
                     disabled={!draft.trim() || moderating === "intervention"}
-                    className="bg-orange-500 hover:bg-orange-600 text-[10px] font-bold text-white py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {moderating === "intervention" ? "Saving..." : "Save Internal"}
                   </button>
@@ -745,41 +745,41 @@ const FeedbackComponent = () => {
             </div>
 
             <div className="space-y-4">
-              <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600">Your Saved Notes</p>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground">Your Saved Notes</p>
               {notes.length === 0 ? (
-                <div className="bg-slate-100 dark:bg-[#161b2a]/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl text-sm text-slate-500 dark:text-slate-500">
+                <div className="bg-card/50 border border-border p-4 rounded-xl text-sm text-muted-foreground">
                   No personal notes yet.
                 </div>
               ) : (
                 notes.map((note) => (
-                  <div key={note.id} className="bg-slate-100 dark:bg-[#161b2a]/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl">
-                    <p className="text-[10px] text-slate-500 dark:text-slate-500 mb-2">{formatReadableDate(note.createdAt)}</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 italic">"{note.content}"</p>
+                  <div key={note.id} className="bg-card/50 border border-border p-4 rounded-xl">
+                    <p className="text-[10px] text-muted-foreground mb-2">{formatReadableDate(note.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground italic">"{note.content}"</p>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          <div className="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
-            <p className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-600 mb-4">Associated Entities</p>
+          <div className="mt-auto p-6 border-t border-border">
+            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-4">Associated Entities</p>
             <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+              <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-medium text-muted-foreground">
                 {ticket.location || "Location"}
               </span>
-              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+              <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-medium text-muted-foreground">
                 {ticket.issueType || "Issue"}
               </span>
-              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+              <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-medium text-muted-foreground">
                 {getIssueTypeInitials(ticket.issueType)}
               </span>
-              <span className="px-2 py-1 bg-white dark:bg-[#161b2a] border border-slate-200 dark:border-slate-700 rounded text-[10px] font-medium text-slate-600 dark:text-slate-400">
+              <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-medium text-muted-foreground">
                 {ticket.status}
               </span>
             </div>
             <button
               onClick={() => navigate(-1)}
-              className="mt-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+              className="mt-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <CheckCircle2 size={16} />
               Back to tickets
@@ -795,13 +795,13 @@ const FeedbackComponent = () => {
           onClick={() => setHideModal({ show: false, commentId: null })}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Hide Comment</h3>
+              <h3 className="text-lg font-semibold text-foreground">Hide Comment</h3>
               <button
-                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setHideModal({ show: false, commentId: null })}
               >
                 <X size={18} />
@@ -811,18 +811,18 @@ const FeedbackComponent = () => {
               value={hideCode}
               onChange={(event) => setHideCode(event.target.value)}
               placeholder="Enter hide code"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+              className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">Hint: SOLEASEHIDE</p>
+            <p className="mt-2 text-xs text-muted-foreground">Hint: SOLEASEHIDE</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 onClick={() => setHideModal({ show: false, commentId: null })}
               >
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-red-500 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 onClick={handleHide}
                 disabled={!hideCode.trim() || moderating === hideModal.commentId}
               >
@@ -839,13 +839,13 @@ const FeedbackComponent = () => {
           onClick={() => setUnhideModal({ show: false, commentId: null })}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Unhide Comment</h3>
+              <h3 className="text-lg font-semibold text-foreground">Unhide Comment</h3>
               <button
-                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setUnhideModal({ show: false, commentId: null })}
               >
                 <X size={18} />
@@ -855,12 +855,12 @@ const FeedbackComponent = () => {
               value={unhideCode}
               onChange={(event) => setUnhideCode(event.target.value)}
               placeholder="Enter unhide code"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+              className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">Hint: SOLEASEUNHIDE</p>
+            <p className="mt-2 text-xs text-muted-foreground">Hint: SOLEASEUNHIDE</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 onClick={() => setUnhideModal({ show: false, commentId: null })}
               >
                 Cancel
@@ -883,13 +883,13 @@ const FeedbackComponent = () => {
           onClick={() => setEditModal({ show: false, message: null, content: "" })}
         >
           <div
-            className="w-full max-w-lg rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            className="w-full max-w-lg rounded-xl border border-border bg-card p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit Message</h3>
+              <h3 className="text-lg font-semibold text-foreground">Edit Message</h3>
               <button
-                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setEditModal({ show: false, message: null, content: "" })}
               >
                 <X size={18} />
@@ -899,17 +899,17 @@ const FeedbackComponent = () => {
               value={editModal.content}
               onChange={(event) => setEditModal((prev) => ({ ...prev, content: event.target.value }))}
               rows={4}
-              className="w-full resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-slate-500"
+              className="w-full resize-none rounded-lg border border-border bg-muted px-3 py-2 text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 onClick={() => setEditModal({ show: false, message: null, content: "" })}
               >
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-sky-500 hover:bg-sky-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-primary hover:bg-primary/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 onClick={handleEditMessage}
                 disabled={!editModal.content.trim() || moderating === "edit"}
               >
@@ -926,30 +926,30 @@ const FeedbackComponent = () => {
           onClick={() => setDeleteModal({ show: false, message: null })}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b1733] p-5"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Delete Message</h3>
+              <h3 className="text-lg font-semibold text-foreground">Delete Message</h3>
               <button
-                className="rounded-md p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setDeleteModal({ show: false, message: null })}
               >
                 <X size={18} />
               </button>
             </div>
-            <p className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3 text-sm text-slate-700 dark:text-slate-300">
+            <p className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground">
               {deleteModal.message?.content}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200"
+                className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
                 onClick={() => setDeleteModal({ show: false, message: null })}
               >
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-red-500 hover:bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 onClick={handleDeleteMessage}
                 disabled={moderating === "delete"}
               >

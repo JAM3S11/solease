@@ -462,7 +462,7 @@ const ReviewerDashbord = () => {
                         <td className="px-4 py-3 text-center">
                           {ticket.comments && ticket.comments.length > 0 ? (
                             <Link
-                              to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                              to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors text-xs font-medium"
                             >
                               <MessageCircle size={12} />
@@ -477,7 +477,7 @@ const ReviewerDashbord = () => {
                         <td className="px-4 py-3 text-right">
                           <motion.div whileHover={{ x: 4 }}>
                             <Link
-                              to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                              to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
                               className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
                               aria-label="View ticket"
                             >
@@ -584,7 +584,7 @@ const ReviewerDashbord = () => {
                       </div>
                       
                       <Link
-                        to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                        to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
                         className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
                         <ArrowRight size={18} />
@@ -690,7 +690,7 @@ const ReviewerDashbord = () => {
                           <div className="flex items-center gap-2">
                             {ticket.comments && ticket.comments.length > 0 ? (
                               <Link
-                                to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                                to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
                                 className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                               >
                                 <MessageCircle size={14} />
@@ -701,7 +701,7 @@ const ReviewerDashbord = () => {
                             )}
                           </div>
                           <Link
-                            to={`/reviewer-dashboard/ticket/${ticket._id}`}
+                            to={`/reviewer-dashboard/ticket/${ticket._id}/feedback`}
                             className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
                           >
                             View

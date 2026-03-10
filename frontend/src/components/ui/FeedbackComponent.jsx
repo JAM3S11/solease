@@ -6,17 +6,27 @@ import {
   ChevronDown,
   Clipboard,
   Clock3,
+  Cloud,
+  Download,
   Eye,
   EyeOff,
+  File,
+  FileImage,
+  FileText,
   Grid2x2,
+  Image,
   MapPin,
   MessageCircle,
   Paperclip,
   Pencil,
   Phone,
+  Plus,
+  PlusCircle,
   Search,
   Send,
   Trash2,
+  Upload,
+  UserPlus,
   Video,
   X,
 } from "lucide-react";
@@ -125,6 +135,9 @@ const FeedbackComponent = () => {
     unhideFeedback,
     managerIntervention,
     updateTicket,
+    uploadFile,
+    uploadLoading,
+    uploadProgress,
   } = useTicketStore();
 
   const ticket = tickets.find((entry) => entry?._id === id);
@@ -139,6 +152,10 @@ const FeedbackComponent = () => {
   const [hideCode, setHideCode] = useState("");
   const [unhideCode, setUnhideCode] = useState("");
   const messagesEndRef = useRef(null);
+  const [activeView, setActiveView] = useState("feedback");
+  const [headerAction, setHeaderAction] = useState("video");
+  const [uploadModal, setUploadModal] = useState({ show: false });
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   // Personal notes state
   const [draft, setDraft] = useState("");
@@ -205,6 +222,47 @@ const FeedbackComponent = () => {
       ticket.assignedTo?.id === user?._id ||
       ticket.assignedTo === user?._id ||
       user?.role === "Manager");
+
+  const auditLogs = useMemo(() => {
+    const logs = [];
+    if (ticket) {
+      logs.push({
+        id: "created",
+        type: "created",
+        message: "Ticket created",
+        user: ticket.user,
+        timestamp: ticket.createdAt,
+      });
+      if (ticket.assignedTo) {
+        logs.push({
+          id: "assigned",
+          type: "assigned",
+          message: `Ticket assigned to ${ticket.assignedTo.name || ticket.assignedTo.username || "Unknown"}`,
+          user: ticket.assignedTo,
+          timestamp: ticket.createdAt,
+        });
+      }
+      ticket.comments?.forEach((comment) => {
+        logs.push({
+          id: comment._id,
+          type: "comment",
+          message: "New comment added",
+          user: comment.user,
+          timestamp: comment.createdAt,
+        });
+        comment.replies?.forEach((reply) => {
+          logs.push({
+            id: reply._id,
+            type: "reply",
+            message: "Reply added",
+            user: reply.user,
+            timestamp: reply.createdAt,
+          });
+        });
+      });
+    }
+    return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }, [ticket]);
 
   const allMessages = useMemo(() => {
     if (!ticket?.comments?.length) return [];
@@ -374,6 +432,31 @@ const FeedbackComponent = () => {
     }
   };
 
+  const handleFileUpload = async (files) => {
+    if (!files.length || !ticket) return;
+    try {
+      for (const file of files) {
+        await uploadFile(id, file);
+      }
+      toast.success("Files uploaded successfully");
+      setUploadModal({ show: false });
+      fetchTickets();
+    } catch {
+      toast.error("Failed to upload files");
+    }
+  };
+
+  const getFileIcon = (filename) => {
+    const ext = filename?.split(".").pop()?.toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) {
+      return <FileImage size={20} className="text-primary" />;
+    }
+    if (["pdf", "doc", "docx", "txt", "rtf"].includes(ext)) {
+      return <FileText size={20} className="text-primary" />;
+    }
+    return <File size={20} className="text-primary" />;
+  };
+
   if (loading && !ticket) {
     return (
       <DashboardLayout>
@@ -392,10 +475,10 @@ const FeedbackComponent = () => {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex -m-6 h-[calc(100%+3rem)] overflow-hidden">
         {/* Left Column - Ticket Summary */}
-        <aside className="w-72 shrink-0 border-r border-border bg-card">
-          <div className="p-6">
+        <aside className="w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-6">
             <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Current View</p>
             <h2 className="text-xl font-bold text-foreground mb-1">
               Ticket #{ticket._id.slice(-6).toUpperCase()}
@@ -426,8 +509,7 @@ const FeedbackComponent = () => {
                             value={status}
                             disabled={status === ticket.status}
                             className={({ active, disabled }) =>
-                              `cursor-pointer rounded-md px-3 py-2 text-sm ${
-                                active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"
+                              `cursor-pointer rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"
                               } ${disabled ? "cursor-not-allowed opacity-50" : ""}`
                             }
                           >
@@ -465,31 +547,33 @@ const FeedbackComponent = () => {
               </div>
             </div>
 
-            <nav className="space-y-2">
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
-                <Grid2x2 size={18} />
-                <span className="text-sm font-semibold">Overview</span>
-              </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg">
-                <MessageCircle size={18} />
-                <span className="text-sm font-semibold">Ticket Feedback</span>
-              </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
-                <Clock3 size={18} />
-                <span className="text-sm font-semibold">Audit Trail</span>
-              </button>
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors rounded-lg">
-                <Paperclip size={18} />
-                <span className="text-sm font-semibold">Documents</span>
-              </button>
+            <nav className="space-y-1">
+              {[
+                { id: "overview", label: "Overview", Icon: Grid2x2 },
+                { id: "feedback", label: "Ticket Feedback", Icon: MessageCircle },
+                { id: "audit", label: "Audit Trail", Icon: Clock3 },
+                { id: "documents", label: "Documents", Icon: Paperclip },
+              ].map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveView(id)}
+                  className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === id
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                >
+                  <Icon size={18} />
+                  <span className="text-sm font-semibold">{label}</span>
+                </button>
+              ))}
             </nav>
           </div>
 
-          <div className="mt-auto p-6">
+          <div className="shrink-0 p-6 border-t border-border">
             <button
               onClick={() => handleStatusChange("Closed")}
               disabled={ticket.status === "Closed" || statusLoading}
-              className="w-full py-3 px-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg flex items-center justify-center gap-2 hover:bg-destructive/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full py-3 px-4 bg-destructive text-white rounded-lg flex items-center justify-center gap-2 hover:bg-destructive/90 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               <X size={16} />
               <span className="text-sm font-bold">Close Ticket</span>
@@ -497,211 +581,469 @@ const FeedbackComponent = () => {
           </div>
         </aside>
 
-        {/* Center Column - Conversation */}
-        <section className="flex-1 flex flex-col bg-background overflow-hidden">
-          {/* Chat Header */}
-          <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
-            <div className="flex items-center gap-3">
-              <h3 className="font-bold text-foreground text-xl">Conversation</h3>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider">
-                Live Support
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg">
-                <Video size={16} />
-              </button>
-              <button className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg">
-                <Phone size={16} />
-              </button>
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="px-6 py-3 border-b border-border">
-            <label className="relative block">
-              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={messageSearch}
-                onChange={(event) => setMessageSearch(event.target.value)}
-                placeholder="Search messages..."
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 pl-9 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
-              />
-            </label>
-          </div>
-
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="flex justify-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
-                Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
-              </span>
+        {/* Center Column - Overview or Conversation */}
+        {activeView === "overview" ? (
+          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+            {/* Overview Header */}
+            <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
+              <h3 className="font-bold text-foreground text-xl">Ticket Overview</h3>
             </div>
 
-            <div className="space-y-6">
-              {filteredMessages.length === 0 && (
-                <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
-                  No messages found for this conversation.
+            <div className="p-6 space-y-6">
+              {/* Subject / Description */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Subject</p>
+                <p className="text-base font-semibold text-foreground">{ticket.subject || ticket.issueType || "No subject provided"}</p>
+                {ticket.description && (
+                  <>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mt-2">Description</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{ticket.description}</p>
+                  </>
+                )}
+              </div>
+
+              {/* Meta grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Status</p>
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(ticket.status)}`}>
+                    {ticket.status}
+                  </span>
                 </div>
-              )}
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Priority</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${getPriorityDotClass(ticket.urgency)}`} />
+                    <span className="text-sm font-semibold text-foreground">{ticket.urgency || "Low"}</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Issue Type</p>
+                  <p className="text-sm font-semibold text-foreground capitalize">{ticket.issueType || "Other"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Location</p>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={13} className="text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{ticket.location || "—"}</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Submitted By</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {ticket.user?.name || ticket.user?.username || "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Assigned To</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {ticket.assignedTo?.name || ticket.assignedTo?.username || "Unassigned"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Date Submitted</p>
+                  <p className="text-sm font-semibold text-foreground">{formatReadableDate(ticket.createdAt)}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Last Updated</p>
+                  <p className="text-sm font-semibold text-foreground">{formatReadableDate(ticket.updatedAt)}</p>
+                </div>
+              </div>
 
-              {filteredMessages.map((message) => {
-                const isSelf = message.user?._id === user?._id;
-                const isComment = message.type === "comment";
-                const isHidden = Boolean(message.isHidden);
-                const messageOwner = getUserDisplayName(message, user);
-                const canEditOwn = isSelf;
-                const canModerateComment = canModerate && isComment && !isSelf;
+              {/* Message count */}
+              <div className="rounded-xl border border-border bg-card p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Conversation Replies</p>
+                  <p className="text-2xl font-bold text-foreground">{allMessages.length}</p>
+                </div>
+                <button
+                  onClick={() => setActiveView("feedback")}
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+                >
+                  <MessageCircle size={15} />
+                  View Conversation
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : activeView === "feedback" ? (
+          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+            {/* Chat Header */}
+            <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-foreground text-xl">Conversation</h3>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider">
+                  Live Support
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Listbox value={headerAction} onChange={setHeaderAction}>
+                  <div className="relative">
+                    <ListboxButton className="p-2 text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg">
+                      {headerAction === "video" ? <Video size={16} /> : headerAction === "phone" ? <Phone size={16} /> : <Search size={16} />}
+                    </ListboxButton>
+                    <ListboxOptions className="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-border bg-card p-1 shadow-xl">
+                      <ListboxOption
+                        value="video"
+                        className={({ active }) =>
+                          `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                        }
+                      >
+                        <Video size={16} />
+                        <span>Start Video Call</span>
+                      </ListboxOption>
+                      <ListboxOption
+                        value="phone"
+                        className={({ active }) =>
+                          `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                        }
+                      >
+                        <Phone size={16} />
+                        <span>Start Voice Call</span>
+                      </ListboxOption>
+                      <ListboxOption
+                        value="search"
+                        className={({ active }) =>
+                          `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                        }
+                      >
+                        <Search size={16} />
+                        <span>Search Messages</span>
+                      </ListboxOption>
+                    </ListboxOptions>
+                  </div>
+                </Listbox>
+              </div>
+            </div>
 
-                return (
-                  <div
-                    key={`${message.type}-${message.id}`}
-                    className={`flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
-                  >
-                    <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0`}>
-                      {isSelf ? (
-                        <span className="font-bold text-xs text-primary">
-                          {user?.name?.slice(0, 2)?.toUpperCase() || "DJ"}
-                        </span>
-                      ) : (
-                        <MessageCircle size={20} className="text-primary" />
-                      )}
-                    </div>
-                    <div className={isSelf ? "flex flex-col items-end" : ""}>
-                      <div className="flex items-center gap-2 mb-1">
-                        {!isSelf && (
-                          <>
-                            <span className="text-sm font-bold text-foreground">{messageOwner}</span>
-                            <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
-                          </>
-                        )}
-                        {isSelf && (
-                          <>
-                            <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
-                            <span className="text-sm font-bold text-foreground">You</span>
-                          </>
+            {headerAction === "search" || messageSearch ? (
+              <div className="px-6 py-3 border-b border-border shrink-0">
+                <label className="relative block">
+                  <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={messageSearch}
+                    onChange={(event) => setMessageSearch(event.target.value)}
+                    placeholder="Search messages..."
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 pl-9 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary"
+                  />
+                </label>
+              </div>
+            ) : null}
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="flex justify-center">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
+                  Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
+                </span>
+              </div>
+
+              <div className="space-y-6">
+                {filteredMessages.length === 0 && (
+                  <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
+                    No messages found for this conversation.
+                  </div>
+                )}
+
+                {filteredMessages.map((message) => {
+                  const isSelf = message.user?._id === user?._id;
+                  const isComment = message.type === "comment";
+                  const isHidden = Boolean(message.isHidden);
+                  const messageOwner = getUserDisplayName(message, user);
+                  const canEditOwn = isSelf;
+                  const canModerateComment = canModerate && isComment && !isSelf;
+
+                  return (
+                    <div
+                      key={`${message.type}-${message.id}`}
+                      className={`group flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
+                    >
+                      <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0`}>
+                        {isSelf ? (
+                          <span className="font-bold text-xs text-primary">
+                            {user?.name?.slice(0, 2)?.toUpperCase() || "DJ"}
+                          </span>
+                        ) : (
+                          <MessageCircle size={20} className="text-primary" />
                         )}
                       </div>
+                      <div className={isSelf ? "flex flex-col items-end" : ""}>
+                        <div className="flex items-center gap-2 mb-1">
+                          {!isSelf && (
+                            <>
+                              <span className="text-sm font-bold text-foreground">{messageOwner}</span>
+                              <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
+                            </>
+                          )}
+                          {isSelf && (
+                            <>
+                              <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
+                              <span className="text-sm font-bold text-foreground">You</span>
+                            </>
+                          )}
+                        </div>
 
-                      <div
-                        className={`border p-4 rounded-2xl ${
-                          isSelf
+                        <div
+                          className={`border p-4 rounded-2xl ${isSelf
                             ? "bg-primary text-primary-foreground rounded-tr-none"
                             : "border-border bg-card text-foreground rounded-tl-none"
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                      </div>
-
-                      {isHidden && canModerate && (
-                        <p className="text-xs font-semibold text-amber-500 mt-1">This comment is hidden.</p>
-                      )}
-
-                      <div className="flex items-center gap-1 mt-2 opacity-0 transition group-hover:opacity-100">
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(message.content || "");
-                            toast.success("Copied to clipboard");
-                          }}
-                          className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
+                            }`}
                         >
-                          <Clipboard size={14} />
-                        </button>
-                        {canEditOwn && (
-                          <>
-                            <button
-                              onClick={() =>
-                                setEditModal({ show: true, message, content: message.content || "" })
-                              }
-                              className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => setDeleteModal({ show: true, message })}
-                              className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </>
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                        </div>
+
+                        {isHidden && canModerate && (
+                          <p className="text-xs font-semibold text-amber-500 mt-1">This comment is hidden.</p>
                         )}
-                        {canModerateComment && !isHidden && (
+
+                        <div className="flex items-center gap-1 mt-2 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
-                            onClick={() => setHideModal({ show: true, commentId: message._id })}
-                            disabled={moderating === message._id}
-                            className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                            onClick={() => {
+                              navigator.clipboard.writeText(message.content || "");
+                              toast.success("Copied to clipboard");
+                            }}
+                            className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
                           >
-                            <EyeOff size={14} />
+                            <Clipboard size={14} />
                           </button>
-                        )}
-                        {canModerateComment && isHidden && (
-                          <button
-                            onClick={() => setUnhideModal({ show: true, commentId: message._id })}
-                            disabled={moderating === message._id}
-                            className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-1.5 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        )}
+                          {canEditOwn && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  setEditModal({ show: true, message, content: message.content || "" })
+                                }
+                                className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => setDeleteModal({ show: true, message })}
+                                className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </>
+                          )}
+                          {canModerateComment && !isHidden && (
+                            <button
+                              onClick={() => setHideModal({ show: true, commentId: message._id })}
+                              disabled={moderating === message._id}
+                              className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                            >
+                              <EyeOff size={14} />
+                            </button>
+                          )}
+                          {canModerateComment && isHidden && (
+                            <button
+                              onClick={() => setUnhideModal({ show: true, commentId: message._id })}
+                              disabled={moderating === message._id}
+                              className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-1.5 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <div ref={messagesEndRef} />
             </div>
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Chat Input */}
-          {canProvideFeedback ? (
-            <div className="p-6 border-t border-border bg-card/50">
-              <div className="bg-card border border-border rounded-xl p-4">
-                <textarea
-                  value={newMessage}
-                  onChange={(event) => setNewMessage(event.target.value)}
-                  rows={3}
-                  placeholder="Type your message to the support team..."
-                  className="w-full bg-transparent border-none text-sm text-foreground focus:ring-0 resize-none placeholder:text-muted-foreground"
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      handleSubmitMessage();
-                    }
-                  }}
-                />
-                <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/50">
-                  <div className="flex gap-4">
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
-                      <Paperclip size={18} />
-                    </button>
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
-                      <Search size={18} />
+            {/* Chat Input */}
+            {canProvideFeedback ? (
+              <div className="shrink-0 p-3 border-t border-border bg-card/50 mt-auto">
+                <div className="bg-card border border-border rounded-xl p-3">
+                  <textarea
+                    value={newMessage}
+                    onChange={(event) => setNewMessage(event.target.value)}
+                    rows={2}
+                    placeholder="Type your message..."
+                    className="w-full bg-transparent border-none text-sm text-foreground focus:ring-0 resize-none placeholder:text-muted-foreground outline-none"
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        handleSubmitMessage();
+                      }
+                    }}
+                  />
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+                    <div className="flex gap-3">
+                      <Listbox>
+                        <div className="relative">
+                          <ListboxButton className="text-muted-foreground hover:text-foreground transition-colors">
+                            <Paperclip size={18} />
+                          </ListboxButton>
+                          <ListboxOptions className="absolute left-0 z-20 mb-2 w-56 rounded-lg border border-border bg-card p-1 shadow-xl" style={{ bottom: "100%" }}>
+                            <ListboxOption
+                              value="view"
+                              onClick={() => setActiveView("documents")}
+                              className={({ active }) =>
+                                `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                              }
+                            >
+                              <Upload size={16} />
+                              <span>View Uploaded Documents</span>
+                            </ListboxOption>
+                            <ListboxOption
+                              value="device"
+                              className={({ active }) =>
+                                `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                              }
+                            >
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="file"
+                                  multiple
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    if (e.target.files?.length) {
+                                      handleFileUpload(Array.from(e.target.files));
+                                    }
+                                  }}
+                                />
+                                <File size={16} />
+                                <span>Upload from Device</span>
+                              </label>
+                            </ListboxOption>
+                            <ListboxOption
+                              value="google"
+                              className={({ active }) =>
+                                `flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`
+                              }
+                            >
+                              <Cloud size={16} />
+                              <span>Google Photos</span>
+                            </ListboxOption>
+                          </ListboxOptions>
+                        </div>
+                      </Listbox>
+                      {/* <button className="text-muted-foreground hover:text-foreground transition-colors">
+                        <Search size={18} />
+                      </button> */}
+                    </div>
+                    <button
+                      onClick={handleSubmitMessage}
+                      disabled={loading || !newMessage.trim()}
+                      className="group relative flex items-center gap-2 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-white dark:text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md hover:shadow-lg"
+                    >
+                      <Send size={16} className="transition-transform group-hover:translate-x-0.1" />
+                      <span>Send</span>
                     </button>
                   </div>
-                  <button
-                    onClick={handleSubmitMessage}
-                    disabled={loading || !newMessage.trim()}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2 px-6 rounded-lg text-sm flex items-center gap-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <span>Send Message</span>
-                    <Send size={16} />
-                  </button>
                 </div>
               </div>
+            ) : (
+              <div className="shrink-0 p-4 border-t border-border bg-amber-500/10 text-sm text-amber-500">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} />
+                  Feedback is available only for ticket participants.
+                </div>
+                </div>
+              )}
+            </section>
+        ) : activeView === "audit" ? (
+          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+            {/* Audit Trail Header */}
+            <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
+              <h3 className="font-bold text-foreground text-xl">Audit Trail</h3>
             </div>
-          ) : (
-            <div className="p-4 border-t border-border bg-amber-500/10 text-sm text-amber-500">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={16} />
-                Feedback is available only for ticket participants.
-              </div>
+
+            <div className="p-6">
+              {auditLogs.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
+                  <Clock3 size={40} className="mx-auto mb-3 opacity-50" />
+                  <p className="font-semibold mb-1">No activity yet</p>
+                  <p className="text-sm">Activity will appear here as events occur.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {auditLogs.map((log) => (
+                    <div key={log.id} className="flex gap-4 p-4 rounded-xl border border-border bg-card">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        {log.type === "created" ? (
+                          <PlusCircle size={20} className="text-primary" />
+                        ) : log.type === "assigned" ? (
+                          <UserPlus size={20} className="text-primary" />
+                        ) : log.type === "comment" ? (
+                          <MessageCircle size={20} className="text-primary" />
+                        ) : (
+                          <FileText size={20} className="text-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-foreground">{log.message}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {log.user?.name || log.user?.username || "Unknown"} • {formatReadableDate(log.timestamp)} at {formatShortTime(log.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </section>
+          </section>
+        ) : activeView === "documents" ? (
+          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+            {/* Documents Header */}
+            <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
+              <h3 className="font-bold text-foreground text-xl">Documents</h3>
+              <button
+                onClick={() => setUploadModal({ show: true })}
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+              >
+                <Upload size={16} />
+                Upload
+              </button>
+            </div>
+
+            <div className="p-6">
+              {!ticket.attachments || ticket.attachments.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
+                  <Paperclip size={40} className="mx-auto mb-3 opacity-50" />
+                  <p className="font-semibold mb-1">No documents</p>
+                  <p className="text-sm">Upload documents to attach to this ticket.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {ticket.attachments.map((attachment, index) => (
+                    <div key={index} className="flex gap-3 p-4 rounded-xl border border-border bg-card">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        {getFileIcon(attachment.filename)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {attachment.originalName || attachment.filename}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : "Unknown size"}
+                        </p>
+                        <div className="flex gap-2 mt-2">
+                          <a
+                            href={`http://localhost:5001/uploads/${attachment.filename}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                          >
+                            <Download size={12} />
+                            View
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        ) : null}
 
         {/* Right Column - Personal Notes */}
-        <aside className="w-80 shrink-0 border-l border-border flex flex-col bg-card/50 overflow-y-auto">
-          <div className="p-6 flex-1">
+        <aside className="w-80 shrink-0 border-l border-border flex flex-col min-h-0 bg-card/50 overflow-y-auto">
+          <div className="flex-1 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Pencil size={18} className="text-primary" />
               <h3 className="font-bold text-foreground text-xl">Personal Notes</h3>
@@ -956,6 +1298,94 @@ const FeedbackComponent = () => {
                 {moderating === "delete" ? "Deleting..." : "Delete"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {uploadModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setUploadModal({ show: false })}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-border bg-card p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Upload Documents</h3>
+              <button
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+                onClick={() => setUploadModal({ show: false })}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload size={24} className="mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PDF, Images, Documents (max 10MB)
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.length) {
+                      handleFileUpload(Array.from(e.target.files));
+                    }
+                  }}
+                />
+              </label>
+
+              <div className="flex items-center gap-2">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">OR</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              <button
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border border-border hover:bg-secondary transition-colors"
+                onClick={() => {
+                  setUploadModal({ show: false });
+                  setActiveView("documents");
+                }}
+              >
+                <Image size={18} className="text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Select from Google Photos</span>
+              </button>
+
+              <button
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border border-border hover:bg-secondary transition-colors"
+                onClick={() => {
+                  setUploadModal({ show: false });
+                  setActiveView("documents");
+                }}
+              >
+                <Upload size={18} className="text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">View Already Uploaded</span>
+              </button>
+            </div>
+
+            {uploadLoading && (
+              <div className="mt-4">
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 text-center">
+                  Uploading... {uploadProgress}%
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

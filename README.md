@@ -787,7 +787,7 @@ pm2 restart solease-backend
 |----------|-------------|---------|
 | `PORT` | Backend server port | `5001` |
 | `NODE_ENV` | Environment mode | `production` |
-| `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/solease` |
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://youruser:pass@cluster.mongodb.net/database` |
 | `JWT_SECRET` | JWT signing secret | `your-256-bit-secret` |
 | `CLIENT_URL` | Frontend URL | `https://yourdomain.com` |
 | `EMAIL_USER` | Gmail address for notifications | `noreply@yourdomain.com` |

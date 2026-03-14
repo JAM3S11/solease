@@ -70,7 +70,7 @@ const PopoverTrigger = React.forwardRef(
 PopoverTrigger.displayName = "PopoverTrigger";
 
 const PopoverContent = React.forwardRef(
-    ({ className, side = "top", align = "end", children, ...props }, ref) => {
+    ({ className, side = "top", align = "end", sideOffset, alignOffset, children, ...props }, ref) => {
         const { open } = React.useContext(PopoverContext);
 
         if (!open) return null;

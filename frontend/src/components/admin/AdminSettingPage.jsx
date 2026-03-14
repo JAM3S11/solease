@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 const AdminSettingPage = () => {
   const { user } = useAuthenticationStore();
-  const { personal, contact, getProfile, putProfile, loading, setUser } = useProfileStore();
+  const { personal, contact, getProfile, putProfile, loading, setUser, profilePhoto, uploadProfilePhoto, deleteProfilePhoto, profilePhotoLoading } = useProfileStore();
 
   const [ personalData, setPersonalData ] = useState({
     name: "",
@@ -73,6 +73,22 @@ const AdminSettingPage = () => {
     }
   }
 
+  const handleUploadProfilePhoto = async (file) => {
+    const res = await uploadProfilePhoto(file);
+    if (res?.success) {
+      toast.success("Profile photo updated!", { duration: 2000 });
+      await getProfile();
+    }
+  };
+
+  const handleDeleteProfilePhoto = async () => {
+    const res = await deleteProfilePhoto();
+    if (res?.success) {
+      toast.success("Profile photo removed!", { duration: 2000 });
+      await getProfile();
+    }
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -129,6 +145,10 @@ const AdminSettingPage = () => {
           onContactChange={handleContactChange}
           onSave={handleSave}
           loading={loading}
+          profilePhoto={profilePhoto}
+          onUploadProfilePhoto={handleUploadProfilePhoto}
+          onDeleteProfilePhoto={handleDeleteProfilePhoto}
+          profilePhotoLoading={profilePhotoLoading}
         />
       </motion.div>
     </DashboardLayout>

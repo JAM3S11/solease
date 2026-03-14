@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "../button";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import useNotificationStore from "../../../store/notificationStore";
+import { useAuthenticationStore } from "../../../store/authStore";
 import { cn } from "../../../lib/utils";
 
 import {
@@ -15,6 +16,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
     const { notificationsEnabled, fetchNotificationPreference, toggleNotifications } =
         useNotificationStore();
+    // Subscribe to auth store for real-time profile photo updates
+    const authUser = useAuthenticationStore((state) => state.user);
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const isUseMobile = useIsMobile();
@@ -42,6 +45,9 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
     };
 
     if (!user) return null;
+
+    // Use auth store for real-time updates, fallback to prop
+    const currentAvatar = authUser?.profilePhoto || user?.profilePhoto;
 
     const getSettingsPath = (role) => {
         switch(role){
@@ -95,8 +101,12 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
             isCollapsed ? "justify-center px-0 py-2" : "px-3 py-2.5"
         )}>
             <div className="relative flex-shrink-0">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                    {user.name?.charAt(0).toUpperCase() ?? "U"}
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-sm overflow-hidden">
+                    {currentAvatar ? (
+                        <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                        user.name?.charAt(0).toUpperCase() ?? "U"
+                    )}
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full">
                     <span className="absolute inset-0 rounded-full bg-green-400 animate-pulse opacity-75"></span>
@@ -133,15 +143,17 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
             <PopoverContent 
                 side="top"
                 align="start" 
-                sideOffset={6}
-                alignOffset={0}
                 className="w-64 p-0 shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-xl overflow-hidden"
             >
                 {/* User Info Header */}
                 <div className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20">
                     <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                            {user.name?.charAt(0).toUpperCase() ?? "U"}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden">
+                            {currentAvatar ? (
+                                <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                user.name?.charAt(0).toUpperCase() ?? "U"
+                            )}
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full">
                             <span className="absolute inset-0 rounded-full bg-green-400 animate-pulse opacity-75"></span>

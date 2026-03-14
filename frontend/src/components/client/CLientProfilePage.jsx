@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const ClientProfilePage = () => {
   const { user } = useAuthenticationStore();
-  const { personal, contact, getProfile, putProfile, loading, setUser } = useProfileStore();
+  const { personal, contact, getProfile, putProfile, loading, setUser, profilePhoto, uploadProfilePhoto, deleteProfilePhoto, profilePhotoLoading } = useProfileStore();
 
   const [personalData, setPersonalData] = useState({
     name: "",
@@ -51,6 +51,13 @@ const ClientProfilePage = () => {
     }
   }, [personal, contact]);
 
+  // Sync profilePhoto from personal data
+  useEffect(() => {
+    if (personal?.profilePhoto) {
+      // profilePhoto is already synced in the store
+    }
+  }, [personal]);
+
   const handlePersonalChange = (e) =>
     setPersonalData(prev => ({
       ...prev,
@@ -76,6 +83,24 @@ const ClientProfilePage = () => {
     }
   }
 
+  const handleUploadProfilePhoto = async (file) => {
+    const res = await uploadProfilePhoto(file);
+    if (res?.success) {
+      toast.success("Profile photo updated!", { duration: 2000 });
+      // Refresh profile to ensure all data is synced
+      await getProfile();
+    }
+  };
+
+  const handleDeleteProfilePhoto = async () => {
+    const res = await deleteProfilePhoto();
+    if (res?.success) {
+      toast.success("Profile photo removed!", { duration: 2000 });
+      // Refresh profile to ensure all data is synced
+      await getProfile();
+    }
+  };
+
   return (
     <DashboardLayout>
       <ProfileSettings
@@ -91,6 +116,10 @@ const ClientProfilePage = () => {
         createdAt={user?.createdAt || null}
         avatar={user?.avatar || null}
         lastLogin={user?.lastLogin || null}
+        profilePhoto={profilePhoto}
+        onUploadProfilePhoto={handleUploadProfilePhoto}
+        onDeleteProfilePhoto={handleDeleteProfilePhoto}
+        profilePhotoLoading={profilePhotoLoading}
       />
     </DashboardLayout>
   )

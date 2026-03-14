@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const ReviewerProfilePage = () => {
   const { user } = useAuthenticationStore();
-  const { personal, contact, getProfile, putProfile, loading, setUser } = useProfileStore();
+  const { personal, contact, getProfile, putProfile, loading, setUser, profilePhoto, uploadProfilePhoto, deleteProfilePhoto, profilePhotoLoading } = useProfileStore();
 
   const [personalData, setPersonalData] = useState({
     name: "",
@@ -76,6 +76,23 @@ const ReviewerProfilePage = () => {
       }
     }
   }
+
+  const handleUploadProfilePhoto = async (file) => {
+    const res = await uploadProfilePhoto(file);
+    if (res?.success) {
+      toast.success("Profile photo updated!", { duration: 2000 });
+      await getProfile();
+    }
+  };
+
+  const handleDeleteProfilePhoto = async () => {
+    const res = await deleteProfilePhoto();
+    if (res?.success) {
+      toast.success("Profile photo removed!", { duration: 2000 });
+      await getProfile();
+    }
+  };
+
   return (
     <DashboardLayout>
         <ProfileSettings 
@@ -86,7 +103,12 @@ const ReviewerProfilePage = () => {
           onPersonalChange={handlePersonalChange}
           onContactChange={handleContactChange}
           onSave={handleSave}
-          loading={loading} />
+          loading={loading}
+          profilePhoto={profilePhoto}
+          onUploadProfilePhoto={handleUploadProfilePhoto}
+          onDeleteProfilePhoto={handleDeleteProfilePhoto}
+          profilePhotoLoading={profilePhotoLoading}
+        />
     </DashboardLayout>
   )
 }

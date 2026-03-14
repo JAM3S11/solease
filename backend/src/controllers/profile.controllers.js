@@ -1,6 +1,8 @@
 // controllers/profile.controller.js
 import { User } from "../models/user.model.js";
 import { ContactUserProfile } from "../models/contactuser.model.js";
+import fs from "fs";
+import path from "path";
 
 // Get profile
 export const getProfile = async (req, res) => {
@@ -87,6 +89,77 @@ export const putProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in putProfile:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Upload profile photo
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Delete old profile photo if exists
+    if (user.profilePhoto) {
+      const oldPhotoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
+      }
+    }
+
+    // Update user with new profile photo path
+    const profilePhotoPath = `/uploads/profile-photos/${req.file.filename}`;
+    user.profilePhoto = profilePhotoPath;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile photo uploaded successfully",
+      profilePhoto: profilePhotoPath
+    });
+  } catch (error) {
+    console.error("Error uploading profile photo:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Delete profile photo
+export const deleteProfilePhoto = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.profilePhoto) {
+      // Delete the photo file
+      const photoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
+      if (fs.existsSync(photoPath)) {
+        fs.unlinkSync(photoPath);
+      }
+
+      // Set profilePhoto to null
+      user.profilePhoto = null;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile photo deleted successfully"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "No profile photo to delete"
+    });
+  } catch (error) {
+    console.error("Error deleting profile photo:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };

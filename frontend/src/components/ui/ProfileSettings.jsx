@@ -252,8 +252,56 @@ const ProfileSettings = ({
   createdAt = null,
   avatar = null,
   lastLogin = null,
+  profilePhoto = null,
+  onUploadProfilePhoto,
+  onDeleteProfilePhoto,
+  profilePhotoLoading = false,
 }) => {
   const { notificationsEnabled, fetchNotificationPreference, toggleNotifications } = useNotificationStore();
+
+  const fileInputRef = React.useRef(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+
+  const currentAvatar = profilePhoto || avatar || user?.profilePhoto;
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('File size must be less than 2MB', toastConfig);
+        return;
+      }
+      setSelectedPhoto(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto) return;
+    try {
+      await onUploadProfilePhoto(selectedPhoto);
+      toast.success('Profile photo updated successfully!', toastConfig);
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
+    } catch (error) {
+      toast.error(error.message || 'Failed to upload photo', toastConfig);
+    }
+  };
+
+  const handlePhotoCancel = () => {
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
+  };
+
+  const handleDeletePhoto = async () => {
+    try {
+      await onDeleteProfilePhoto();
+      toast.success('Profile photo removed successfully!', toastConfig);
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete photo', toastConfig);
+    }
+  };
 
   const [validationErrors, setValidationErrors] = useState({});
   const [validationSuccess, setValidationSuccess] = useState({});
@@ -393,14 +441,31 @@ const ProfileSettings = ({
               <div className="flex-shrink-0">
                 <div className="relative">
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 shadow-lg flex items-center justify-center overflow-hidden">
-                    {avatar ? (
-                      <img src={avatar} alt="Profile" className="w-full h-full object-cover" />
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : currentAvatar ? (
+                      <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-3xl sm:text-4xl font-bold text-white">
                         {getInitials(personalData.name || user?.name)}
                       </span>
                     )}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-8 h-8 sm:w-9 sm:h-9 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center justify-center shadow-lg border-2 border-white transition-colors"
+                    title="Change profile photo"
+                  >
+                    <Camera size={14} className="text-white" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handlePhotoSelect}
+                    className="hidden"
+                  />
                   <div className="sm:hidden absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-lg border-2 border-white">
                     {verified ? (
                       <BadgeCheck size={10} className="text-white" />
@@ -409,6 +474,34 @@ const ProfileSettings = ({
                     )}
                   </div>
                 </div>
+                {selectedPhoto && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={handlePhotoUpload}
+                      disabled={profilePhotoLoading}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      {profilePhotoLoading ? 'Uploading...' : 'Save Photo'}
+                    </button>
+                    <button
+                      onClick={handlePhotoCancel}
+                      disabled={profilePhotoLoading}
+                      className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {(currentAvatar || profilePhotoLoading) && !selectedPhoto && (
+                  <button
+                    onClick={handleDeletePhoto}
+                    disabled={profilePhotoLoading}
+                    className="mt-2 text-xs text-red-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+                  >
+                    <XCircle size={14} />
+                    {profilePhotoLoading ? 'Removing...' : 'Remove Photo'}
+                  </button>
+                )}
               </div>
 
               {/* Main Info */}
@@ -517,11 +610,34 @@ const ProfileSettings = ({
           animate={{ opacity: 1, y: 0 }}
           className='w-full flex flex-col items-start bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800/40 dark:to-slate-800 border border-blue-200 dark:border-slate-700 shadow-sm rounded-2xl mb-8 p-6'
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-200 dark:bg-blue-900/30 rounded-lg">
-              <User size={20} className="text-blue-600 dark:text-blue-400" />
+          <div className="flex items-center gap-4 w-full">
+            <div className="relative flex-shrink-0">
+              <div className="w-16 h-16 rounded-full bg-blue-200 dark:bg-blue-900/30 flex items-center justify-center overflow-hidden border-2 border-blue-300 dark:border-blue-700">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : currentAvatar ? (
+                  <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={28} className="text-blue-600 dark:text-blue-400" />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800 transition-colors"
+                title="Change profile photo"
+              >
+                <Camera size={12} className="text-white" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
                 {user?.name || user?.username}
               </h2>
@@ -529,6 +645,34 @@ const ProfileSettings = ({
                 {role.toUpperCase()} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
               </p>
             </div>
+            {selectedPhoto && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePhotoUpload}
+                  disabled={profilePhotoLoading}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white text-xs font-semibold rounded-lg transition-colors"
+                >
+                  {profilePhotoLoading ? 'Uploading...' : 'Save'}
+                </button>
+                <button
+                  onClick={handlePhotoCancel}
+                  disabled={profilePhotoLoading}
+                  className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+            {(currentAvatar || profilePhotoLoading) && !selectedPhoto && (
+              <button
+                onClick={handleDeletePhoto}
+                disabled={profilePhotoLoading}
+                className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+              >
+                <XCircle size={14} />
+                Remove
+              </button>
+            )}
           </div>
         </motion.div>
       )}

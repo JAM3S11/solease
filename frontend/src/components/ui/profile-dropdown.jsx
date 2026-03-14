@@ -57,7 +57,7 @@ export function ProfileDropdown({ showChevron = true }) {
     const role = user?.role?.toLowerCase();
     switch (role) {
       case "admin":
-        return "/admin-dashboard/settings"
+        return "/admin-dashboard/admin-settings"
       case "reviewer":
         return "/reviewer-dashboard/settings"
       case "client":

@@ -16,6 +16,7 @@ import {
   Grid2x2,
   Image,
   MapPin,
+  Menu,
   MessageCircle,
   Paperclip,
   Pencil,
@@ -156,6 +157,8 @@ const FeedbackComponent = () => {
   const [headerAction, setHeaderAction] = useState("video");
   const [uploadModal, setUploadModal] = useState({ show: false });
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [mobileView, setMobileView] = useState("summary");
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Personal notes state
   const [draft, setDraft] = useState("");
@@ -475,11 +478,66 @@ const FeedbackComponent = () => {
 
   return (
     <DashboardLayout>
-      <div className="flex -m-6 h-[calc(100%+3rem)] overflow-hidden">
+      <div className="flex -m-6 h-[calc(100%+3rem)] overflow-hidden flex-col lg:flex-row">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+          <button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            className="p-2 text-muted-foreground hover:text-foreground"
+          >
+            <Menu size={20} />
+          </button>
+          <span className="text-sm font-bold text-foreground">Ticket #{ticket._id.slice(-6).toUpperCase()}</span>
+          <button
+            onClick={() => setMobileView(mobileView === "summary" ? "notes" : "summary")}
+            className="p-2 text-muted-foreground hover:text-foreground"
+          >
+            {mobileView === "summary" ? <Pencil size={20} /> : <Grid2x2 size={20} />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation Tabs */}
+        <div className="lg:hidden flex border-b border-border bg-card overflow-x-auto">
+          {[
+            { id: "summary", label: "Summary" },
+            { id: "overview", label: "Overview" },
+            { id: "feedback", label: "Conversation" },
+            { id: "audit", label: "Audit" },
+            { id: "documents", label: "Documents" },
+          ].map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => {
+                if (id === "summary") {
+                  setMobileView("summary");
+                } else {
+                  setActiveView(id);
+                  setMobileView("content");
+                }
+              }}
+              className={`flex-1 min-w-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                (mobileView === "summary" && id === "summary") || activeView === id
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Left Column - Ticket Summary */}
-        <aside className="w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-y-auto">
+        <aside className={`w-full lg:w-72 shrink-0 border-r border-border bg-card flex flex-col min-h-0 overflow-y-auto ${
+          showMobileSidebar ? "fixed inset-0 z-50 lg:relative lg:translate-x-0 lg:block" : "hidden lg:block"
+        }`}>
           <div className="flex-1 overflow-y-auto p-6">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Current View</p>
+            <div className="flex items-center justify-between mb-4 lg:hidden">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground">Current View</p>
+              <button onClick={() => setShowMobileSidebar(false)} className="p-1 text-muted-foreground">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 hidden lg:block">Current View</p>
             <h2 className="text-xl font-bold text-foreground mb-1">
               Ticket #{ticket._id.slice(-6).toUpperCase()}
             </h2>
@@ -556,7 +614,10 @@ const FeedbackComponent = () => {
               ].map(({ id, label, Icon }) => (
                 <button
                   key={id}
-                  onClick={() => setActiveView(id)}
+                  onClick={() => {
+                    setActiveView(id);
+                    setShowMobileSidebar(false);
+                  }}
                   className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === id
                       ? "bg-primary text-primary-foreground shadow-lg"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -583,7 +644,7 @@ const FeedbackComponent = () => {
 
         {/* Center Column - Overview or Conversation */}
         {activeView === "overview" ? (
-          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+          <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Overview Header */}
             <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
               <h3 className="font-bold text-foreground text-xl">Ticket Overview</h3>
@@ -667,7 +728,7 @@ const FeedbackComponent = () => {
             </div>
           </section>
         ) : activeView === "feedback" ? (
-          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+          <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Chat Header */}
             <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
               <div className="flex items-center gap-3">
@@ -944,7 +1005,7 @@ const FeedbackComponent = () => {
               )}
             </section>
         ) : activeView === "audit" ? (
-          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+          <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Audit Trail Header */}
             <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
               <h3 className="font-bold text-foreground text-xl">Audit Trail</h3>
@@ -987,7 +1048,7 @@ const FeedbackComponent = () => {
             </div>
           </section>
         ) : activeView === "documents" ? (
-          <section className="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+          <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Documents Header */}
             <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
               <h3 className="font-bold text-foreground text-xl">Documents</h3>
@@ -1042,7 +1103,9 @@ const FeedbackComponent = () => {
         ) : null}
 
         {/* Right Column - Personal Notes */}
-        <aside className="w-80 shrink-0 border-l border-border flex flex-col min-h-0 bg-card/50 overflow-y-auto">
+        <aside className={`w-full lg:w-80 shrink-0 border-l border-border flex flex-col min-h-0 bg-card/50 overflow-y-auto ${
+          mobileView === "notes" ? "block" : "hidden lg:block"
+        }`}>
           <div className="flex-1 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Pencil size={18} className="text-primary" />

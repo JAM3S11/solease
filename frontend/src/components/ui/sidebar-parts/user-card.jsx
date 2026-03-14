@@ -47,7 +47,10 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
     if (!user) return null;
 
     // Use auth store for real-time updates, fallback to prop
-    const currentAvatar = authUser?.profilePhoto || user?.profilePhoto;
+    const profilePhoto = authUser?.profilePhoto || user?.profilePhoto;
+    const currentAvatar = profilePhoto
+        ? `${import.meta.env.VITE_API_URL}${profilePhoto}`
+        : undefined;
 
     const getSettingsPath = (role) => {
         switch(role){

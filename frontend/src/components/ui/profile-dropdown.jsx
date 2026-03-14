@@ -17,7 +17,10 @@ export function ProfileDropdown({ showChevron = true }) {
   const { user, logout } = useAuthenticationStore()
   const navigate = useNavigate()
 
-  const currentAvatar = user?.profilePhoto;
+  const currentAvatar = user?.profilePhoto
+    ? `${import.meta.env.VITE_API_URL}${user?.profilePhoto}`
+    : undefined;
+  console.log("currentAvatar:", currentAvatar, "user:", user)
 
   const getInitials = (name) => {
     if (!name) return "U"

@@ -51,14 +51,16 @@ export function DynamicBreadcrumb() {
       // If on dashboard, add appropriate dashboard entry
       if (pathSegments.length > 0 && pathSegments[0].includes('dashboard')) {
         const dashboardType = pathSegments[0];
+        
+        // Use user's actual role to determine dashboard label (more reliable than URL)
+        const userRole = user?.role?.toLowerCase();
         let dashboardLabel = "Dashboard";
-
-        // Customize based on role
-        if (dashboardType.includes('admin')) {
+        
+        if (userRole === 'admin' || userRole === 'manager' || dashboardType.includes('admin')) {
           dashboardLabel = "Admin Dashboard";
-        } else if (dashboardType.includes('reviewer')) {
+        } else if (userRole === 'reviewer' || dashboardType.includes('reviewer')) {
           dashboardLabel = "Reviewer Dashboard";
-        } else if (dashboardType.includes('client')) {
+        } else {
           dashboardLabel = "Client Dashboard";
         }
 
@@ -138,7 +140,7 @@ export function DynamicBreadcrumb() {
     };
 
     updateBreadcrumbs();
-  }, [location.pathname, tickets]);
+  }, [location.pathname, tickets, user]);
 
   // const b = generateBreadcrumbItems();
 

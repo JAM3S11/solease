@@ -1,5 +1,5 @@
 // components/ui/Sidebar.jsx
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronsUpDown, Hash, Clock, Briefcase, MoreHorizontal, Plus, ChevronLeft } from "lucide-react";
 import {
@@ -16,6 +16,7 @@ import {
 } from "./shadcn-sidebar";
 import { Button } from "./button";
 import { useAuthenticationStore } from "../../store/authStore";
+import useTicketStore from "../../store/ticketStore";
 import { toast } from "sonner"
 import { cn } from "../../lib/utils";
 
@@ -27,14 +28,61 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AppSidebar({ userRole }) {
   const { logout, user } = useAuthenticationStore();
+  const { tickets, fetchTickets, loading } = useTicketStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { state, isMobile, toggleSidebar } = useSidebar();
   const isUseMobile = useIsMobile();
   const position = isUseMobile ? 'top-center' : 'top-right';
 
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+
+  const assignedTicketsCount = useMemo(() => {
+    if (!tickets || !user?._id) return 0;
+    const safeTickets = Array.isArray(tickets) ? tickets : [];
+    return safeTickets.filter(t => {
+      const isAssignedToMe = t.assignedTo && (
+        t.assignedTo._id === user._id || 
+        t.assignedTo.id === user._id ||
+        t.assignedTo === user._id
+      );
+      return isAssignedToMe && t.status !== 'Closed';
+    }).length;
+  }, [tickets, user?._id]);
+
+  const currentMenu = useMemo(() => {
+    const baseMenu = MENU_CONFIG[userRole] ?? { top: [] };
+    
+    if (userRole === 'Reviewer') {
+      return {
+        ...baseMenu,
+        top: baseMenu.top.map(item => {
+          if (item.name === 'Tickets') {
+            return {
+              ...item,
+              badge: assignedTicketsCount > 0 ? assignedTicketsCount : null,
+              submenu: item.submenu?.map(sub => {
+                if (sub.name === 'Assigned') {
+                  return {
+                    ...sub,
+                    badge: assignedTicketsCount > 0 ? assignedTicketsCount : null
+                  };
+                }
+                return sub;
+              })
+            };
+          }
+          return item;
+        })
+      };
+    }
+    
+    return baseMenu;
+  }, [userRole, assignedTicketsCount]);
+
   const isCollapsed = state === "collapsed";
-  const currentMenu = MENU_CONFIG[userRole] ?? { top: [] };
 
   const handleLogout = useCallback(async () => {
     try {

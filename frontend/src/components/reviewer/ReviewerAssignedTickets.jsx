@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Ticket, Clock, CheckCircle, MessageCircle, List, Grid, Table } from 'lucide-react'
+import { Tickets, Clock, CheckCircle, MessageCircle, List, Grid, Table } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import useTicketStore from '../../store/ticketStore'
 import TicketsTable from '../ui/TicketsTable'
 import SelectedTicketModal from '../ui/SelectedTicketModal'
 import NoTicketComponent from '../ui/NoTicketComponent'
+import { NumberTicker } from '../ui/number-ticker'
 import toast from 'react-hot-toast'
 
 const ReviewerAssignedTickets = () => {
@@ -71,6 +72,39 @@ const ReviewerAssignedTickets = () => {
     return maps[color] || maps.blue
   }
 
+  const getBgGradient = (color) => {
+    const maps = {
+      blue: 'from-blue-50/80 to-transparent dark:from-blue-900/20',
+      orange: 'from-orange-50/80 to-transparent dark:from-orange-900/20',
+      green: 'from-green-50/80 to-transparent dark:from-green-900/20',
+      purple: 'from-purple-50/80 to-transparent dark:from-purple-900/20',
+      indigo: 'from-indigo-50/80 to-transparent dark:from-indigo-900/20',
+    }
+    return maps[color] || maps.blue
+  }
+
+  const getIconBg = (color) => {
+    const maps = {
+      blue: 'bg-blue-500 shadow-blue-500/30',
+      orange: 'bg-orange-500 shadow-orange-500/30',
+      green: 'bg-green-500 shadow-green-500/30',
+      purple: 'bg-purple-500 shadow-purple-500/30',
+      indigo: 'bg-indigo-500 shadow-indigo-500/30',
+    }
+    return maps[color] || maps.blue
+  }
+
+  const getLiveDotColor = (color) => {
+    const maps = {
+      blue: 'bg-blue-500',
+      orange: 'bg-orange-500',
+      green: 'bg-green-500',
+      purple: 'bg-purple-500',
+      indigo: 'bg-indigo-500',
+    }
+    return maps[color] || maps.blue
+  }
+
   return (
     <DashboardLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
@@ -93,25 +127,33 @@ const ReviewerAssignedTickets = () => {
         {!loading && !error && assignedTickets.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {[
-              { label: 'Total Assigned', val: stats.total, icon: Ticket, color: 'blue' },
+              { label: 'Total Assigned', val: stats.total, icon: Tickets, color: 'blue' },
               { label: 'Open Tickets', val: stats.open, icon: Clock, color: 'orange' },
               { label: 'In Progress', val: stats.inProgress, icon: Clock, color: 'indigo' },
               { label: 'Resolved', val: stats.resolved, icon: CheckCircle, color: 'green' },
-              { label: 'Pending Feedback Review', val: stats.pendingFeedback, icon: MessageCircle, color: 'purple' },
+              { label: 'Pending Reviews', val: stats.pendingFeedback, icon: MessageCircle, color: 'purple' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4"
+                whileHover={{ y: -2, scale: 1.01 }}
+                className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)}`}
               >
-                <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
-                  <stat.icon size={24} />
+                <div className="relative">
+                  <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                    <stat.icon size={22} className="text-white" />
+                  </div>
+                  <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(stat.color)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                    <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+                  </span>
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.val}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <NumberTicker value={stat.val} />
+                  </p>
                 </div>
               </motion.div>
             ))}

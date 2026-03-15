@@ -39,6 +39,41 @@ const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate })
 
   const visibleComments = ticket.comments?.filter(c => !c.hidden) || [];
 
+  // Create user profile lookup from ticket data
+  const userProfileMap = React.useMemo(() => {
+    const map = {};
+    
+    // Add ticket user (creator)
+    if (ticket.user?._id && ticket.user) {
+      map[ticket.user._id] = ticket.user;
+    }
+    
+    // Add assigned user
+    if (ticket.assignedTo?._id && ticket.assignedTo) {
+      map[ticket.assignedTo._id] = ticket.assignedTo;
+    }
+    
+    // Add all comment users
+    ticket.comments?.forEach(comment => {
+      if (comment.user?._id && comment.user) {
+        map[comment.user._id] = comment.user;
+      }
+      // Add reply users
+      comment.replies?.forEach(reply => {
+        if (reply.user?._id && reply.user) {
+          map[reply.user._id] = reply.user;
+        }
+      });
+    });
+    
+    // Add current user from auth store
+    if (user?._id && user) {
+      map[user._id] = { ...map[user._id], ...user };
+    }
+    
+    return map;
+  }, [ticket, user]);
+
   const downloadAll = () => {
     if (!ticket.attachments?.length) return;
     ticket.attachments.forEach((attachment) => {
@@ -129,9 +164,12 @@ const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate })
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* User profile lookup for comments */}
+          {activeTab === "comments" && (
+            <CommentsTab comments={visibleComments} userProfileMap={userProfileMap} currentUserId={user?._id} />
+          )}
           {activeTab === "details" && <DetailsTab ticket={ticket} canAssign={canAssign} itSupportUsers={itSupportUsers} assignedTo={assignedTo} isAssigning={isAssigning} handleAssign={handleAssign} />}
           {activeTab === "attachments" && <AttachmentsTab ticket={ticket} onDownloadAll={downloadAll} />}
-          {activeTab === "comments" && <CommentsTab comments={visibleComments} />}
         </div>
 
         {/* Footer */}
@@ -312,7 +350,7 @@ const AttachmentsTab = ({ ticket, onDownloadAll }) => {
   );
 };
 
-const CommentsTab = ({ comments }) => {
+const CommentsTab = ({ comments, userProfileMap = {}, currentUserId }) => {
   if (!comments || comments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -327,15 +365,28 @@ const CommentsTab = ({ comments }) => {
 
   return (
     <div className="space-y-4">
-      {comments.map((comment, index) => (
+      {comments.map((comment, index) => {
+        const commentUser = userProfileMap[comment.user?._id] || comment.user;
+        const profilePhoto = commentUser?.profilePhoto;
+        
+        return (
         <div key={index} className="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <span className="text-sm font-bold text-white">{comment.user?.username?.charAt(0).toUpperCase() || "?"}</span>
-            </div>
+            {profilePhoto ? (
+              <img 
+                src={`${import.meta.env.VITE_API_URL}${profilePhoto}`}
+                alt={commentUser?.name || commentUser?.username}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <span className="text-sm font-bold text-white">{commentUser?.username?.charAt(0).toUpperCase() || "?"}</span>
+              </div>
+            )}
+          
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {comment.user?.name || comment.user?.username || "Unknown User"}
+                {commentUser?.name || commentUser?.username || "Unknown User"}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {new Date(comment.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -346,11 +397,26 @@ const CommentsTab = ({ comments }) => {
           
           {comment.replies && comment.replies.length > 0 && (
             <div className="mt-4 pl-4 border-l-2 border-gray-300 dark:border-gray-600 space-y-3">
-              {comment.replies.map((reply, rIndex) => (
+              {comment.replies.map((reply, rIndex) => {
+                const replyUser = userProfileMap[reply.user?._id] || reply.user;
+                const replyProfilePhoto = replyUser?.profilePhoto;
+                
+                return (
                 <div key={rIndex} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center gap-2 mb-1">
+                    {replyProfilePhoto ? (
+                      <img 
+                        src={`${import.meta.env.VITE_API_URL}${replyProfilePhoto}`}
+                        alt={replyUser?.name || replyUser?.username}
+                        className="w-5 h-5 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400">{replyUser?.username?.charAt(0).toUpperCase() || "?"}</span>
+                      </div>
+                    )}
                     <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
-                      {reply.user?.name || reply.user?.username || "Unknown"}
+                      {replyUser?.name || replyUser?.username || "Unknown"}
                     </span>
                     <span className="text-xs text-gray-400">replied</span>
                     <span className="text-xs text-gray-400">
@@ -359,11 +425,11 @@ const CommentsTab = ({ comments }) => {
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">{reply.content}</p>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
-      ))}
+      )})}
     </div>
   );
 };

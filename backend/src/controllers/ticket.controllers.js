@@ -119,10 +119,10 @@ export const getTickets = async (req, res) => {
         };
 
         const tickets = await Ticket.find(query)
-            .populate("user", "username name role")
-            .populate("assignedTo", "username name role")
-            .populate("comments.user", "username name role")
-            .populate("comments.replies.user", "username name role")
+            .populate("user", "username name role profilePhoto")
+            .populate("assignedTo", "username name role profilePhoto")
+            .populate("comments.user", "username name role profilePhoto")
+            .populate("comments.replies.user", "username name role profilePhoto")
             .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments assignedTo")
             .sort(sort);
 

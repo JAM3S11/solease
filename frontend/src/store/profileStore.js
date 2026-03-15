@@ -90,12 +90,9 @@ export const useProfileStore = create((set, get) => ({
             }));
             
             // Update user in auth store with full URL
-            const authState = useAuthenticationStore.getState();
-            if (authState && authState.user) {
-                const updatedUser = { ...authState.user, profilePhoto: fullPhotoUrl };
-                authState.setUser(updatedUser);
-                console.log("Updated auth user with photo:", updatedUser.profilePhoto);
-            }
+            useAuthenticationStore.setState((state) => ({ 
+                user: state.user ? { ...state.user, profilePhoto: fullPhotoUrl } : null 
+            }));
             
             return { ...res.data, profilePhoto: fullPhotoUrl };
         } catch (error) {
@@ -120,11 +117,9 @@ export const useProfileStore = create((set, get) => ({
             }));
             
             // Update user in auth store
-            const authState = useAuthenticationStore.getState();
-            if (authState && authState.user) {
-                const updatedUser = { ...authState.user, profilePhoto: null };
-                authState.setUser(updatedUser);
-            }
+            useAuthenticationStore.setState((state) => ({ 
+                user: state.user ? { ...state.user, profilePhoto: null } : null 
+            }));
             
             return res.data;
         } catch (error) {

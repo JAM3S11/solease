@@ -823,17 +823,17 @@ const ClientAllTicketPage = () => {
                       transition={{ delay: index * 0.03 }}
                       whileHover={{ scale: 1.01 }}
                       onClick={() => setSelectedTicket(ticket)}
-                      className="group flex items-center gap-4 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 cursor-pointer"
+                      className="group flex items-center gap-3 p-3 sm:p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 cursor-pointer"
                     >
                       {/* Number */}
-                      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-sm shadow-md">
+                      <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xs sm:text-sm shadow-md">
                         {index + 1}
                       </div>
                       
                       {/* Main Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-md">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+                          <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md">
                             #{ticket._id.slice(-6).toUpperCase()}
                           </span>
                           {ticket.urgency === "Critical" && (
@@ -852,27 +852,34 @@ const ClientAllTicketPage = () => {
                           }`}>
                             {ticket.urgency}
                           </span>
-                          <motion.span
-                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className={`w-2 h-2 rounded-full ${
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            ticket.status === "Open"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                              : ticket.status === "In Progress"
+                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+                                : ticket.status === "Resolved"
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                                  : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
                               ticket.status === "Open" ? "bg-blue-500" :
                               ticket.status === "In Progress" ? "bg-yellow-500" :
                               ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
-                            }`}
-                          />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{ticket.status}</span>
+                            } ${ticket.status !== "Resolved" ? "animate-pulse" : ""}`} />
+                            <span className="hidden sm:inline">{ticket.status}</span>
+                            <span className="sm:hidden">{ticket.status === "In Progress" ? "Progress" : ticket.status}</span>
+                          </span>
                         </div>
-                        <h3 className="font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-medium text-sm sm:text-base text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {ticket.subject}
                         </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                          {ticket.description?.slice(0, 80)}...
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 hidden sm:block">
+                          {ticket.description?.slice(0, 60)}...
                         </p>
                       </div>
                       
                       {/* Meta Info - Hidden on small screens */}
-                      <div className="hidden lg:flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="hidden lg:flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
                           <FileText size={12} />
                           {ticket.issueType || 'General'}
@@ -888,7 +895,7 @@ const ClientAllTicketPage = () => {
                       </div>
                       
                       {/* Attachments & Feedback */}
-                      <div className="hidden md:flex items-center gap-3">
+                      <div className="hidden md:flex items-center gap-2">
                         {ticket.attachments && ticket.attachments.length > 0 && (
                           <a
                             href={`http://localhost:5001/uploads/${ticket.attachments[0].filename}`}
@@ -911,33 +918,25 @@ const ClientAllTicketPage = () => {
                             {ticket.comments.length}
                           </Link>
                         ) : (
-                          <span className="text-xs text-gray-400">No feedback</span>
+                          <span className="text-xs text-gray-400 hidden sm:inline">No feedback</span>
                         )}
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); setTicketToDelete(ticket._id); }}
                           disabled={deleteLoading === ticket._id}
-                          className="p-2 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                          className="p-1.5 sm:p-2 inline-block text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
                           aria-label="Delete ticket"
                           title="Delete ticket"
                         >
                           {deleteLoading === ticket._id ? (
                             <div className="h-4 w-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
                           ) : (
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           )}
                         </button>
-                        <Link
-                          to={`/client-dashboard/ticket/${ticket._id}/feedback`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                          aria-label="View ticket feedback"
-                        >
-                          <ArrowRight size={18} />
-                        </Link>
                       </div>
                     </motion.div>
                   ))}

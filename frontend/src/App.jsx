@@ -60,6 +60,7 @@ import FeedbackComponent from "./components/ui/FeedbackComponent";
 import { useAuthenticationStore } from "./store/authStore";
 import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
 import AllNotificationsPage from "./components/ui/AllNotificationsPage";
+import HelpSupportPage from "./components/ui/HelpSupportPage";
 
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
@@ -122,6 +123,7 @@ const dashboardRoutes = [
   "/admin-dashboard/notifications",
   "/reviewer-dashboard/notifications",
   "/client-dashboard/notifications",
+  "/help-support",
 ];
 
 const App = () => {
@@ -450,6 +452,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client"]}>
               <AllNotificationsPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Help & Support - Available to all authenticated users */}
+        <Route path="/help-support"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <HelpSupportPage />
             </ProtectedRoute>
           } />
 

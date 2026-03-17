@@ -176,7 +176,7 @@ const ReviewerDashbord = () => {
                 { label: "Assigned Tickets", description: "View all assigned", icon: Tickets, to: "/reviewer-dashboard/assigned-ticket", color: "blue" },
                 { label: "Create Ticket", description: "Create new ticket", icon: Plus, to: "/reviewer-dashboard/new-ticket", color: "indigo" },
                 { label: "Pending Reviews", description: "Feedback to review", icon: MessageCircle, to: "/reviewer-dashboard/assigned-ticket", color: "orange" },
-                { label: "Knowledge Base", description: "Browse articles", icon: BookOpen, to: "/reviewer-dashboard/knowledge", color: "emerald" },
+                { label: "Knowledge Base", description: "Browse articles", icon: BookOpen, to: "/help-support", color: "emerald" },
               ].map((link, i) => (
                 <motion.div
                   key={link.label}

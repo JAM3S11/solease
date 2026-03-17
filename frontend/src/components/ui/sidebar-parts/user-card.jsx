@@ -254,7 +254,7 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
                 {/* Help & Support */}
                 <div className="py-1.5 px-1">
                     <button
-                        onClick={() => {}}
+                        onClick={() => navigate("/help-support")}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 mx-1"
                     >
                         <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">

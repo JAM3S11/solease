@@ -290,7 +290,7 @@ const ClientDashboard = () => {
                   label: "Help Center", 
                   description: "Browse articles",
                   icon: BookOpen, 
-                  to: "/client-dashboard/knowledge", 
+                  to: "/help-support", 
                   color: "violet" 
                 },
               ].map((link, i) => (

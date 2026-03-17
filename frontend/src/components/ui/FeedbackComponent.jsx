@@ -160,26 +160,37 @@ const FeedbackComponent = () => {
   const [mobileView, setMobileView] = useState("summary");
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
-  // Personal notes state
+  // Personal notes state - unique per user and ticket
   const [draft, setDraft] = useState("");
   const [notes, setNotes] = useState([]);
-  const storageKey = `solease-personal-notes-${id}`;
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  
+  // Derive storage key - only create after user is loaded
+  const storageKey = user?._id 
+    ? `solease-personal-notes-${user._id}-${id}`
+    : null;
 
+  // Load notes when storage key becomes available (user loaded)
   useEffect(() => {
+    if (!storageKey || notesLoaded) return;
     try {
       const raw = localStorage.getItem(storageKey);
       setNotes(raw ? JSON.parse(raw) : []);
+      setNotesLoaded(true);
     } catch {
       setNotes([]);
+      setNotesLoaded(true);
     }
-  }, [storageKey]);
+  }, [storageKey, notesLoaded]);
 
+  // Save notes to localStorage whenever they change
   useEffect(() => {
+    if (!storageKey || !notesLoaded) return;
     localStorage.setItem(storageKey, JSON.stringify(notes));
-  }, [storageKey, notes]);
+  }, [storageKey, notes, notesLoaded]);
 
   const handleSaveLocal = () => {
-    if (!draft.trim()) return;
+    if (!draft.trim() || !storageKey) return;
     setNotes((prev) => [
       {
         id: crypto.randomUUID(),
@@ -190,6 +201,12 @@ const FeedbackComponent = () => {
     ]);
     setDraft("");
     toast.success("Personal note saved");
+  };
+
+  const handleDeleteNote = (noteId) => {
+    if (!storageKey) return;
+    setNotes((prev) => prev.filter((note) => note.id !== noteId));
+    toast.success("Note deleted");
   };
 
   useEffect(() => {
@@ -1157,7 +1174,14 @@ const FeedbackComponent = () => {
                 </div>
               ) : (
                 notes.map((note) => (
-                  <div key={note.id} className="bg-card/50 border border-border p-4 rounded-xl">
+                  <div key={note.id} className="bg-card/50 border border-border p-4 rounded-xl group relative">
+                    <button
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="absolute top-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                      title="Delete note"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                     <p className="text-[10px] text-muted-foreground mb-2">{formatReadableDate(note.createdAt)}</p>
                     <p className="text-xs text-muted-foreground italic">"{note.content}"</p>
                   </div>

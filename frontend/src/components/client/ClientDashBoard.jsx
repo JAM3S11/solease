@@ -35,6 +35,34 @@ import useTicketStore from "../../store/ticketStore";
 import WelcomeMessage from "../ui/WelcomeMessage";
 import { NumberTicker } from "../ui/number-ticker";
 import toast from "react-hot-toast";
+
+// Profile Avatar Helper
+const getProfileAvatar = (user, size = "md") => {
+  const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm", lg: "w-12 h-12 text-base" };
+  const role = user?.role?.toLowerCase();
+  const gradientClass = role === "manager" || role === "admin"
+    ? "bg-gradient-to-br from-purple-500 to-purple-600"
+    : role === "reviewer"
+      ? "bg-gradient-to-br from-green-500 to-emerald-600"
+      : "bg-gradient-to-br from-blue-500 to-blue-600";
+  const initials = user?.name?.charAt(0) || user?.username?.charAt(0) || "?";
+
+  if (user?.profilePhoto) {
+    return (
+      <img
+        src={`${import.meta.env.VITE_API_URL}${user.profilePhoto}`}
+        alt={user?.name || user?.username}
+        className={`${sizes[size]} rounded-full object-cover`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold ${gradientClass}`}>
+      {initials.toUpperCase()}
+    </div>
+  );
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1098,17 +1126,7 @@ const ClientDashboard = () => {
                                     className="block p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                   >
                                     <div className="flex items-start gap-3">
-                                      <div
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                                          role === "Client"
-                                            ? "bg-blue-500"
-                                            : role === "Reviewer"
-                                              ? "bg-green-500"
-                                              : "bg-purple-500"
-                                        }`}
-                                      >
-                                        {msg.user?.name?.charAt(0) || msg.user?.username?.charAt(0) || "?"}
-                                      </div>
+                                      {getProfileAvatar(msg.user, "sm")}
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                           <span className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">

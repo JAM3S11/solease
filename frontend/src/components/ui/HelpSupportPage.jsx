@@ -31,7 +31,10 @@ import {
   BarChart3,
   Users,
   Code,
-  Rocket
+  Rocket,
+  UserPlus,
+  Lock,
+  LayoutDashboard
 } from "lucide-react";
 
 const faqs = {
@@ -237,6 +240,9 @@ const HelpSupportPage = () => {
     if (selectedCategory === "account") {
       return renderAccountBilling();
     }
+    if (selectedCategory === "getting-started") {
+      return renderGettingStarted();
+    }
     return renderFaqs();
   };
 
@@ -335,6 +341,136 @@ const HelpSupportPage = () => {
       </button>
     </motion.div>
   );
+
+  const renderGettingStarted = () => {
+    const guides = [
+      {
+        id: "signup",
+        title: "Create Your Account",
+        description: "Sign up and get started with SOLEASE in minutes",
+        icon: UserPlus,
+        color: "primary",
+        steps: [
+          { title: "Visit the Registration Page", desc: "Navigate to our signup page by clicking the 'Sign Up' button on the login page." },
+          { title: "Enter Your Information", desc: "Fill in your full name, email address, and create a secure password. Use a combination of letters, numbers, and symbols for security." },
+          { title: "Verify Your Email", desc: "Check your inbox for a verification email. Click the verification link to activate your account." },
+          { title: "Complete Your Profile", desc: "Add your company information, upload a profile picture, and set your preferences." }
+        ]
+      },
+      {
+        id: "dashboard",
+        title: "Navigating the Dashboard",
+        description: "Learn how to use the main dashboard features",
+        icon: LayoutDashboard,
+        color: "blue",
+        steps: [
+          { title: "Access the Dashboard", desc: "After logging in, you'll be automatically redirected to your personalized dashboard." },
+          { title: "View Quick Stats", desc: "The top section displays key metrics like open tickets, resolved cases, and response times." },
+          { title: "Use Quick Actions", desc: "The sidebar provides quick access to common tasks like creating new tickets or viewing reports." },
+          { title: "Customize Your View", desc: "Rearrange widgets and customize which metrics are visible based on your preferences." }
+        ]
+      },
+      {
+        id: "tickets",
+        title: "Creating & Managing Tickets",
+        description: "Step-by-step guide to ticket management",
+        icon: Ticket,
+        color: "purple",
+        steps: [
+          { title: "Create a New Ticket", desc: "Click the 'New Ticket' button and fill in the subject, description, and priority level." },
+          { title: "Attach Files", desc: "Use the paperclip icon to attach screenshots or documents relevant to your issue." },
+          { title: "Track Ticket Status", desc: "View your submitted tickets in the 'My Tickets' section with real-time status updates." },
+          { title: "Provide Feedback", desc: "Once resolved, rate your experience and provide feedback to help us improve." }
+        ]
+      },
+      {
+        id: "security",
+        title: "Account Security",
+        description: "Keep your account safe and secure",
+        icon: Lock,
+        color: "green",
+        steps: [
+          { title: "Enable Two-Factor Authentication", desc: "Go to Settings > Security and enable 2FA for an extra layer of protection." },
+          { title: "Use Strong Passwords", desc: "Update your password regularly and avoid using easily guessable combinations." },
+          { title: "Review Active Sessions", desc: "Check your account activity regularly to ensure no unauthorized access." },
+          { title: "Secure Your Email", desc: "Ensure the email associated with your account has proper security settings." }
+        ]
+      }
+    ];
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        {/* Introduction */}
+        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gradient-to-br from-primary/5 to-blue-500/5 dark:from-primary/10 dark:to-blue-500/10">
+          <div className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Rocket className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Welcome to SOLEASE</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Your complete guide to getting started</p>
+              </div>
+            </div>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+              This guide will walk you through everything you need to know about using SOLEASE effectively. 
+              From creating your account to managing tickets, we've got you covered.
+            </p>
+          </div>
+        </div>
+
+        {/* All Guides Expanded */}
+        <div className="space-y-4">
+          {guides.map((guide) => (
+            <div key={guide.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
+              <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center ${
+                    guide.color === "primary" ? "bg-primary/10 text-primary" :
+                    guide.color === "blue" ? "bg-blue-500/10 text-blue-500" :
+                    guide.color === "purple" ? "bg-purple-500/10 text-purple-500" :
+                    "bg-green-500/10 text-green-500"
+                  }`}>
+                    <guide.icon className="w-5 h-5 sm:w-5 sm:h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{guide.title}</h4>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{guide.description}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 sm:p-5">
+                <div className="space-y-4 sm:space-y-5">
+                  {guide.steps.map((step, index) => (
+                    <div key={index} className="flex gap-3 sm:gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
+                          index === 0 ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                        }`}>
+                          {index + 1}
+                        </div>
+                        {index < guide.steps.length - 1 && (
+                          <div className="w-0.5 flex-1 bg-gray-200 dark:bg-gray-700 my-1" />
+                        )}
+                      </div>
+                      <div className="flex-1 pb-3 sm:pb-4">
+                        <h5 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-0.5 sm:mb-1">{step.title}</h5>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  };
 
   const renderClientTickets = () => {
     const filteredTickets = tickets.filter(ticket =>
@@ -509,6 +645,7 @@ const HelpSupportPage = () => {
                   onClick={() => {
                     setActiveSection(category.id);
                     if (category.id === "tickets") setSelectedCategory("tickets");
+                    else if (category.id === "getting-started") setSelectedCategory("getting-started");
                     else if (category.id === "billing" || category.id === "account-security") setSelectedCategory("account");
                     else setSelectedCategory("general");
                   }}
@@ -543,7 +680,7 @@ const HelpSupportPage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <MessageSquare className="w-5 h-5 text-primary" />
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  {activeSection === "tickets" ? "Your Tickets" : "Frequently Asked Questions"}
+                  {activeSection === "tickets" ? "Your Tickets" : activeSection === "getting-started" ? "Getting Started Guide" : "Frequently Asked Questions"}
                 </h2>
               </div>
               {renderCategoryContent()}

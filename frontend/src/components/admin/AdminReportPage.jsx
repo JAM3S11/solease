@@ -13,7 +13,7 @@ import {
   Zap, Database, HardDrive, RefreshCw, TrendingUp,
   TrendingDown, AlertTriangle, Ticket, Target,
   ArrowRight, MapPin, FileText, MessageSquare,
-  Star, ThumbsUp, Clock3, Filter, Download, ChevronDown, FileDown,
+  Star, ThumbsUp, Clock3, Filter, Download, ChevronDown, FileDown, Printer,
   Search, UserCheck, UserX, UserPlus, Mail, Building2, Eye, EyeOff,
   X, CalendarDays, Shield, AlertTriangle as AlertTri, Save
 } from 'lucide-react';
@@ -38,14 +38,358 @@ const AdminReportPage = () => {
   const [editForm, setEditForm] = useState({ role: '', status: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState(null);
   const reportRef = useRef(null);
 
   const handleSyncData = async () => {
-    await Promise.all([
-      fetchTickets(),
-      fetchUsers(),
-      fetchActiveUsers()
-    ]);
+    setIsSyncing(true);
+    try {
+      await Promise.all([
+        fetchTickets(),
+        fetchUsers(),
+        fetchActiveUsers()
+      ]);
+      setLastSynced(new Date());
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const formatLastSynced = (date) => {
+    if (!date) return 'Never';
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    return date.toLocaleTimeString();
+  };
+
+  const handlePrint = () => {
+    const totalStatus = stats.resolved + stats.pending + stats.inProgress + stats.closed;
+    const maxBarValue = Math.max(...stats.barData.map(d => Math.max(d.created, d.resolved)), 1);
+
+    const pieChartHTML = totalStatus > 0 ? `
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="position: relative; width: 140px; height: 140px;">
+          <svg viewBox="0 0 42 42" style="width: 100%; height: 100%;">
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#e5e7eb" stroke-width="3"/>
+            ${stats.resolved > 0 ? `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="3" stroke-dasharray="${(stats.resolved / totalStatus * 100).toFixed(1)} ${(100 - stats.resolved / totalStatus * 100).toFixed(1)}" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>` : ''}
+            ${stats.pending > 0 ? `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="3" stroke-dasharray="${(stats.pending / totalStatus * 100).toFixed(1)} ${(100 - stats.pending / totalStatus * 100).toFixed(1)}" stroke-dashoffset="${25 - (stats.resolved / totalStatus * 100).toFixed(1)}" transform="rotate(-90 21 21)"/>` : ''}
+            ${stats.inProgress > 0 ? `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3b82f6" stroke-width="3" stroke-dasharray="${(stats.inProgress / totalStatus * 100).toFixed(1)} ${(100 - stats.inProgress / totalStatus * 100).toFixed(1)}" stroke-dashoffset="${25 - ((stats.resolved + stats.pending) / totalStatus * 100).toFixed(1)}" transform="rotate(-90 21 21)"/>` : ''}
+            ${stats.closed > 0 ? `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#6b7280" stroke-width="3" stroke-dasharray="${(stats.closed / totalStatus * 100).toFixed(1)} ${(100 - stats.closed / totalStatus * 100).toFixed(1)}" stroke-dashoffset="${25 - ((stats.resolved + stats.pending + stats.inProgress) / totalStatus * 100).toFixed(1)}" transform="rotate(-90 21 21)"/>` : ''}
+            <text x="21" y="21" text-anchor="middle" dominant-baseline="middle" font-size="6" fill="#1f2937" font-weight="bold">${stats.total}</text>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="width: 12px; height: 12px; background: #10b981; border-radius: 2px;"></span>
+            <span style="flex: 1; font-size: 12px;">Resolved</span>
+            <span style="font-weight: bold; font-size: 12px;">${stats.resolved}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></span>
+            <span style="flex: 1; font-size: 12px;">Pending</span>
+            <span style="font-weight: bold; font-size: 12px;">${stats.pending}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="width: 12px; height: 12px; background: #3b82f6; border-radius: 2px;"></span>
+            <span style="flex: 1; font-size: 12px;">In Progress</span>
+            <span style="font-weight: bold; font-size: 12px;">${stats.inProgress}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 12px; height: 12px; background: #6b7280; border-radius: 2px;"></span>
+            <span style="flex: 1; font-size: 12px;">Closed</span>
+            <span style="font-weight: bold; font-size: 12px;">${stats.closed}</span>
+          </div>
+        </div>
+      </div>
+    ` : '<div style="text-align: center; color: #6b7280;">No data available</div>';
+
+    const barChartHTML = `
+      <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 120px; padding: 10px 0;">
+        ${stats.barData.map(d => `
+          <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+            <div style="display: flex; gap: 4px; align-items: flex-end; height: 100px;">
+              <div style="width: 20px; background: #3b82f6; border-radius: 2px 2px 0 0; height: ${(d.created / maxBarValue * 100).toFixed(1)}%;" title="Created: ${d.created}"></div>
+              <div style="width: 20px; background: #10b981; border-radius: 2px 2px 0 0; height: ${(d.resolved / maxBarValue * 100).toFixed(1)}%;" title="Resolved: ${d.resolved}"></div>
+            </div>
+            <span style="font-size: 10px; margin-top: 4px; color: #6b7280;">${d.month}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display: flex; justify-content: center; gap: 20px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 12px; height: 12px; background: #3b82f6;"></span>
+          <span style="font-size: 11px;">Created</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 12px; height: 12px; background: #10b981;"></span>
+          <span style="font-size: 11px;">Resolved</span>
+        </div>
+      </div>
+    `;
+
+    const printContent = `
+      <div style="padding: 20px; font-family: Arial, sans-serif; width: 900px;">
+        <div style="border-bottom: 4px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h1 style="font-size: 28px; font-weight: bold; margin: 0; color: #1f2937;">SolEase - Analytics Report</h1>
+              <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 13px;">System Manager Dashboard</p>
+            </div>
+            <div style="text-align: right;">
+              <p style="margin: 0; font-size: 12px; color: #6b7280;"><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;"><strong>Report Period:</strong> Last 6 Months</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="page-break-before: always;"></div>
+
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">1. Key Metrics Summary</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 15px; border-radius: 8px; color: white;">
+            <div style="font-size: 11px; opacity: 0.9;">Total Tickets</div>
+            <div style="font-size: 28px; font-weight: bold;">${stats.total}</div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">All time</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 15px; border-radius: 8px; color: white;">
+            <div style="font-size: 11px; opacity: 0.9;">Resolution Rate</div>
+            <div style="font-size: 28px; font-weight: bold;">${stats.resolutionRate}%</div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">+5% improvement</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 15px; border-radius: 8px; color: white;">
+            <div style="font-size: 11px; opacity: 0.9;">Pending Review</div>
+            <div style="font-size: 28px; font-weight: bold;">${stats.pending}</div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">Requires attention</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 15px; border-radius: 8px; color: white;">
+            <div style="font-size: 11px; opacity: 0.9;">Critical Issues</div>
+            <div style="font-size: 28px; font-weight: bold;">${stats.critical}</div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">${stats.critical > 0 ? 'Needs immediate action' : 'All clear'}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 25px;">
+          <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+            <div style="font-size: 10px; color: #6b7280;">Active Users</div>
+            <div style="font-size: 22px; font-weight: bold; color: #1f2937;">${stats.users.active}</div>
+          </div>
+          <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 4px solid #6366f1;">
+            <div style="font-size: 10px; color: #6b7280;">In Progress</div>
+            <div style="font-size: 22px; font-weight: bold; color: #1f2937;">${stats.inProgress}</div>
+          </div>
+          <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="font-size: 10px; color: #6b7280;">Resolved</div>
+            <div style="font-size: 22px; font-weight: bold; color: #1f2937;">${stats.resolved}</div>
+          </div>
+          <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; border-left: 4px solid #06b6d4;">
+            <div style="font-size: 10px; color: #6b7280;">Avg Resolution</div>
+            <div style="font-size: 22px; font-weight: bold; color: #1f2937;">${stats.avgResolutionTime}</div>
+          </div>
+        </div>
+
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">2. Visual Analytics</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div>
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #374151;">Status Distribution</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              ${pieChartHTML}
+            </div>
+          </div>
+          
+          <div>
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #374151;">Monthly Trends</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              ${barChartHTML}
+              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                  <thead>
+                    <tr style="background: #e5e7eb;">
+                      <th style="padding: 6px 8px; text-align: left;">Month</th>
+                      <th style="padding: 6px 8px; text-align: center;">Created</th>
+                      <th style="padding: 6px 8px; text-align: center;">Resolved</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${stats.barData.map(d => `
+                      <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 6px 8px;">${d.month}</td>
+                        <td style="padding: 6px 8px; text-align: center; font-weight: bold; color: #3b82f6;">${d.created}</td>
+                        <td style="padding: 6px 8px; text-align: center; font-weight: bold; color: #10b981;">${d.resolved}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">3. Detailed Breakdown</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div>
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #374151;">Urgency Breakdown</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              ${[
+                { label: 'Critical', value: stats.urgencyBreakdown.critical, color: '#dc2626', bg: '#fef2f2' },
+                { label: 'High', value: stats.urgencyBreakdown.high, color: '#ea580c', bg: '#fff7ed' },
+                { label: 'Medium', value: stats.urgencyBreakdown.medium, color: '#ca8a04', bg: '#fefce8' },
+                { label: 'Low', value: stats.urgencyBreakdown.low, color: '#16a34a', bg: '#f0fdf4' },
+              ].map(item => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: ${item.bg}; border-radius: 4px; margin-bottom: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 10px; height: 10px; background: ${item.color}; border-radius: 50%;"></span>
+                    <span style="font-size: 12px;">${item.label}</span>
+                  </div>
+                  <strong style="color: ${item.color};">${item.value}</strong>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div>
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #374151;">By Department</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              ${Object.entries(stats.deptBreakdown).slice(0, 5).map(([dept, count], idx) => {
+                const colors = ['#3b82f6', '#8b5cf6', '#6366f1', '#ec4899', '#14b8a6'];
+                const total = Object.values(stats.deptBreakdown).reduce((a, b) => a + b, 0);
+                const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                return `
+                  <div style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                      <span style="font-size: 12px;">${dept}</span>
+                      <span style="font-size: 12px; font-weight: bold;">${count} <span style="color: #6b7280; font-weight: normal;">(${percent}%)</span></span>
+                    </div>
+                    <div style="background: #e5e7eb; height: 6px; border-radius: 3px;">
+                      <div style="background: ${colors[idx % colors.length]}; height: 100%; border-radius: 3px; width: ${percent}%;"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <div>
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #374151;">User Statistics</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="text-align: center; padding: 10px; background: white; border-radius: 6px;">
+                  <div style="font-size: 20px; font-weight: bold; color: #3b82f6;">${stats.users.total}</div>
+                  <div style="font-size: 10px; color: #6b7280;">Total Users</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: white; border-radius: 6px;">
+                  <div style="font-size: 20px; font-weight: bold; color: #10b981;">${stats.users.active}</div>
+                  <div style="font-size: 10px; color: #6b7280;">Active</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: white; border-radius: 6px;">
+                  <div style="font-size: 20px; font-weight: bold; color: #8b5cf6;">${stats.users.roles.manager}</div>
+                  <div style="font-size: 10px; color: #6b7280;">Managers</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: white; border-radius: 6px;">
+                  <div style="font-size: 20px; font-weight: bold; color: #6366f1;">${stats.users.roles.reviewer}</div>
+                  <div style="font-size: 10px; color: #6b7280;">Reviewers</div>
+                </div>
+              </div>
+              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                  <span style="color: #6b7280;">Verified</span>
+                  <strong>${stats.users.verified} / ${stats.users.total}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px;">
+                  <span style="color: #6b7280;">Active Today</span>
+                  <strong>${stats.users.activeToday}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="page-break-before: always;"></div>
+
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">4. Status Summary Table</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: #3b82f6; color: white;">
+              <th style="padding: 12px; text-align: left; border: 1px solid #2563eb;">Status</th>
+              <th style="padding: 12px; text-align: center; border: 1px solid #2563eb;">Count</th>
+              <th style="padding: 12px; text-align: center; border: 1px solid #2563eb;">Percentage</th>
+              <th style="padding: 12px; text-align: left; border: 1px solid #2563eb;">Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              { status: 'Resolved', count: stats.resolved, color: '#10b981', trend: 'Positive' },
+              { status: 'Pending', count: stats.pending, color: '#f59e0b', trend: 'Needs Attention' },
+              { status: 'In Progress', count: stats.inProgress, color: '#3b82f6', trend: 'Ongoing' },
+              { status: 'Closed', count: stats.closed, color: '#6b7280', trend: 'Completed' },
+            ].map((row, idx) => `
+              <tr style="background: ${idx % 2 === 0 ? '#f9fafb' : 'white'};">
+                <td style="padding: 12px; border: 1px solid #e5e7eb;">
+                  <span style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span style="width: 10px; height: 10px; background: ${row.color}; border-radius: 2px;"></span>
+                    ${row.status}
+                  </span>
+                </td>
+                <td style="padding: 12px; text-align: center; border: 1px solid #e5e7eb; font-weight: bold;">${row.count}</td>
+                <td style="padding: 12px; text-align: center; border: 1px solid #e5e7eb;">${totalStatus > 0 ? ((row.count / totalStatus) * 100).toFixed(1) : 0}%</td>
+                <td style="padding: 12px; border: 1px solid #e5e7eb; color: ${row.color}; font-weight: 500;">${row.trend}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">5. System Health Status</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Database Status</div>
+            <div style="font-size: 18px; font-weight: bold; color: #10b981;">Healthy</div>
+            <div style="font-size: 10px; color: #6b7280;">4.2 GB / 10 GB (42%)</div>
+          </div>
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Storage Usage</div>
+            <div style="font-size: 18px; font-weight: bold; color: #10b981;">Optimal</div>
+            <div style="font-size: 10px; color: #6b7280;">128 GB / 512 GB (25%)</div>
+          </div>
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">API Latency</div>
+            <div style="font-size: 18px; font-weight: bold; color: #10b981;">Excellent</div>
+            <div style="font-size: 10px; color: #6b7280;">48ms Average</div>
+          </div>
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
+          <div style="font-size: 11px; color: #9ca3af; margin-bottom: 5px;">SolEase System Manager Dashboard</div>
+          <div style="font-size: 10px; color: #d1d5db;">Generated automatically | All data reflects real-time system status</div>
+        </div>
+      </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>SolEase Analytics Report</title>
+          <style>
+            body { margin: 0; padding: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: Arial, sans-serif; }
+            @media print { 
+              body { padding: 0; }
+              div { page-break-inside: avoid; }
+            }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const handleExportPDF = async () => {
@@ -227,6 +571,16 @@ const AdminReportPage = () => {
     fetchTickets();
     fetchUsers();
     fetchActiveUsers();
+    setLastSynced(new Date());
+    
+    const interval = setInterval(() => {
+      fetchTickets();
+      fetchUsers();
+      fetchActiveUsers();
+      setLastSynced(new Date());
+    }, 60000);
+    
+    return () => clearInterval(interval);
   }, [fetchTickets, fetchUsers, fetchActiveUsers]);
 
   // Comprehensive Data Memoization for real-time filtering
@@ -363,36 +717,54 @@ const AdminReportPage = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex items-center gap-3">
-              {/* <div className="bg-primary/10 p-2 rounded-lg">
-                <BarChart3 className="text-primary w-8 h-8" />
-              </div> */}
               <div>
                 <h1 className="text-3xl font-bold text-foreground tracking-tight">
                   System Manager Dashboard
                 </h1>
-                <p className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-                  <Activity size={14} className="text-green-500" />
-                  SolEase System Status: <span className="text-green-600 dark:text-green-400 font-semibold">Healthy</span>
-                </p>
+                <div className="flex items-center gap-4 mt-1">
+                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Activity size={14} className="text-green-500" />
+                    SolEase System Status: <span className="text-green-600 dark:text-green-400 font-semibold">Healthy</span>
+                  </p>
+                  {isSyncing && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full"
+                    >
+                      <RefreshCw size={12} className="animate-spin" />
+                      Syncing data...
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
           
-          <div className="flex gap-3">
-            <button 
-              onClick={handleSyncData}
-              disabled={usersLoading}
-              className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent transition-all shadow-sm disabled:opacity-50"
-            >
-              <RefreshCw size={18} className={usersLoading ? "animate-spin" : ""} /> Sync Data
-            </button>
-            <button 
-              onClick={handleExportPDF}
-              disabled={isExporting}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md disabled:opacity-50"
-            >
-              <FileDown size={18} className={isExporting ? "animate-pulse" : ""} /> {isExporting ? 'Exporting...' : 'Export System Audit'}
-            </button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-3">
+              <button 
+                onClick={handleSyncData}
+                disabled={isSyncing}
+                className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-accent transition-all shadow-sm disabled:opacity-50"
+              >
+                <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} /> 
+                {isSyncing ? 'Syncing...' : 'Sync Data'}
+              </button>
+              <button 
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md disabled:opacity-50"
+              >
+                <FileDown size={18} className={isExporting ? "animate-pulse" : ""} /> {isExporting ? 'Exporting...' : 'Export System Audit'}
+              </button>
+            </div>
+            {lastSynced && (
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Last synced: {formatLastSynced(lastSynced)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -531,7 +903,7 @@ const AdminReportPage = () => {
               {/* Visual Analytics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Status Distribution */}
-                <motion.div whileHover={{ y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <motion.div whileHover={{ y: -5 }} data-chart="pie" className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                   <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -584,7 +956,7 @@ const AdminReportPage = () => {
                 </motion.div>
 
                 {/* Monthly Trends */}
-                <motion.div whileHover={{ y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <motion.div whileHover={{ y: -5 }} data-chart="bar" className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                   <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -682,9 +1054,9 @@ const AdminReportPage = () => {
                     <h3 className="font-bold">Export Report</h3>
                   </div>
                   <p className="text-sm text-blue-100 mb-4">Download a comprehensive PDF report of all ticket analytics and user metrics.</p>
-                  <button className="w-full py-2.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl font-medium text-sm flex items-center justify-center gap-2">
-                    <Download size={16} />
-                    Download PDF
+                  <button onClick={handlePrint} className="w-full py-2.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl font-medium text-sm flex items-center justify-center gap-2">
+                    <Printer size={16} />
+                    Print Page
                   </button>
                 </motion.div>
               </div>

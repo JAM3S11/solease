@@ -1,8 +1,7 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import DashboardLayout from '../ui/DashboardLayout';
 import useTicketStore from "../../store/ticketStore";
 import useAdminStore from "../../store/adminStore";
-import { useAuthenticationStore } from "../../store/authStore";
 import { useDarkMode } from "../../hooks/use-dark-mode";
 import { PieChart, BarChart } from "@mui/x-charts";
 import html2pdf from 'html2pdf.js';
@@ -20,13 +19,20 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Transition, Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { NumberTicker } from "../ui/number-ticker";
+import NoRecordsFound from "../ui/NoRecordsFound";
 
 const departments = ["All Departments", "Hardware issue", "Software issue",  "Network Connectivity", "Account Access"];
 const reportTypes = ["All Types", "Open", "In Progress", "Resolved", "Closed"];
+const DATE_RANGES = [
+    { value: '7', label: 'Last 7 Days' },
+    { value: '30', label: 'Last 30 Days' },
+    { value: '90', label: 'Last 90 Days' },
+    { value: 'all', label: 'All Time' },
+];
 
 const AdminReportPage = () => {
   const { tickets, fetchTickets } = useTicketStore();
-  const { users, fetchUsers, loading: usersLoading, activeUsers, fetchActiveUsers, activeUsersLoading, updateUserRoleAndStatus } = useAdminStore();
+  const { users, fetchUsers, activeUsers, fetchActiveUsers, activeUsersLoading, updateUserRoleAndStatus } = useAdminStore();
   const isDark = useDarkMode();
   const [selectedDept, setSelectedDept] = useState(departments[0]);
   const [selectedType, setSelectedType] = useState(reportTypes[0]);
@@ -40,7 +46,9 @@ const AdminReportPage = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
-  const reportRef = useRef(null);
+  const [dateRange, setDateRange] = useState('30');
+  const [selectedDateRange, setSelectedDateRange] = useState(DATE_RANGES[1]);
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
 
   const handleSyncData = async () => {
     setIsSyncing(true);
@@ -587,6 +595,14 @@ const AdminReportPage = () => {
   const stats = useMemo(() => {
     let currentFilteredTickets = tickets;
 
+    // Apply date range filter first
+    if (dateRange !== 'all') {
+      const days = parseInt(dateRange);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      currentFilteredTickets = currentFilteredTickets.filter(t => new Date(t.createdAt) >= cutoffDate);
+    }
+
     if (selectedDept !== "All Departments") {
       currentFilteredTickets = currentFilteredTickets.filter(t => t.issueType === selectedDept);
     }
@@ -701,7 +717,7 @@ const AdminReportPage = () => {
       // Feedback stats
       feedbackCount: currentFilteredTickets.filter(t => t.feedbackSubmitted).length,
     };
-  }, [tickets, users, selectedDept, selectedType]);
+  }, [tickets, users, selectedDept, selectedType, dateRange]);
 
   // Chart theme colors
   const chartTextColor = isDark ? '#e5e7eb' : '#374151';
@@ -743,6 +759,39 @@ const AdminReportPage = () => {
           
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-3">
+              {/* Date Range Filter */}
+              <Listbox value={dateRange} onChange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val)); }} open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
+                <div className="relative">
+                  <Listbox.Button className="flex items-center gap-1 sm:gap-2 bg-card border border-border px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-accent transition-colors">
+                    <Calendar size={14} className="text-muted-foreground flex-shrink-0" />
+                    <span className="hidden sm:inline font-medium">{selectedDateRange?.label || 'Date Range'}</span>
+                    <span className="sm:hidden font-medium">{dateRange === 'all' ? 'All' : `${dateRange}d`}</span>
+                    <ChevronDown size={12} className={`text-muted-foreground transition-transform ${isDateFilterOpen ? 'rotate-180' : ''} hidden sm:block`} />
+                  </Listbox.Button>
+                  
+                  <Listbox.Options className="absolute z-50 mt-1 left-0 sm:right-0 w-[calc(100vw-2rem)] sm:w-44 bg-popover border border-border rounded-xl shadow-lg max-h-60 overflow-auto">
+                    {DATE_RANGES.map((range) => (
+                      <Listbox.Option
+                        key={range.value}
+                        value={range.value}
+                        className={({ active, selected }) =>
+                          `cursor-pointer py-2.5 px-4 text-sm flex items-center justify-between ${
+                            selected 
+                              ? 'bg-primary/10 text-primary font-medium' 
+                              : active 
+                                ? 'bg-accent text-foreground' 
+                                : 'text-popover-foreground'
+                          }`
+                        }
+                      >
+                        {range.label}
+                        {dateRange === range.value && <CheckCircle size={16} className="text-primary" />}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
+
               <button 
                 onClick={handleSyncData}
                 disabled={isSyncing}
@@ -802,79 +851,93 @@ const AdminReportPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
-              {/* Dynamic Metric Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard 
-                  title="Total Tickets" 
-                  value={stats.total} 
-                  icon={<Ticket />} 
-                  color="bg-gradient-to-br from-blue-500 to-blue-600"
-                  trend="+12% from last week"
-                  trendUp={true}
+              {/* No Records Found */}
+              {stats.total === 0 && tickets.length > 0 && (
+                <NoRecordsFound
+                  type="admin"
+                  dateRangeLabel={selectedDateRange?.label}
+                  totalTickets={tickets.length}
+                  onChangeDateRange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val) || DATE_RANGES[3]); }}
                 />
-                <MetricCard 
-                  title="Resolution Rate" 
-                  value={`${stats.resolutionRate}%`} 
-                  icon={<Target />} 
-                  color="bg-gradient-to-br from-emerald-500 to-emerald-600"
-                  trend="+5% improvement"
-                  trendUp={true}
-                />
-                <MetricCard 
-                  title="Pending Review" 
-                  value={stats.pending} 
-                  icon={<Clock />} 
-                  color="bg-gradient-to-br from-amber-500 to-orange-500"
-                  trend="-3 from yesterday"
-                  trendUp={false}
-                />
-                <MetricCard 
-                  title="Critical Issues" 
-                  value={stats.critical} 
-                  icon={<AlertTriangle />} 
-                  color="bg-gradient-to-br from-red-500 to-rose-600"
-                  trend={stats.critical > 0 ? "Requires attention" : "All clear"}
-                  trendUp={stats.critical > 0}
-                  critical={stats.critical > 0}
-                />
-              </div>
+              )}
 
-              {/* Secondary Stats Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard 
-                  title="Active Now" 
-                  value={activeUsers.length} 
-                  icon={<Users />} 
-                  color="bg-gradient-to-br from-purple-500 to-violet-600"
-                  trend={activeUsersLoading ? "Loading..." : `${stats.users.total} total users`}
-                >
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <span className="text-[10px] font-medium text-green-600 dark:text-green-400">Live</span>
-                  </div>
-                </MetricCard>
-                <MetricCard 
-                  title="In Progress" 
-                  value={stats.inProgress} 
-                  icon={<Clock3 />} 
-                  color="bg-gradient-to-br from-indigo-500 to-blue-600"
-                  trend="Being handled"
-                />
-                <MetricCard 
-                  title="Resolved" 
-                  value={stats.resolved} 
-                  icon={<CheckCircle />} 
-                  color="bg-gradient-to-br from-green-500 to-emerald-600"
-                  trend="This month"
-                />
-                <MetricCard 
-                  title="Avg Resolution" 
-                  value={stats.avgResolutionTime} 
-                  icon={<Activity />} 
-                  color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                  trend="Per ticket"
-                />
-              </div>
+              {/* Dynamic Metric Cards */}
+              {stats.total > 0 && (
+                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard 
+                    title="Total Tickets" 
+                    value={stats.total} 
+                    icon={<Ticket />} 
+                    color="bg-gradient-to-br from-blue-500 to-blue-600"
+                    trend="+12% from last week"
+                    trendUp={true}
+                  />
+                  <MetricCard 
+                    title="Resolution Rate" 
+                    value={`${stats.resolutionRate}%`} 
+                    icon={<Target />} 
+                    color="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                    trend="+5% improvement"
+                    trendUp={true}
+                  />
+                  <MetricCard 
+                    title="Pending Review" 
+                    value={stats.pending} 
+                    icon={<Clock />} 
+                    color="bg-gradient-to-br from-amber-500 to-orange-500"
+                    trend="-3 from yesterday"
+                    trendUp={false}
+                  />
+                  <MetricCard 
+                    title="Critical Issues" 
+                    value={stats.critical} 
+                    icon={<AlertTriangle />} 
+                    color="bg-gradient-to-br from-red-500 to-rose-600"
+                    trend={stats.critical > 0 ? "Requires attention" : "All clear"}
+                    trendUp={stats.critical > 0}
+                    critical={stats.critical > 0}
+                  />
+                </div>
+
+                {/* Secondary Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard 
+                    title="Active Now" 
+                    value={activeUsers.length} 
+                    icon={<Users />} 
+                    color="bg-gradient-to-br from-purple-500 to-violet-600"
+                    trend={activeUsersLoading ? "Loading..." : `${stats.users.total} total users`}
+                  >
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      <span className="text-[10px] font-medium text-green-600 dark:text-green-400">Live</span>
+                    </div>
+                  </MetricCard>
+                  <MetricCard 
+                    title="In Progress" 
+                    value={stats.inProgress} 
+                    icon={<Clock3 />} 
+                    color="bg-gradient-to-br from-indigo-500 to-blue-600"
+                    trend="Being handled"
+                  />
+                  <MetricCard 
+                    title="Resolved" 
+                    value={stats.resolved} 
+                    icon={<CheckCircle />} 
+                    color="bg-gradient-to-br from-green-500 to-emerald-600"
+                    trend="This month"
+                  />
+                  <MetricCard 
+                    title="Avg Resolution" 
+                    value={stats.avgResolutionTime} 
+                    icon={<Activity />} 
+                    color="bg-gradient-to-br from-cyan-500 to-sky-600"
+                    trend="Per ticket"
+                  />
+                </div>
+                </>
+              )}
 
               {/* Quick Filters */}
               <section className="bg-card p-6 rounded-xl shadow-sm border border-border grid grid-cols-1 md:grid-cols-3 gap-6">

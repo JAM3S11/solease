@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -8,12 +8,11 @@ import html2pdf from 'html2pdf.js';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
 import { 
-    Clock, CheckCircle, TrendingUp, Activity, MessageCircle, Star, 
-    AlertTriangle, Zap, RotateCcw, Users, BarChart3, ArrowUpDown, 
-    Search, Filter, ChevronDown, ChevronUp, X, RefreshCw, Eye,
-    ArrowRight, Target, Award, Flame, Sparkles, Timer, ThumbsUp, Phone, Gauge,
-    Tickets, Download, Printer, Calendar, TrendingDown, FileDown, Bell,
-    Send, Check, AlertCircle, Clock3, Ticket, User
+    Clock, CheckCircle, Check, TrendingUp, Activity, MessageCircle, Star, 
+    AlertTriangle, Zap, BarChart3, 
+    Search, ChevronDown, X, RefreshCw, Eye,
+    ArrowRight, Target, Flame, Timer, ThumbsUp, Phone, Gauge,
+    Tickets, FileDown, Ticket, Calendar
 } from "lucide-react"; 
 import { Link } from "react-router";
 import NoReport from "../ui/NoReport";
@@ -839,10 +838,23 @@ const ClientReportPage = () => {
 
     const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
 
+    // Safe tickets array
+    const safeTickets = useMemo(() => {
+        return Array.isArray(tickets) ? tickets : [];
+    }, [tickets]);
+
+    // User's tickets (unfiltered)
+    const userAllTickets = useMemo(() => {
+        return safeTickets.filter(t => (t.user?._id || t.user) === user._id);
+    }, [safeTickets, user]);
+
+    // Check if user has any tickets at all (for distinguishing "no records" vs "no tickets ever")
+    const userHasAnyTickets = useMemo(() => {
+        return safeTickets.some(t => (t.user?._id || t.user) === user._id);
+    }, [safeTickets, user]);
+
     const clientTickets = useMemo(() => {
-        if (!tickets) return [];
-        const safeTickets = Array.isArray(tickets) ? tickets : [];
-        let filtered = safeTickets.filter(t => (t.user?._id || t.user) === user._id);
+        let filtered = userAllTickets;
         
         // Apply date range filter
         if (dateRange !== 'all') {
@@ -853,14 +865,7 @@ const ClientReportPage = () => {
         }
         
         return filtered;
-    }, [tickets, user, dateRange]);
-
-    // Check if user has any tickets at all (for distinguishing "no records" vs "no tickets ever")
-    const userHasAnyTickets = useMemo(() => {
-        if (!tickets) return false;
-        const safeTickets = Array.isArray(tickets) ? tickets : [];
-        return safeTickets.some(t => (t.user?._id || t.user) === user._id);
-    }, [tickets, user]);
+    }, [userAllTickets, dateRange]);
 
     // Has tickets but none in selected date range
     const hasNoRecordsInRange = userHasAnyTickets && clientTickets.length === 0;
@@ -958,136 +963,80 @@ const ClientReportPage = () => {
                     <motion.div 
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-8"
+                        className="mb-6"
                     >
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                                     {user?.name ? `${user.name.split(' ')[0]}'s Dashboard` : "My Dashboard"}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-3 mt-2">
-                                    <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm">
-                                        <Sparkles size={14} className="text-yellow-500" />
-                                        Track your IT support tickets and performance metrics
-                                    </p>
-                                    {isSyncing && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full"
-                                        >
-                                            <RefreshCw size={12} className="animate-spin" />
-                                            Syncing...
-                                        </motion.div>
-                                    )}
-                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    {stats.total} ticket{stats.total !== 1 ? 's' : ''} {selectedDateRange?.label?.toLowerCase()}
+                                </p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 {/* Date Range Filter */}
-                                <div className="relative">
-                                    <Listbox value={dateRange} onChange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val)); setIsDateFilterOpen(false); }} open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
-                                        <div className="relative">
-                                            <Listbox.Button className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                                <Calendar size={16} className="text-gray-400" />
-                                                <span className="hidden sm:inline">{selectedDateRange?.label || 'Date Range'}</span>
-                                                <span className="sm:hidden">Filter</span>
-                                                <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDateFilterOpen ? 'rotate-180' : ''}`} />
-                                            </Listbox.Button>
-                                            
-                                            <Listbox.Options className="absolute z-50 mt-2 sm:mt-1 left-0 sm:left-auto sm:right-0 w-48 sm:w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-auto outline-none">
-                                                <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                                                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date Range</span>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); setIsDateFilterOpen(false); }}
-                                                        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-                                                    >
-                                                        <X size={14} className="text-gray-400" />
-                                                    </button>
-                                                </div>
-                                                {DATE_RANGES.map((range) => (
-                                                    <Listbox.Option
-                                                        key={range.value}
-                                                        value={range.value}
-                                                        className={({ active, selected }) =>
-                                                            `cursor-pointer py-2.5 px-4 text-sm flex items-center justify-between mx-1 rounded-lg ${
-                                                                selected 
-                                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' 
-                                                                    : active 
-                                                                        ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100' 
-                                                                        : 'text-gray-700 dark:text-gray-300'
-                                                            }`
-                                                        }
-                                                    >
-                                                        {range.label}
-                                                        {dateRange === range.value && <Check size={16} className="text-blue-500" />}
-                                                    </Listbox.Option>
-                                                ))}
-                                            </Listbox.Options>
-                                        </div>
-                                    </Listbox>
-                                </div>
+                                <Listbox value={dateRange} onChange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val)); }} open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
+                                    <div className="relative">
+                                        <Listbox.Button className="flex items-center gap-1 sm:gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                                            <span className="hidden xs:inline">{selectedDateRange?.label || 'Date Range'}</span>
+                                            <span className="xs:hidden font-medium">{dateRange === 'all' ? 'All' : `${dateRange}d`}</span>
+                                            <ChevronDown size={12} className={`text-gray-400 transition-transform ${isDateFilterOpen ? 'rotate-180' : ''} hidden sm:block`} />
+                                        </Listbox.Button>
+                                        
+                                        <Listbox.Options className="absolute z-50 mt-1 left-0 sm:right-0 w-[calc(100vw-2rem)] sm:w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-auto">
+                                            {DATE_RANGES.map((range) => (
+                                                <Listbox.Option
+                                                    key={range.value}
+                                                    value={range.value}
+                                                    className={({ active, selected }) =>
+                                                        `cursor-pointer py-2.5 px-4 text-sm flex items-center justify-between ${
+                                                            selected 
+                                                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium' 
+                                                                : active 
+                                                                    ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
+                                                                    : 'text-gray-700 dark:text-gray-300'
+                                                        }`
+                                                    }
+                                                >
+                                                    {range.label}
+                                                    {dateRange === range.value && <Check size={16} className="text-blue-500" />}
+                                                </Listbox.Option>
+                                            ))}
+                                        </Listbox.Options>
+                                    </div>
+                                </Listbox>
 
                                 {/* Sync Button */}
                                 <button 
                                     onClick={handleSyncData}
                                     disabled={isSyncing}
-                                    className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
+                                    className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                                    title="Sync data"
                                 >
-                                    <RefreshCw size={16} className={isSyncing ? "animate-spin" : ""} />
-                                    <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
+                                    <RefreshCw size={18} className={`text-gray-600 dark:text-gray-300 ${isSyncing ? 'animate-spin' : ''}`} />
                                 </button>
 
                                 {/* Export Button */}
                                 <button 
                                     onClick={handleExportPDF}
                                     disabled={isExporting}
-                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                 >
-                                    <FileDown size={16} className={isExporting ? "animate-pulse" : ""} />
-                                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+                                    <FileDown size={16} />
+                                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
                                 </button>
 
                                 <Link 
                                     to="/client-dashboard/all-tickets" 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                                 >
                                     <Eye size={16} />
                                     <span className="hidden sm:inline">View All</span>
                                 </Link>
                             </div>
                         </div>
-
-                        {/* Status Bar */}
-                        <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-2 text-sm">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                <span className="text-green-600 dark:text-green-400 font-medium">Live Data</span>
-                            </div>
-                            {lastSynced && (
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <Clock size={14} />
-                                    <span>Last synced: {formatLastSynced(lastSynced)}</span>
-                                </div>
-                            )}
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Ticket size={14} />
-                                <span>{stats.total} total tickets</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <CheckCircle size={14} className="text-green-500" />
-                                <span>{stats.resolved} resolved</span>
-                            </div>
-                        </div>
-
-                        {/* Comparative Stats */}
-                        {stats.comparative.change !== 0 && (
-                            <div className="flex flex-wrap items-center gap-3 mt-3">
-                                <div className={`flex items-center gap-1 text-sm font-medium ${stats.comparative.change > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                                    {stats.comparative.change > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                    <span>{Math.abs(stats.comparative.change)}% vs previous period</span>
-                                </div>
-                            </div>
-                        )}
                     </motion.div>
                 )}
 
@@ -1107,9 +1056,15 @@ const ClientReportPage = () => {
                 ) : hasNoRecordsInRange ? (
                     <NoRecordsFound 
                         dateRangeLabel={selectedDateRange?.label || 'this period'}
+                        totalTickets={userAllTickets.length}
+                        lastTicketDate={userAllTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.createdAt}
                         onClearFilter={() => {
                             setDateRange('all');
                             setSelectedDateRange(DATE_RANGES.find(r => r.value === 'all'));
+                        }}
+                        onChangeDateRange={(value) => {
+                            setDateRange(value);
+                            setSelectedDateRange(DATE_RANGES.find(r => r.value === value));
                         }}
                     />
                 ) : clientTickets.length === 0 ? (

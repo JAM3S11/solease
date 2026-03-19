@@ -1,182 +1,182 @@
 import React from "react";
-import { motion } from "framer-motion";
-import { 
-  Calendar,
-  Search,
-  Clock,
-  Filter,
-  RefreshCw,
-  Inbox
-} from "lucide-react";
+import { Calendar, Inbox, Clock, AlertCircle } from "lucide-react";
 
-const NoRecordsFound = ({ dateRangeLabel = "this period", onClearFilter }) => {
-  const containerVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.4, ease: "easeOut" }
-    }
-  };
+const NoRecordsFound = ({ 
+    title = "No tickets found",
+    message,
+    dateRangeLabel, 
+    onClearFilter, 
+    onChangeDateRange,
+    lastTicketDate,
+    totalTickets,
+    type = "client"
+}) => {
+    const getDateRangeDays = (label) => {
+        if (label?.includes('7 Days')) return 7;
+        if (label?.includes('30 Days')) return 30;
+        if (label?.includes('90 Days')) return 90;
+        return null;
+    };
 
-  const iconVariants = {
-    hidden: { opacity: 0, y: -20, rotate: -10 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      rotate: 0,
-      transition: { delay: 0.2, duration: 0.5, type: "spring", stiffness: 200 }
-    }
-  };
+    const days = getDateRangeDays(dateRangeLabel);
 
-  const contentVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { delay: 0.3, duration: 0.4 }
-    }
-  };
-
-  const bubbleVariants = {
-    hidden: { opacity: 0, scale: 0 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { delay: 0.4, duration: 0.3 }
-    }
-  };
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="max-w-md mx-auto"
-    >
-      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-        {/* Decorative top gradient bar */}
-        <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+    const formatLastDate = (date) => {
+        if (!date) return null;
+        const d = new Date(date);
+        const now = new Date();
+        const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
         
-        <div className="p-8 text-center">
-          {/* Animated Icon Container */}
-          <motion.div 
-            variants={iconVariants}
-            className="relative inline-block mb-6"
-          >
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl" />
-            
-            {/* Main icon circle */}
-            <div className="relative w-24 h-24 mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full" />
-              <div className="absolute inset-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                <Inbox size={36} className="text-white" />
-              </div>
-              
-              {/* Decorative elements */}
-              <motion.div 
-                className="absolute -top-1 -right-1 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-              >
-                <Search size={16} className="text-white" />
-              </motion.div>
-            </div>
-          </motion.div>
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+        return `${Math.floor(diffDays / 30)} months ago`;
+    };
 
-          {/* Content */}
-          <motion.div variants={contentVariants}>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3">
-              No Records Found
-            </h2>
-            
-            <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base mb-2">
-              No tickets match your selected criteria
-            </p>
-            
-            {/* Date Range Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-100 dark:border-blue-800 mb-6">
-              <Calendar size={14} className="text-blue-500" />
-              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                {dateRangeLabel}
-              </span>
-            </div>
+    const quickRanges = [
+        { value: '7', label: 'Last 7 Days', days: 7 },
+        { value: '30', label: 'Last 30 Days', days: 30 },
+        { value: '90', label: 'Last 90 Days', days: 90 },
+        { value: 'all', label: 'All Time', days: null },
+    ];
 
-            {/* Suggestions */}
-            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 mb-6">
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-3 flex items-center justify-center gap-2">
-                <Filter size={14} className="text-gray-400" />
-                Try these options:
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <span className="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  Last 30 Days
-                </span>
-                <span className="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  Last 90 Days
-                </span>
-                <span className="text-xs px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                  All Time
-                </span>
-              </div>
-            </div>
+    const typeConfig = {
+        client: { icon: Inbox, label: 'tickets' },
+        admin: { icon: Inbox, label: 'records' },
+        reviewer: { icon: Inbox, label: 'assigned tickets' }
+    };
 
-            {/* Info text */}
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500 mb-4">
-              <Clock size={12} />
-              <span>Data is updated in real-time</span>
-            </div>
+    const config = typeConfig[type] || typeConfig.client;
+    const Icon = config.icon;
 
-            {/* Action buttons */}
-            {onClearFilter && (
-              <motion.button
-                onClick={onClearFilter}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:scale-[1.02]"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <RefreshCw size={16} />
-                Clear Filter & Show All
-              </motion.button>
-            )}
-          </motion.div>
+    const defaultMessage = message || (
+        totalTickets > 0 
+            ? `You have ${totalTickets} ${config.label}, but none match this filter.`
+            : `No ${config.label} found for this period.`
+    );
+
+    return (
+        <div className="max-w-lg mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                {/* Top accent bar */}
+                <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                
+                <div className="p-6">
+                    {/* Icon and Title */}
+                    <div className="flex flex-col items-center text-center mb-6">
+                        <div className="relative mb-4">
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center">
+                                <Icon size={32} className="text-gray-400" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                <Calendar size={14} className="text-white" />
+                            </div>
+                        </div>
+                        
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                            {title}
+                        </h3>
+                        
+                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                            {defaultMessage}
+                        </p>
+                    </div>
+
+                    {/* Current Filter Info */}
+                    {dateRangeLabel && (
+                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                        <Calendar size={18} className="text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Current filter</p>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{dateRangeLabel}</p>
+                                    </div>
+                                </div>
+                                {days && (
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Range</p>
+                                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{days}</p>
+                                        <p className="text-xs text-gray-400">days</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Last Ticket Info */}
+                    {lastTicketDate && (
+                        <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl mb-6">
+                            <Clock size={18} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Last {config.label.replace(/s$/, '')} created</p>
+                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                                    {formatLastDate(lastTicketDate)}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quick Range Selector */}
+                    {onChangeDateRange && (
+                        <div className="mb-6">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 text-center">
+                                Try a different period
+                            </p>
+                            <div className="grid grid-cols-4 gap-2">
+                                {quickRanges.map((range) => (
+                                    <button
+                                        key={range.value}
+                                        onClick={() => onChangeDateRange(range.value)}
+                                        className={`p-3 rounded-xl text-center transition-all ${
+                                            dateRangeLabel === range.label
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        <p className="text-xs font-medium">{range.days ? `${range.days}d` : 'All'}</p>
+                                        <p className="text-[10px] opacity-80">{range.days ? 'days' : 'time'}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                        {onClearFilter && (
+                            <button
+                                onClick={onClearFilter}
+                                className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+                            >
+                                View All
+                            </button>
+                        )}
+                        {onChangeDateRange && (
+                            <button
+                                onClick={() => onChangeDateRange('all')}
+                                className="px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
+                            >
+                                All Time
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Tip */}
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <div className="flex items-start gap-2 text-xs text-gray-400 dark:text-gray-500">
+                            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                            <p>
+                                Try expanding the date range or clearing filters to see more results.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        {/* Decorative bottom pattern */}
-        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-        
-        {/* Floating bubbles decoration */}
-        <div className="absolute -bottom-4 -left-4 -right-4 h-8 overflow-hidden pointer-events-none">
-          <motion.div 
-            variants={bubbleVariants}
-            className="absolute bottom-0 left-[10%] w-3 h-3 bg-blue-400/30 rounded-full"
-          />
-          <motion.div 
-            variants={bubbleVariants}
-            className="absolute bottom-0 left-[30%] w-2 h-2 bg-indigo-400/30 rounded-full"
-            style={{ transitionDelay: "0.1s" }}
-          />
-          <motion.div 
-            variants={bubbleVariants}
-            className="absolute bottom-0 left-[50%] w-4 h-4 bg-purple-400/30 rounded-full"
-            style={{ transitionDelay: "0.2s" }}
-          />
-          <motion.div 
-            variants={bubbleVariants}
-            className="absolute bottom-0 left-[70%] w-2 h-2 bg-blue-400/30 rounded-full"
-            style={{ transitionDelay: "0.3s" }}
-          />
-          <motion.div 
-            variants={bubbleVariants}
-            className="absolute bottom-0 left-[90%] w-3 h-3 bg-indigo-400/30 rounded-full"
-            style={{ transitionDelay: "0.4s" }}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
+    );
 };
 
 export default NoRecordsFound;

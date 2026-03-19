@@ -1,9 +1,10 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { Listbox } from '@headlessui/react';
+import html2pdf from 'html2pdf.js';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
 import { 
@@ -11,14 +12,22 @@ import {
     AlertTriangle, Zap, RotateCcw, Users, BarChart3, ArrowUpDown, 
     Search, Filter, ChevronDown, ChevronUp, X, RefreshCw, Eye,
     ArrowRight, Target, Award, Flame, Sparkles, Timer, ThumbsUp, Phone, Gauge,
-    Tickets
+    Tickets, Download, Printer, Calendar, TrendingDown, FileDown, Bell,
+    Send, Check, AlertCircle, Clock3, Ticket, User
 } from "lucide-react"; 
 import { Link } from "react-router";
 import NoReport from "../ui/NoReport";
+import NoRecordsFound from "../ui/NoRecordsFound";
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
 const SUCCESS_STATUSES = ['Closed', 'Resolved'];
 const ACTIVE_STATUSES = ['Open', 'In Progress'];
+const DATE_RANGES = [
+    { value: '7', label: 'Last 7 Days' },
+    { value: '30', label: 'Last 30 Days' },
+    { value: '90', label: 'Last 90 Days' },
+    { value: 'all', label: 'All Time' },
+];
 
 const getDaysDifference = (startDate, endDate) => {
     const diffTime = endDate.getTime() - startDate.getTime();
@@ -31,6 +40,102 @@ const formatTimeDisplay = (days) => {
     const totalHours = Math.round(days * 24);
     if (totalHours < 24) return `${totalHours}h`;
     return `${days.toFixed(1)}d`;
+};
+
+const formatFullDate = (date) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const calculateSLACompliance = (tickets) => {
+    const urgentTickets = tickets.filter(t => t.urgency === 'Critical' || t.urgency === 'High');
+    const resolvedUrgent = urgentTickets.filter(t => SUCCESS_STATUSES.includes(t.status));
+    
+    const onTime = resolvedUrgent.filter(t => {
+        const resolutionTime = getDaysDifference(new Date(t.createdAt), new Date(t.updatedAt));
+        return t.urgency === 'Critical' ? resolutionTime <= 1 : resolutionTime <= 3;
+    }).length;
+
+    return {
+        total: urgentTickets.length,
+        onTime,
+        compliance: urgentTickets.length > 0 ? Math.round((onTime / urgentTickets.length) * 100) : 100
+    };
+};
+
+const calculateTicketHealthScore = (tickets) => {
+    if (tickets.length === 0) return 0;
+    
+    const resolvedRate = tickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length / tickets.length;
+    const avgResponse = calculateAverageResponseTime(tickets).hours || 0;
+    const responseScore = Math.max(0, 100 - (avgResponse * 5));
+    
+    return Math.round((resolvedRate * 50) + (responseScore * 0.5));
+};
+
+const calculateComparativeStats = (tickets, periodDays) => {
+    const now = new Date();
+    const periodStart = new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000);
+    const previousPeriodStart = new Date(periodStart.getTime() - periodDays * 24 * 60 * 60 * 1000);
+
+    const currentPeriod = tickets.filter(t => new Date(t.createdAt) >= periodStart);
+    const previousPeriod = tickets.filter(t => {
+        const date = new Date(t.createdAt);
+        return date >= previousPeriodStart && date < periodStart;
+    });
+
+    const currentResolved = currentPeriod.filter(t => SUCCESS_STATUSES.includes(t.status)).length;
+    const previousResolved = previousPeriod.filter(t => SUCCESS_STATUSES.includes(t.status)).length;
+
+    const resolvedChange = previousResolved > 0 
+        ? Math.round(((currentResolved - previousResolved) / previousResolved) * 100) 
+        : currentResolved > 0 ? 100 : 0;
+
+    return {
+        currentCount: currentPeriod.length,
+        previousCount: previousPeriod.length,
+        currentResolved,
+        previousResolved,
+        change: previousPeriod.length > 0 
+            ? Math.round(((currentPeriod.length - previousPeriod.length) / previousPeriod.length) * 100)
+            : 0,
+        resolvedChange
+    };
+};
+
+const calculateDetailedFeedbackAnalytics = (tickets) => {
+    const detailed = tickets.map(ticket => {
+        const feedback = ticket.comments || [];
+        const responses = feedback.filter(c => c.isStaff || c.role === 'reviewer').length;
+        const clientMessages = feedback.filter(c => !c.isStaff && c.role !== 'reviewer').length;
+        
+        return {
+            ticketId: ticket._id,
+            subject: ticket.subject,
+            totalMessages: feedback.length,
+            staffResponses: responses,
+            clientMessages,
+            hasFeedback: feedback.length > 0,
+            lastActivity: feedback.length > 0 ? feedback[feedback.length - 1].createdAt : null
+        };
+    });
+
+    const totalFeedback = detailed.reduce((sum, d) => sum + d.totalMessages, 0);
+    const ticketsWithActivity = detailed.filter(d => d.hasFeedback).length;
+
+    return {
+        detailed,
+        totalFeedback,
+        ticketsWithActivity,
+        engagementRate: tickets.length > 0 ? Math.round((ticketsWithActivity / tickets.length) * 100) : 0,
+        avgMessagesPerTicket: tickets.length > 0 ? (totalFeedback / tickets.length).toFixed(1) : 0
+    };
 };
 
 const calculateAverageResolutionTime = (tickets) => {
@@ -458,14 +563,16 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
     </button>
 );
 
-const StatCard = ({ label, value, icon: Icon, color, progress, subtitle }) => {
+const StatCard = ({ label, value, icon: Icon, color, progress, subtitle, trend, trendUp, badge }) => {
     const colorStyles = {
-        blue: { bg: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400', ring: 'ring-blue-100 dark:ring-blue-900' },
-        green: { bg: 'bg-green-500', text: 'text-green-600 dark:text-green-400', ring: 'ring-green-100 dark:ring-green-900' },
-        yellow: { bg: 'bg-yellow-500', text: 'text-yellow-600 dark:text-yellow-400', ring: 'ring-yellow-100 dark:ring-yellow-900' },
-        purple: { bg: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400', ring: 'ring-purple-100 dark:ring-purple-900' },
-        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', ring: 'ring-indigo-100 dark:ring-indigo-900' },
-        cyan: { bg: 'bg-cyan-500', text: 'text-cyan-600 dark:text-cyan-400', ring: 'ring-cyan-100 dark:ring-cyan-900' },
+        blue: { bg: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400', ring: 'ring-blue-100 dark:ring-blue-900', light: 'bg-blue-50 dark:bg-blue-900/20' },
+        green: { bg: 'bg-green-500', text: 'text-green-600 dark:text-green-400', ring: 'ring-green-100 dark:ring-green-900', light: 'bg-green-50 dark:bg-green-900/20' },
+        yellow: { bg: 'bg-yellow-500', text: 'text-yellow-600 dark:text-yellow-400', ring: 'ring-yellow-100 dark:ring-yellow-900', light: 'bg-yellow-50 dark:bg-yellow-900/20' },
+        purple: { bg: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400', ring: 'ring-purple-100 dark:ring-purple-900', light: 'bg-purple-50 dark:bg-purple-900/20' },
+        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', ring: 'ring-indigo-100 dark:ring-indigo-900', light: 'bg-indigo-50 dark:bg-indigo-900/20' },
+        cyan: { bg: 'bg-cyan-500', text: 'text-cyan-600 dark:text-cyan-400', ring: 'ring-cyan-100 dark:ring-yellow-900', light: 'bg-cyan-50 dark:bg-cyan-900/20' },
+        red: { bg: 'bg-red-500', text: 'text-red-600 dark:text-red-400', ring: 'ring-red-100 dark:ring-red-900', light: 'bg-red-50 dark:bg-red-900/20' },
+        orange: { bg: 'bg-orange-500', text: 'text-orange-600 dark:text-orange-400', ring: 'ring-orange-100 dark:ring-orange-900', light: 'bg-orange-50 dark:bg-orange-900/20' },
     };
     const style = colorStyles[color] || colorStyles.blue;
     const isLongLabel = label.length > 12;
@@ -473,10 +580,15 @@ const StatCard = ({ label, value, icon: Icon, color, progress, subtitle }) => {
     return (
         <motion.div 
             whileHover={{ y: -2 }}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:shadow-lg transition-shadow h-full"
+            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:shadow-lg transition-shadow h-full relative overflow-hidden"
         >
+            {badge && (
+                <div className={`absolute top-0 right-0 px-2 py-1 text-[10px] font-bold rounded-bl-lg ${style.light} ${style.text}`}>
+                    {badge}
+                </div>
+            )}
             <div className="flex items-start gap-2">
-                <div className={`p-1.5 rounded-lg ${style.bg} bg-opacity-10 flex-shrink-0`}>
+                <div className={`p-1.5 rounded-lg ${style.light} flex-shrink-0`}>
                     <Icon size={16} className={style.text} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -484,7 +596,7 @@ const StatCard = ({ label, value, icon: Icon, color, progress, subtitle }) => {
                     <p className="text-lg font-bold text-gray-900 dark:text-white truncate">{value}</p>
                 </div>
             </div>
-            {(progress !== undefined || subtitle) && (
+            {(progress !== undefined || subtitle || trend) && (
                 <div className="mt-2 pl-0">
                     {progress !== undefined && (
                         <div className="flex items-center gap-2">
@@ -498,6 +610,12 @@ const StatCard = ({ label, value, icon: Icon, color, progress, subtitle }) => {
                         </div>
                     )}
                     {subtitle && <p className="text-[10px] text-gray-400 mt-1 truncate">{subtitle}</p>}
+                    {trend && (
+                        <div className={`flex items-center gap-1 mt-1 text-[10px] font-medium ${trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                            {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                            <span>{trend}</span>
+                        </div>
+                    )}
                 </div>
             )}
         </motion.div>
@@ -555,6 +673,142 @@ const ClientReportPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
+    
+    // New state for enhanced features
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSynced, setLastSynced] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [dateRange, setDateRange] = useState('30');
+    const [selectedDateRange, setSelectedDateRange] = useState(DATE_RANGES[1]);
+    const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
+
+    const handleSyncData = async () => {
+        setIsSyncing(true);
+        try {
+            await fetchTickets("Client");
+            setLastSynced(new Date());
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const formatLastSynced = (date) => {
+        if (!date) return 'Never';
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000);
+        if (diff < 60) return 'Just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+        return date.toLocaleTimeString();
+    };
+
+    const handleExportPDF = async () => {
+        setIsExporting(true);
+        try {
+            const printContent = `
+                <div style="padding: 20px; font-family: Arial, sans-serif; width: 900px;">
+                    <div style="border-bottom: 4px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px;">
+                        <h1 style="font-size: 28px; font-weight: bold; margin: 0; color: #1f2937;">${user?.name}'s Support Report</h1>
+                        <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 13px;">Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">Performance Overview</h2>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 15px; border-radius: 8px; color: white;">
+                            <div style="font-size: 11px; opacity: 0.9;">Total Tickets</div>
+                            <div style="font-size: 28px; font-weight: bold;">${stats.total}</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 15px; border-radius: 8px; color: white;">
+                            <div style="font-size: 11px; opacity: 0.9;">Resolved</div>
+                            <div style="font-size: 28px; font-weight: bold;">${stats.resolved}</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 15px; border-radius: 8px; color: white;">
+                            <div style="font-size: 11px; opacity: 0.9;">In Progress</div>
+                            <div style="font-size: 28px; font-weight: bold;">${stats.inProgress}</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 15px; border-radius: 8px; color: white;">
+                            <div style="font-size: 11px; opacity: 0.9;">Satisfaction</div>
+                            <div style="font-size: 28px; font-weight: bold;">${stats.sat.value}</div>
+                        </div>
+                    </div>
+
+                    <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">Response Analytics</h2>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 11px; color: #6b7280;">Avg Response Time</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${stats.avgResponse.value}</div>
+                        </div>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 11px; color: #6b7280;">First Response Rate</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #10b981;">${stats.firstResponseRate.value}</div>
+                        </div>
+                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 11px; color: #6b7280;">Avg Resolution</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #8b5cf6;">${stats.avgRes.value}</div>
+                        </div>
+                    </div>
+
+                    <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">Tickets by Status</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #3b82f6; color: white;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #2563eb;">Status</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #2563eb;">Count</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #2563eb;">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats.byStatus.map((row, idx) => `
+                                <tr style="background: ${idx % 2 === 0 ? '#f9fafb' : 'white'};">
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">${row.status}</td>
+                                    <td style="padding: 12px; text-align: center; border: 1px solid #e5e7eb; font-weight: bold;">${row.count}</td>
+                                    <td style="padding: 12px; text-align: center; border: 1px solid #e5e7eb;">${stats.total > 0 ? ((row.count / stats.total) * 100).toFixed(1) : 0}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 15px;">Urgency Breakdown</h2>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #6b7280; color: white;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #4b5563;">Urgency</th>
+                                <th style="padding: 12px; text-align: center; border: 1px solid #4b5563;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats.byUrgency.map((row, idx) => `
+                                <tr style="background: ${idx % 2 === 0 ? '#f9fafb' : 'white'};">
+                                    <td style="padding: 12px; border: 1px solid #e5e7eb;">${row.urgency}</td>
+                                    <td style="padding: 12px; text-align: center; border: 1px solid #e5e7eb; font-weight: bold;">${row.count}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
+                        <div style="font-size: 11px; color: #9ca3af;">SolEase Support Dashboard | Generated automatically</div>
+                    </div>
+                </div>
+            `;
+
+            const container = document.createElement('div');
+            container.innerHTML = printContent;
+
+            const opt = {
+                margin: 5,
+                filename: `SolEase_Report_${user?.name}_${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opt).from(container).save();
+        } catch (error) {
+            console.error('Export error:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const availableColumns = [
         { key: 'subject', label: 'Ticket', default: true },
@@ -588,8 +842,28 @@ const ClientReportPage = () => {
     const clientTickets = useMemo(() => {
         if (!tickets) return [];
         const safeTickets = Array.isArray(tickets) ? tickets : [];
-        return safeTickets.filter(t => (t.user?._id || t.user) === user._id);
+        let filtered = safeTickets.filter(t => (t.user?._id || t.user) === user._id);
+        
+        // Apply date range filter
+        if (dateRange !== 'all') {
+            const days = parseInt(dateRange);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            filtered = filtered.filter(t => new Date(t.createdAt) >= cutoffDate);
+        }
+        
+        return filtered;
+    }, [tickets, user, dateRange]);
+
+    // Check if user has any tickets at all (for distinguishing "no records" vs "no tickets ever")
+    const userHasAnyTickets = useMemo(() => {
+        if (!tickets) return false;
+        const safeTickets = Array.isArray(tickets) ? tickets : [];
+        return safeTickets.some(t => (t.user?._id || t.user) === user._id);
     }, [tickets, user]);
+
+    // Has tickets but none in selected date range
+    const hasNoRecordsInRange = userHasAnyTickets && clientTickets.length === 0;
 
     const stats = useMemo(() => ({
         total: clientTickets.length,
@@ -618,7 +892,11 @@ const ClientReportPage = () => {
         resolutionRateOverTime: calculateResolutionRateOverTime(clientTickets),
         avgResponseTimeOverTime: calculateAvgResponseTimeOverTime(clientTickets),
         firstResponseData: calculateTicketsWithFirstResponse(clientTickets),
-    }), [clientTickets]);
+        slaCompliance: calculateSLACompliance(clientTickets),
+        healthScore: calculateTicketHealthScore(clientTickets),
+        comparative: calculateComparativeStats(clientTickets, parseInt(dateRange)),
+        feedbackDetailed: calculateDetailedFeedbackAnalytics(clientTickets),
+    }), [clientTickets, dateRange]);
 
     const filteredTickets = useMemo(() => {
         let filtered = [...stats.ticketMetrics];
@@ -676,7 +954,7 @@ const ClientReportPage = () => {
     return (
         <DashboardLayout>
             <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
-                {clientTickets.length > 0 && (
+                {(clientTickets.length > 0 || hasNoRecordsInRange) && (
                     <motion.div 
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -687,25 +965,112 @@ const ClientReportPage = () => {
                                 <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                     {user?.name ? `${user.name.split(' ')[0]}'s Dashboard` : "My Dashboard"}
                                 </h1>
-                                <p className="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                                    <Sparkles size={14} className="text-yellow-500" />
-                                    Track your IT support tickets and performance metrics
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 text-sm font-medium text-green-600 bg-green-50 dark:bg-green-900/30 px-4 py-2 rounded-xl">
-                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    Live Data
+                                <div className="flex flex-wrap items-center gap-3 mt-2">
+                                    <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm">
+                                        <Sparkles size={14} className="text-yellow-500" />
+                                        Track your IT support tickets and performance metrics
+                                    </p>
+                                    {isSyncing && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full"
+                                        >
+                                            <RefreshCw size={12} className="animate-spin" />
+                                            Syncing...
+                                        </motion.div>
+                                    )}
                                 </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                                {/* Date Range Filter */}
+                                <div className="relative">
+                                    <Listbox value={dateRange} onChange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val)); setIsDateFilterOpen(false); }} open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
+                                        <div className="relative">
+                                            <Listbox.Button className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                                <Calendar size={16} className="text-gray-400" />
+                                                <span className="hidden sm:inline">{selectedDateRange?.label || 'Date Range'}</span>
+                                                <span className="sm:hidden">Filter</span>
+                                                <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDateFilterOpen ? 'rotate-180' : ''}`} />
+                                            </Listbox.Button>
+                                            <Listbox.Options className="absolute z-30 mt-1 right-0 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-auto">
+                                                {DATE_RANGES.map((range) => (
+                                                    <Listbox.Option
+                                                        key={range.value}
+                                                        value={range.value}
+                                                        className={({ active }) =>
+                                                            `cursor-pointer select-none py-2 px-3 text-sm ${active ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`
+                                                        }
+                                                    >
+                                                        {range.label}
+                                                    </Listbox.Option>
+                                                ))}
+                                            </Listbox.Options>
+                                        </div>
+                                    </Listbox>
+                                </div>
+
+                                {/* Sync Button */}
+                                <button 
+                                    onClick={handleSyncData}
+                                    disabled={isSyncing}
+                                    className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
+                                >
+                                    <RefreshCw size={16} className={isSyncing ? "animate-spin" : ""} />
+                                    <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
+                                </button>
+
+                                {/* Export Button */}
+                                <button 
+                                    onClick={handleExportPDF}
+                                    disabled={isExporting}
+                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                >
+                                    <FileDown size={16} className={isExporting ? "animate-pulse" : ""} />
+                                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+                                </button>
+
                                 <Link 
                                     to="/client-dashboard/all-tickets" 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all"
+                                    className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
                                 >
                                     <Eye size={16} />
-                                    View All
+                                    <span className="hidden sm:inline">View All</span>
                                 </Link>
                             </div>
                         </div>
+
+                        {/* Status Bar */}
+                        <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="text-green-600 dark:text-green-400 font-medium">Live Data</span>
+                            </div>
+                            {lastSynced && (
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <Clock size={14} />
+                                    <span>Last synced: {formatLastSynced(lastSynced)}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Ticket size={14} />
+                                <span>{stats.total} total tickets</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <CheckCircle size={14} className="text-green-500" />
+                                <span>{stats.resolved} resolved</span>
+                            </div>
+                        </div>
+
+                        {/* Comparative Stats */}
+                        {stats.comparative.change !== 0 && (
+                            <div className="flex flex-wrap items-center gap-3 mt-3">
+                                <div className={`flex items-center gap-1 text-sm font-medium ${stats.comparative.change > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                    {stats.comparative.change > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                    <span>{Math.abs(stats.comparative.change)}% vs previous period</span>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 )}
 
@@ -722,6 +1087,14 @@ const ClientReportPage = () => {
                         <AlertTriangle size={20} />
                         <span className="font-bold">Error:</span> {error}
                     </div>
+                ) : hasNoRecordsInRange ? (
+                    <NoRecordsFound 
+                        dateRangeLabel={selectedDateRange?.label || 'this period'}
+                        onClearFilter={() => {
+                            setDateRange('all');
+                            setSelectedDateRange(DATE_RANGES.find(r => r.value === 'all'));
+                        }}
+                    />
                 ) : clientTickets.length === 0 ? (
                     <NoReport userName={user?.name?.split(' ')[0]} type="client" />
                 ) : (
@@ -758,6 +1131,61 @@ const ClientReportPage = () => {
                                         <StatCard label="Avg Resolution" value={stats.avgRes.value} icon={TrendingUp} color="purple" />
                                         <StatCard label="Satisfaction" value={stats.sat.value} icon={Star} color="indigo" progress={parseInt(stats.sat.value) || 0} />
                                         <StatCard label="Response Rate" value={stats.firstResponseRate.value} icon={Zap} color="cyan" progress={parseInt(stats.firstResponseRate.value) || 0} />
+                                    </div>
+
+                                    {/* SLA & Health Score Section */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-100 dark:border-green-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="p-2 bg-green-500 rounded-lg">
+                                                    <Gauge size={18} className="text-white" />
+                                                </div>
+                                                <span className={`text-2xl font-bold ${stats.slaCompliance.compliance >= 80 ? 'text-green-600' : stats.slaCompliance.compliance >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                    {stats.slaCompliance.compliance}%
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-green-700 dark:text-green-300">SLA Compliance</p>
+                                            <p className="text-xs text-green-600/70 dark:text-green-400/70">{stats.slaCompliance.onTime}/{stats.slaCompliance.total} on time</p>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="p-2 bg-blue-500 rounded-lg">
+                                                    <Activity size={18} className="text-white" />
+                                                </div>
+                                                <span className={`text-2xl font-bold ${stats.healthScore >= 70 ? 'text-blue-600' : stats.healthScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                                    {stats.healthScore}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Health Score</p>
+                                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Overall performance</p>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-4 border border-purple-100 dark:border-purple-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="p-2 bg-purple-500 rounded-lg">
+                                                    <MessageCircle size={18} className="text-white" />
+                                                </div>
+                                                <span className="text-2xl font-bold text-purple-600">
+                                                    {stats.feedbackDetailed.ticketsWithActivity}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Active Tickets</p>
+                                            <p className="text-xs text-purple-600/70 dark:text-purple-400/70">{stats.feedbackDetailed.engagementRate}% engagement</p>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-4 border border-orange-100 dark:border-orange-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="p-2 bg-orange-500 rounded-lg">
+                                                    <AlertTriangle size={18} className="text-white" />
+                                                </div>
+                                                <span className="text-2xl font-bold text-orange-600">
+                                                    {stats.critical}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">Critical/High</p>
+                                            <p className="text-xs text-orange-600/70 dark:text-orange-400/70">Priority tickets</p>
+                                        </div>
                                     </div>
 
                                     {/* Response Analytics Section */}
@@ -1739,82 +2167,182 @@ const ClientReportPage = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-6"
                                 >
-                                    {/* Activity Stats */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        {[
-                                            { label: 'Tickets with Feedback', value: stats.feedback.ticketsWithFeedback, icon: MessageCircle, color: 'blue' },
-                                            { label: 'Total Messages', value: stats.feedback.totalFeedbackCount, icon: Activity, color: 'green' },
-                                            { label: 'Active Discussions', value: stats.activeDiscussions, icon: Users, color: 'purple' },
-                                        ].map((stat, idx) => (
-                                            <motion.div
-                                                key={stat.label}
-                                                initial={{ y: 20 }}
-                                                animate={{ y: 0 }}
-                                                transition={{ delay: idx * 0.1 }}
-                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex items-center gap-4"
-                                            >
-                                                <div className={`p-3 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/30`}>
-                                                    <stat.icon size={24} className={`text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                                                    <p className="text-xs text-gray-500">{stat.label}</p>
-                                                </div>
-                                            </motion.div>
-                                        ))}
+                                    {/* Enhanced Activity Stats */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
+                                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.feedback.ticketsWithFeedback}</p>
+                                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70 font-medium mt-1">With Feedback</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-800 text-center">
+                                            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.feedback.totalFeedbackCount}</p>
+                                            <p className="text-xs text-green-600/70 dark:text-green-400/70 font-medium mt-1">Total Messages</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 p-4 rounded-2xl border border-purple-100 dark:border-purple-800 text-center">
+                                            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.activeDiscussions}</p>
+                                            <p className="text-xs text-purple-600/70 dark:text-purple-400/70 font-medium mt-1">Active</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800 text-center">
+                                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.feedback.engagementRate}%</p>
+                                            <p className="text-xs text-orange-600/70 dark:text-orange-400/70 font-medium mt-1">Engagement</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-900/20 dark:to-sky-900/20 p-4 rounded-2xl border border-cyan-100 dark:border-cyan-800 text-center">
+                                            <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.feedback.recentFeedback}</p>
+                                            <p className="text-xs text-cyan-600/70 dark:text-cyan-400/70 font-medium mt-1">This Week</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 p-4 rounded-2xl border border-pink-100 dark:border-pink-800 text-center">
+                                            <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">{stats.feedback.feedbackRate}%</p>
+                                            <p className="text-xs text-pink-600/70 dark:text-pink-400/70 font-medium mt-1">Response Rate</p>
+                                        </div>
                                     </div>
 
-                                    {/* Recent Feedback */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                                        <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+                                    {/* Engagement Metrics */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* Message Breakdown */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-5">
+                                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
+                                                <MessageCircle size={18} className="text-blue-500" />
+                                                Message Breakdown
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-blue-500 rounded-lg">
+                                                            <Send size={16} className="text-white" />
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Messages</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0)}</p>
+                                                        <p className="text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-green-500 rounded-lg">
+                                                            <User size={16} className="text-white" />
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Staff Responses</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0)}</p>
+                                                        <p className="text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-gray-500">Avg messages per ticket</span>
+                                                    <span className="font-bold text-gray-800 dark:text-white">{stats.feedbackDetailed.avgMessagesPerTicket}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Recent Feedback */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                            <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+                                                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                                    <Clock size={18} className="text-purple-500" />
+                                                    Recent Activity
+                                                </h3>
+                                            </div>
+                                            <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
+                                                {stats.recentFeedback.length > 0 ? stats.recentFeedback.map((feedback, idx) => (
+                                                    <motion.div 
+                                                        key={`${feedback.ticketId}-${idx}`}
+                                                        initial={{ opacity: 0, x: -10 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ delay: idx * 0.05 }}
+                                                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                                {feedback.user?.name?.charAt(0) || feedback.user?.username?.charAt(0) || 'U'}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="font-semibold text-sm text-gray-800 dark:text-white">
+                                                                        {feedback.user?.name || feedback.user?.username || 'Unknown'}
+                                                                    </span>
+                                                                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${feedback.isStaff ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'}`}>
+                                                                        {feedback.isStaff ? 'Staff' : 'You'}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-xs text-gray-500 truncate mt-0.5">{feedback.ticketSubject}</p>
+                                                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{feedback.content}</p>
+                                                                <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+                                                                    <Clock size={10} />
+                                                                    {formatFullDate(feedback.createdAt)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )) : (
+                                                    <div className="p-8 text-center text-gray-400">
+                                                        <MessageCircle size={40} className="mx-auto mb-2 opacity-50" />
+                                                        <p>No recent activity</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Ticket Activity Timeline */}
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                        <div className="p-5 border-b border-gray-100 dark:border-gray-700">
                                             <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                                <MessageCircle size={20} className="text-blue-500" />
-                                                Recent Activity
+                                                <Activity size={18} className="text-green-500" />
+                                                Your Ticket Activity Timeline
                                             </h3>
                                         </div>
-                                        <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {stats.recentFeedback.length > 0 ? stats.recentFeedback.map((feedback, idx) => (
-                                                <motion.div 
-                                                    key={`${feedback.ticketId}-${idx}`}
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: idx * 0.05 }}
-                                                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                                >
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                            {feedback.user?.name?.charAt(0) || feedback.user?.username?.charAt(0) || 'U'}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="font-semibold text-gray-800 dark:text-white">
-                                                                    {feedback.user?.name || feedback.user?.username || 'Unknown'}
-                                                                </span>
-                                                                <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full">
-                                                                    {feedback.ticketSubject?.substring(0, 30)}...
-                                                                </span>
-                                                                {feedback.aiGenerated && (
-                                                                    <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full">
-                                                                        AI
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                                                                {feedback.content}
-                                                            </p>
-                                                            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                                                                <Clock size={12} />
-                                                                {new Date(feedback.createdAt).toLocaleString()}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            )) : (
-                                                <div className="p-8 text-center text-gray-400">
-                                                    <MessageCircle size={40} className="mx-auto mb-2 opacity-50" />
-                                                    <p>No recent activity</p>
+                                        <div className="p-5">
+                                            <div className="relative">
+                                                {/* Timeline line */}
+                                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500"></div>
+                                                
+                                                <div className="space-y-4">
+                                                    {stats.feedbackDetailed.detailed.slice(0, 5).map((item, idx) => {
+                                                        const ticket = clientTickets.find(t => t._id === item.ticketId);
+                                                        if (!ticket) return null;
+                                                        
+                                                        return (
+                                                            <motion.div 
+                                                                key={item.ticketId}
+                                                                initial={{ opacity: 0, y: 10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: idx * 0.1 }}
+                                                                className="relative flex items-start gap-4 pl-10"
+                                                            >
+                                                                <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${
+                                                                    SUCCESS_STATUSES.includes(ticket.status) 
+                                                                        ? 'bg-green-500 border-green-500' 
+                                                                        : ticket.status === 'In Progress'
+                                                                            ? 'bg-yellow-500 border-yellow-500'
+                                                                            : 'bg-blue-500 border-blue-500'
+                                                                }`}></div>
+                                                                <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
+                                                                    <div className="flex items-center justify-between mb-2">
+                                                                        <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${
+                                                                            ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' :
+                                                                            ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' :
+                                                                            SUCCESS_STATUSES.includes(ticket.status) ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
+                                                                            'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-400'
+                                                                        }`}>
+                                                                            {ticket.status}
+                                                                        </span>
+                                                                        <span className="text-[10px] text-gray-400">
+                                                                            {item.totalMessages} messages
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="font-medium text-sm text-gray-800 dark:text-white">{item.subject}</p>
+                                                                    <p className="text-xs text-gray-500 mt-1">
+                                                                        {item.staffResponses} staff • {item.clientMessages} your messages
+                                                                    </p>
+                                                                </div>
+                                                            </motion.div>
+                                                        );
+                                                    })}
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>

@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
@@ -7,12 +8,13 @@ import { Listbox } from '@headlessui/react';
 import html2pdf from 'html2pdf.js';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
+import { NumberTicker } from "../ui/number-ticker";
 import { 
-    Clock, CheckCircle, Check, TrendingUp, Activity, MessageCircle, Star, 
+    Clock, CheckCircle, Check, TrendingUp, TrendingDown, Activity, MessageCircle, Star, 
     AlertTriangle, Zap, BarChart3, 
     Search, ChevronDown, X, RefreshCw, Eye,
-    ArrowRight, Target, Flame, Timer, ThumbsUp, Phone, Gauge,
-    Tickets, FileDown, Ticket, Calendar
+    ArrowRight, ArrowUpDown, Target, Flame, Timer, ThumbsUp, Phone, Gauge,
+    Tickets, FileDown, Ticket, Calendar, Send, User
 } from "lucide-react"; 
 import { Link } from "react-router";
 import NoReport from "../ui/NoReport";
@@ -266,7 +268,7 @@ const calculateAutoResolved = (tickets) => {
     return tickets.filter(t => t.resolutionMethod === 'Auto' && (t.status === 'Resolved' || t.status === 'Closed')).length;
 };
 
-const calculateReopenedTickets = (tickets) => {
+const calculateReopenedTickets = () => {
     return 0;
 };
 
@@ -283,7 +285,7 @@ const calculateActiveDiscussions = (tickets) => {
 const calculateTicketsByStatus = (tickets) => {
     const statusCounts = { 'Open': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0 };
     tickets.forEach(t => {
-        if (statusCounts.hasOwnProperty(t.status)) {
+        if (Object.hasOwn(statusCounts, t.status)) {
             statusCounts[t.status]++;
         }
     });
@@ -293,7 +295,7 @@ const calculateTicketsByStatus = (tickets) => {
 const calculateTicketsByUrgency = (tickets) => {
     const urgencyCounts = { 'Low': 0, 'Medium': 0, 'High': 0, 'Critical': 0 };
     tickets.forEach(t => {
-        if (urgencyCounts.hasOwnProperty(t.urgency)) {
+        if (Object.hasOwn(urgencyCounts, t.urgency)) {
             urgencyCounts[t.urgency]++;
         }
     });
@@ -439,14 +441,6 @@ const hasChartData = (dataArray) => {
     return dataArray && dataArray.some(val => val !== null && val > 0);
 };
 
-const getChartColors = (isDark) => ({
-    primary: isDark ? '#818cf8' : '#4f46e5',
-    secondary: isDark ? '#34d399' : '#10b981',
-    text: isDark ? '#9ca3af' : '#6b7280',
-    grid: isDark ? '#374151' : '#e5e7eb',
-    background: isDark ? '#1f2937' : '#ffffff',
-});
-
 const calculatePerTicketMetrics = (tickets) => {
     return tickets.map(ticket => {
         const createdDate = new Date(ticket.createdAt);
@@ -505,24 +499,6 @@ const calculateResolutionPerformance = (tickets) => {
     };
 };
 
-const getColorClasses = (color) => {
-  const maps = {
-    blue: "from-blue-500/20 to-blue-600/10 text-blue-600 dark:text-blue-400",
-    orange: "from-orange-500/20 to-orange-600/10 text-orange-600 dark:text-orange-400",
-    green: "from-green-500/20 to-green-600/10 text-green-600 dark:text-green-400",
-    purple: "from-purple-500/20 to-purple-600/10 text-purple-600 dark:text-purple-400",
-    indigo: "from-indigo-500/20 to-indigo-600/10 text-indigo-600 dark:text-indigo-400",
-    pink: "from-pink-500/20 to-pink-600/10 text-pink-600 dark:text-pink-400",
-    red: "from-red-500/20 to-red-600/10 text-red-600 dark:text-red-400",
-    yellow: "from-yellow-500/20 to-yellow-600/10 text-yellow-600 dark:text-yellow-400",
-    cyan: "from-cyan-500/20 to-cyan-600/10 text-cyan-600 dark:text-cyan-400",
-    emerald: "from-emerald-500/20 to-emerald-600/10 text-emerald-600 dark:text-emerald-400",
-    amber: "from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400",
-    violet: "from-violet-500/20 to-violet-600/10 text-violet-600 dark:text-violet-400",
-  };
-  return maps[color] || maps.blue;
-};
-
 const getStatusColor = (status) => {
     const colors = {
         'Open': 'bg-blue-500',
@@ -552,7 +528,7 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
         }`}
     >
-        <Icon size={18} />
+        {Icon && <Icon size={18} />}
         <span>{label}</span>
         {count !== undefined && (
             <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${active ? 'bg-white/20' : 'bg-gray-200 dark:bg-gray-700'}`}>
@@ -562,73 +538,37 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
     </button>
 );
 
-const StatCard = ({ label, value, icon: Icon, color, progress, subtitle, trend, trendUp, badge }) => {
-    const colorStyles = {
-        blue: { bg: 'bg-blue-500', text: 'text-blue-600 dark:text-blue-400', ring: 'ring-blue-100 dark:ring-blue-900', light: 'bg-blue-50 dark:bg-blue-900/20' },
-        green: { bg: 'bg-green-500', text: 'text-green-600 dark:text-green-400', ring: 'ring-green-100 dark:ring-green-900', light: 'bg-green-50 dark:bg-green-900/20' },
-        yellow: { bg: 'bg-yellow-500', text: 'text-yellow-600 dark:text-yellow-400', ring: 'ring-yellow-100 dark:ring-yellow-900', light: 'bg-yellow-50 dark:bg-yellow-900/20' },
-        purple: { bg: 'bg-purple-500', text: 'text-purple-600 dark:text-purple-400', ring: 'ring-purple-100 dark:ring-purple-900', light: 'bg-purple-50 dark:bg-purple-900/20' },
-        indigo: { bg: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', ring: 'ring-indigo-100 dark:ring-indigo-900', light: 'bg-indigo-50 dark:bg-indigo-900/20' },
-        cyan: { bg: 'bg-cyan-500', text: 'text-cyan-600 dark:text-cyan-400', ring: 'ring-cyan-100 dark:ring-yellow-900', light: 'bg-cyan-50 dark:bg-cyan-900/20' },
-        red: { bg: 'bg-red-500', text: 'text-red-600 dark:text-red-400', ring: 'ring-red-100 dark:ring-red-900', light: 'bg-red-50 dark:bg-red-900/20' },
-        orange: { bg: 'bg-orange-500', text: 'text-orange-600 dark:text-orange-400', ring: 'ring-orange-100 dark:ring-orange-900', light: 'bg-orange-50 dark:bg-orange-900/20' },
-    };
-    const style = colorStyles[color] || colorStyles.blue;
-    const isLongLabel = label.length > 12;
-    
-    return (
-        <motion.div 
-            whileHover={{ y: -2 }}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 hover:shadow-lg transition-shadow h-full relative overflow-hidden"
-        >
-            {badge && (
-                <div className={`absolute top-0 right-0 px-2 py-1 text-[10px] font-bold rounded-bl-lg ${style.light} ${style.text}`}>
-                    {badge}
-                </div>
-            )}
-            <div className="flex items-start gap-2">
-                <div className={`p-1.5 rounded-lg ${style.light} flex-shrink-0`}>
-                    <Icon size={16} className={style.text} />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className={`font-medium text-gray-500 dark:text-gray-400 ${isLongLabel ? 'text-[10px]' : 'text-xs'} leading-tight`}>{label}</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white truncate">{value}</p>
-                </div>
+const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge }) => (
+    <motion.div 
+        whileHover={{ y: -4 }}
+        className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all relative overflow-hidden"
+    >
+        {badge && (
+            <div className={`absolute top-0 right-0 px-2 py-1 text-[10px] font-bold rounded-bl-lg ${badge.bg} ${badge.text}`}>
+                {badge.label}
             </div>
-            {(progress !== undefined || subtitle || trend) && (
-                <div className="mt-2 pl-0">
-                    {progress !== undefined && (
-                        <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div 
-                                    className={`h-full ${style.bg} rounded-full transition-all duration-500`}
-                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                />
-                            </div>
-                            <span className={`text-[10px] font-semibold ${style.text} flex-shrink-0`}>{progress}%</span>
-                        </div>
-                    )}
-                    {subtitle && <p className="text-[10px] text-gray-400 mt-1 truncate">{subtitle}</p>}
-                    {trend && (
-                        <div className={`flex items-center gap-1 mt-1 text-[10px] font-medium ${trendUp ? 'text-green-600' : 'text-red-600'}`}>
-                            {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                            <span>{trend}</span>
-                        </div>
-                    )}
+        )}
+        <div className="flex items-center justify-between mb-3">
+            <div className={`p-2.5 rounded-xl ${color}`}>
+                {icon}
+            </div>
+            {trend && (
+                <div className={`flex items-center gap-1 text-xs font-medium ${trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                    {trend}
                 </div>
             )}
-        </motion.div>
-    );
-};
-
-const useSafeTheme = () => {
-    try {
-        const { theme } = require("../ui/theme-provider").useTheme();
-        return theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    } catch (e) {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-};
+        </div>
+        <div className="space-y-1">
+            <NumberTicker 
+                value={typeof value === 'number' ? value : 0} 
+                className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white"
+            />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        </div>
+        {children && <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">{children}</div>}
+    </motion.div>
+);
 
 const ClientReportPage = () => {
     const { user } = useAuthenticationStore();
@@ -640,26 +580,29 @@ const ClientReportPage = () => {
     
     useEffect(() => {
         fetchTickets("Client");
+        setLastSynced(new Date());
+        
+        const interval = setInterval(() => {
+            fetchTickets("Client");
+            setLastSynced(new Date());
+        }, 60000);
+        
+        const checkTheme = () => {
+            const newTheme = localStorage.getItem('solease-ui-theme') || 'system';
+            setIsDark(newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
+        };
+        checkTheme();
         
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = (e) => setIsDark(e.matches);
         mediaQuery.addEventListener('change', handleChange);
+        window.addEventListener('storage', checkTheme);
         
-        try {
-            const { theme } = require("../ui/theme-provider").useTheme();
-            const checkTheme = () => {
-                const newTheme = localStorage.getItem('solease-ui-theme') || 'system';
-                setIsDark(newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
-            };
-            checkTheme();
-            window.addEventListener('storage', checkTheme);
-            return () => {
-                mediaQuery.removeEventListener('change', handleChange);
-                window.removeEventListener('storage', checkTheme);
-            };
-        } catch (e) {
-            return () => mediaQuery.removeEventListener('change', handleChange);
-        }
+        return () => {
+            clearInterval(interval);
+            mediaQuery.removeEventListener('change', handleChange);
+            window.removeEventListener('storage', checkTheme);
+        };
     }, [fetchTickets]);
 
     const [activeTab, setActiveTab] = useState('overview');
@@ -901,6 +844,12 @@ const ClientReportPage = () => {
         healthScore: calculateTicketHealthScore(clientTickets),
         comparative: calculateComparativeStats(clientTickets, parseInt(dateRange)),
         feedbackDetailed: calculateDetailedFeedbackAnalytics(clientTickets),
+        // Computed trends
+        trends: {
+            totalChange: calculateComparativeStats(clientTickets, parseInt(dateRange)).change,
+            resolvedChange: calculateComparativeStats(clientTickets, parseInt(dateRange)).resolvedChange,
+            resolutionRate: clientTickets.length > 0 ? ((clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length / clientTickets.length) * 100).toFixed(1) : 0,
+        }
     }), [clientTickets, dateRange]);
 
     const filteredTickets = useMemo(() => {
@@ -970,9 +919,22 @@ const ClientReportPage = () => {
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                                     {user?.name ? `${user.name.split(' ')[0]}'s Dashboard` : "My Dashboard"}
                                 </h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    {stats.total} ticket{stats.total !== 1 ? 's' : ''} {selectedDateRange?.label?.toLowerCase()}
-                                </p>
+                                <div className="flex items-center gap-4 mt-1">
+                                    <p className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <Activity size={14} className="text-green-500" />
+                                        <span className="text-green-600 dark:text-green-400 font-semibold">Live Data</span>
+                                    </p>
+                                    {isSyncing && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full"
+                                        >
+                                            <RefreshCw size={12} className="animate-spin" />
+                                            Syncing data...
+                                        </motion.div>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 {/* Date Range Filter */}
@@ -1012,10 +974,10 @@ const ClientReportPage = () => {
                                 <button 
                                     onClick={handleSyncData}
                                     disabled={isSyncing}
-                                    className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                                    title="Sync data"
+                                    className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
                                 >
-                                    <RefreshCw size={18} className={`text-gray-600 dark:text-gray-300 ${isSyncing ? 'animate-spin' : ''}`} />
+                                    <RefreshCw size={16} className={`text-gray-600 dark:text-gray-300 ${isSyncing ? 'animate-spin' : ''}`} />
+                                    <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
                                 </button>
 
                                 {/* Export Button */}
@@ -1025,7 +987,7 @@ const ClientReportPage = () => {
                                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                 >
                                     <FileDown size={16} />
-                                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export'}</span>
+                                    <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export Report'}</span>
                                 </button>
 
                                 <Link 
@@ -1037,6 +999,12 @@ const ClientReportPage = () => {
                                 </Link>
                             </div>
                         </div>
+                        {lastSynced && (
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                Last synced: {formatLastSynced(lastSynced)}
+                            </div>
+                        )}
                     </motion.div>
                 )}
 
@@ -1093,248 +1061,93 @@ const ClientReportPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-4 sm:space-y-6"
+                                    className="space-y-6"
                                 >
-                                    {/* Main Stats Grid - Key Metrics */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                                        {/* Total Tickets */}
-                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-blue-500 rounded-lg shadow-sm">
-                                                    <Tickets size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                                    {stats.total}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total Tickets</p>
-                                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">All time</p>
-                                        </div>
-
-                                        {/* Resolved */}
-                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-100 dark:border-green-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-green-500 rounded-lg shadow-sm">
-                                                    <CheckCircle size={18} className="text-white" />
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.resolved}</span>
-                                                    <span className="text-xs text-green-600/70 dark:text-green-400/70 ml-1">({stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}%)</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm font-semibold text-green-700 dark:text-green-300">Resolved</p>
-                                            <div className="mt-2 h-1.5 bg-green-200 dark:bg-green-800/50 rounded-full overflow-hidden">
-                                                <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}%` }} />
-                                            </div>
-                                        </div>
-
-                                        {/* In Progress */}
-                                        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-2xl p-4 border border-yellow-100 dark:border-yellow-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-yellow-500 rounded-lg shadow-sm">
-                                                    <Clock size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                                                    {stats.inProgress}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">In Progress</p>
-                                            <p className="text-xs text-yellow-600/70 dark:text-yellow-400/70">Active</p>
-                                        </div>
-
-                                        {/* Avg Resolution */}
-                                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-4 border border-purple-100 dark:border-purple-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-purple-500 rounded-lg shadow-sm">
-                                                    <TrendingUp size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                                    {stats.avgRes.value}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Avg Resolution</p>
-                                            <p className="text-xs text-purple-600/70 dark:text-purple-400/70">Time to close</p>
-                                        </div>
-
-                                        {/* Satisfaction */}
-                                        <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 rounded-2xl p-4 border border-pink-100 dark:border-pink-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-pink-500 rounded-lg shadow-sm">
-                                                    <Star size={18} className="text-white" />
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-2xl font-bold text-pink-600 dark:text-pink-400">{stats.sat.value}</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm font-semibold text-pink-700 dark:text-pink-300">Satisfaction</p>
-                                            <div className="mt-2 h-1.5 bg-pink-200 dark:bg-pink-800/50 rounded-full overflow-hidden">
-                                                <div className="h-full bg-pink-500 rounded-full transition-all duration-500" style={{ width: `${parseInt(stats.sat.value) || 0}%` }} />
-                                            </div>
-                                        </div>
-
-                                        {/* Response Rate */}
-                                        <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/20 dark:to-teal-900/20 rounded-2xl p-4 border border-cyan-100 dark:border-cyan-800 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-cyan-500 rounded-lg shadow-sm">
-                                                    <Zap size={18} className="text-white" />
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{stats.firstResponseRate.value}</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">Response Rate</p>
-                                            <div className="mt-2 h-1.5 bg-cyan-200 dark:bg-cyan-800/50 rounded-full overflow-hidden">
-                                                <div className="h-full bg-cyan-500 rounded-full transition-all duration-500" style={{ width: `${parseInt(stats.firstResponseRate.value) || 0}%` }} />
-                                            </div>
-                                        </div>
+                                    {/* Key Metrics Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <MetricCard 
+                                            title="Total Tickets" 
+                                            value={stats.total} 
+                                            icon={<Tickets size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-blue-500 to-blue-600"
+                                            trend={stats.trends.totalChange !== 0 ? `${stats.trends.totalChange > 0 ? '+' : ''}${stats.trends.totalChange}%` : null}
+                                            trendUp={stats.trends.totalChange >= 0}
+                                        />
+                                        <MetricCard 
+                                            title="Resolution Rate" 
+                                            value={`${stats.trends.resolutionRate}%`}
+                                            icon={<Target size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                                            trend={stats.trends.resolvedChange !== 0 ? `${stats.trends.resolvedChange > 0 ? '+' : ''}${stats.trends.resolvedChange}%` : null}
+                                            trendUp={stats.trends.resolvedChange >= 0}
+                                        />
+                                        <MetricCard 
+                                            title="Avg Response" 
+                                            value={stats.avgResponse.value}
+                                            icon={<Timer size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-indigo-500 to-blue-600"
+                                            trend="Time to first reply"
+                                        />
+                                        <MetricCard 
+                                            title="Active Tickets" 
+                                            value={stats.inProgress} 
+                                            icon={<Clock size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-amber-500 to-orange-500"
+                                            trend="In progress now"
+                                        />
                                     </div>
 
-                                    {/* SLA & Health Score Section */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 border border-green-100 dark:border-green-800">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-green-500 rounded-lg">
-                                                    <Gauge size={18} className="text-white" />
-                                                </div>
-                                                <span className={`text-2xl font-bold ${stats.slaCompliance.compliance >= 80 ? 'text-green-600' : stats.slaCompliance.compliance >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                                    {stats.slaCompliance.compliance}%
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-green-700 dark:text-green-300">SLA Compliance</p>
-                                            <p className="text-xs text-green-600/70 dark:text-green-400/70">{stats.slaCompliance.onTime}/{stats.slaCompliance.total} on time</p>
-                                        </div>
-
-                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-800">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-blue-500 rounded-lg">
-                                                    <Activity size={18} className="text-white" />
-                                                </div>
-                                                <span className={`text-2xl font-bold ${stats.healthScore >= 70 ? 'text-blue-600' : stats.healthScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                                    {stats.healthScore}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Health Score</p>
-                                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Overall performance</p>
-                                        </div>
-
-                                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-4 border border-purple-100 dark:border-purple-800">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-purple-500 rounded-lg">
-                                                    <MessageCircle size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-2xl font-bold text-purple-600">
-                                                    {stats.feedbackDetailed.ticketsWithActivity}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Active Tickets</p>
-                                            <p className="text-xs text-purple-600/70 dark:text-purple-400/70">{stats.feedbackDetailed.engagementRate}% engagement</p>
-                                        </div>
-
-                                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-2xl p-4 border border-orange-100 dark:border-orange-800">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-2 bg-orange-500 rounded-lg">
-                                                    <AlertTriangle size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-2xl font-bold text-orange-600">
-                                                    {stats.critical}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">Critical/High</p>
-                                            <p className="text-xs text-orange-600/70 dark:text-orange-400/70">Priority tickets</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Response Analytics Section */}
-                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-blue-100 dark:border-blue-800">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-blue-500 rounded-xl">
-                                                    <Gauge size={20} className="text-white sm:hidden" />
-                                                    <Gauge size={24} className="text-white hidden sm:block" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-gray-800 dark:text-white text-base sm:text-lg">Response Analytics</h3>
-                                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:block">How quickly the support team responds to your tickets</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                                            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
-                                                <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                                                    <Timer size={16} className="text-blue-500 sm:hidden" />
-                                                    <Timer size={18} className="text-blue-500 hidden sm:block" />
-                                                    <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Avg Response</span>
-                                                </div>
-                                                <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.avgResponse.value}</p>
-                                            </div>
-                                            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
-                                                <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                                                    <Phone size={16} className="text-green-500 sm:hidden" />
-                                                    <Phone size={18} className="text-green-500 hidden sm:block" />
-                                                    <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Response Rate</span>
-                                                </div>
-                                                <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.firstResponseRate.value}</p>
-                                            </div>
-                                            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
-                                                <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                                                    <ThumbsUp size={16} className="text-purple-500 sm:hidden" />
-                                                    <ThumbsUp size={18} className="text-purple-500 hidden sm:block" />
-                                                    <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Responded</span>
-                                                </div>
-                                                <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.firstResponseData.withResponse}/{stats.firstResponseData.total}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Response Rate Over Time Chart */}
-                                        {hasChartData(stats.responseRateOverTime.data) && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
-                                                <h4 className="font-semibold text-gray-800 dark:text-white text-sm sm:text-base mb-3 sm:mb-4">Response Rate Over Time (%)</h4>
-                                                <div style={{ height: '150px' }}>
-                                                    <LineChart 
-                                                        series={[{ 
-                                                            data: stats.responseRateOverTime.data, 
-                                                            color: isDark ? '#60a5fa' : '#3b82f6', 
-                                                            area: true, 
-                                                            showMark: true,
-                                                            curve: 'monotoneX'
-                                                        }]}
-                                                        xAxis={[{ 
-                                                            scaleType: 'point', 
-                                                            data: stats.responseRateOverTime.months,
-                                                            tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
-                                                        }]}
-                                                        height={150}
-                                                        margin={{ top: 10, bottom: 25, left: 30, right: 10 }}
-                                                        sx={{ 
-                                                            '.MuiAreaElement-root': { fillOpacity: 0.15 },
-                                                            '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                            '.MuiChartsAxis-tick': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
+                                    {/* Secondary Stats Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <MetricCard 
+                                            title="Resolved" 
+                                            value={stats.resolved} 
+                                            icon={<CheckCircle size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-green-500 to-emerald-600"
+                                            trend="Tickets closed"
+                                        />
+                                        <MetricCard 
+                                            title="Response Rate" 
+                                            value={stats.firstResponseRate.value}
+                                            icon={<Zap size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-purple-500 to-violet-600"
+                                            trend="First response"
+                                        />
+                                        <MetricCard 
+                                            title="SLA Compliance" 
+                                            value={`${stats.slaCompliance.compliance}%`}
+                                            icon={<Gauge size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-cyan-500 to-sky-600"
+                                            badge={{ label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total} on time`, bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', text: 'text-green-700 dark:text-green-400' }}
+                                        />
+                                        <MetricCard 
+                                            title="Critical/High" 
+                                            value={stats.critical} 
+                                            icon={<AlertTriangle size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-red-500 to-rose-600"
+                                            badge={stats.critical > 0 ? { label: 'Needs attention', bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', text: 'text-red-700 dark:text-red-400' } : null}
+                                        />
                                     </div>
 
                                     {/* Charts Row */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                                        {/* Resolution Trend */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* Resolution Time Trend */}
                                         {hasChartData(stats.chart.data) && (
                                             <motion.div 
-                                                initial={{ x: -20 }} 
-                                                animate={{ x: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700"
+                                                initial={{ y: 20 }} 
+                                                animate={{ y: 0 }}
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                                             >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <TrendingUp size={16} className="text-indigo-500 sm:w-5" />
-                                                        <span className="hidden sm:inline">Resolution Time Trend</span>
-                                                        <span className="sm:hidden">Resolution Trend</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">Avg days</span>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                                                            <TrendingUp size={18} className="text-blue-600 dark:text-blue-400" />
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Resolution Time</h3>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Avg days</span>
                                                 </div>
-                                                <div style={{ height: '160px' }}>
+                                                <div style={{ height: '180px' }}>
                                                     <LineChart 
                                                         series={[{ 
                                                             data: stats.chart.data, 
@@ -1348,8 +1161,8 @@ const ClientReportPage = () => {
                                                             data: stats.chart.months,
                                                             tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
                                                         }]}
-                                                        height={160}
-                                                        margin={{ top: 10, bottom: 25, left: 25, right: 10 }}
+                                                        height={180}
+                                                        margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
                                                         sx={{ 
                                                             '.MuiAreaElement-root': { fillOpacity: 0.2 },
                                                             '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
@@ -1360,22 +1173,23 @@ const ClientReportPage = () => {
                                             </motion.div>
                                         )}
 
-                                        {/* Monthly Volume */}
+                                        {/* Monthly Ticket Volume */}
                                         {hasChartData(stats.monthlyVolume.data) && (
                                             <motion.div 
-                                                initial={{ x: 20 }} 
-                                                animate={{ x: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700"
+                                                initial={{ y: 20 }} 
+                                                animate={{ y: 0 }}
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                                             >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <Flame size={16} className="text-orange-500 sm:w-5" />
-                                                        <span className="hidden sm:inline">Ticket Volume</span>
-                                                        <span className="sm:hidden">Volume</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">Monthly</span>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                                                            <Flame size={18} className="text-orange-600 dark:text-orange-400" />
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Ticket Volume</h3>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Monthly</span>
                                                 </div>
-                                                <div style={{ height: '160px' }}>
+                                                <div style={{ height: '180px' }}>
                                                     <LineChart
                                                         series={[{
                                                             data: stats.monthlyVolume.data,
@@ -1389,90 +1203,8 @@ const ClientReportPage = () => {
                                                             data: stats.monthlyVolume.months,
                                                             tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
                                                         }]}
-                                                        height={160}
-                                                        margin={{ top: 10, bottom: 25, left: 25, right: 10 }}
-                                                        sx={{ 
-                                                            '.MuiAreaElement-root': { fillOpacity: 0.15 },
-                                                            '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                            '.MuiChartsAxis-tick': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                        }}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        {/* Resolution Rate Over Time */}
-                                        {hasChartData(stats.resolutionRateOverTime.data) && (
-                                            <motion.div 
-                                                initial={{ x: -20 }} 
-                                                animate={{ x: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <CheckCircle size={16} className="text-green-500 sm:w-5" />
-                                                        <span className="hidden sm:inline">Resolution Rate</span>
-                                                        <span className="sm:hidden">Res. Rate</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">% resolved</span>
-                                                </div>
-                                                <div style={{ height: '160px' }}>
-                                                    <LineChart 
-                                                        series={[{ 
-                                                            data: stats.resolutionRateOverTime.data, 
-                                                            color: isDark ? '#34d399' : '#10b981', 
-                                                            area: true, 
-                                                            showMark: true,
-                                                            curve: 'monotoneX'
-                                                        }]}
-                                                        xAxis={[{ 
-                                                            scaleType: 'point', 
-                                                            data: stats.resolutionRateOverTime.months,
-                                                            tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
-                                                        }]}
-                                                        height={160}
-                                                        margin={{ top: 10, bottom: 25, left: 30, right: 10 }}
-                                                        sx={{ 
-                                                            '.MuiAreaElement-root': { fillOpacity: 0.15 },
-                                                            '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                            '.MuiChartsAxis-tick': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                        }}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        {/* Average Response Time Over Time */}
-                                        {hasChartData(stats.avgResponseTimeOverTime.data) && (
-                                            <motion.div 
-                                                initial={{ x: 20 }} 
-                                                animate={{ x: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <Timer size={16} className="text-cyan-500 sm:w-5" />
-                                                        <span className="hidden sm:inline">Response Time Trend</span>
-                                                        <span className="sm:hidden">Response Time</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">Avg hours</span>
-                                                </div>
-                                                <div style={{ height: '160px' }}>
-                                                    <LineChart 
-                                                        series={[{ 
-                                                            data: stats.avgResponseTimeOverTime.data, 
-                                                            color: isDark ? '#22d3ee' : '#06b6d4', 
-                                                            area: true, 
-                                                            showMark: true,
-                                                            curve: 'monotoneX'
-                                                        }]}
-                                                        xAxis={[{ 
-                                                            scaleType: 'point', 
-                                                            data: stats.avgResponseTimeOverTime.months,
-                                                            tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
-                                                        }]}
-                                                        height={160}
-                                                        margin={{ top: 10, bottom: 25, left: 30, right: 10 }}
+                                                        height={180}
+                                                        margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
                                                         sx={{ 
                                                             '.MuiAreaElement-root': { fillOpacity: 0.15 },
                                                             '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
@@ -1484,73 +1216,142 @@ const ClientReportPage = () => {
                                         )}
                                     </div>
 
-                                    {/* Pie Charts - Only show if data exists */}
-                                    {stats.byStatus.length > 0 && (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                                            {[
-                                                { title: 'Tickets by Status', data: stats.byStatus, colors: isDark ? ['#60a5fa', '#fbbf24', '#34d399', '#a78bfa'] : ['#3b82f6', '#f59e0b', '#10b981', '#6366f1'] },
-                                                { title: 'Tickets by Urgency', data: stats.byUrgency, colors: isDark ? ['#4ade80', '#facc15', '#fb923c', '#f87171'] : ['#22c55e', '#eab308', '#f97316', '#ef4444'] },
-                                                { title: 'Support Team Activity', data: stats.reviewerActivity, colors: isDark ? ['#a78bfa', '#22d3ee', '#f472b6', '#2dd4bf'] : ['#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'] },
-                                            ].map((chart, idx) => {
-                                                const total = chart.data.reduce((sum, d) => sum + (d.count || 0), 0);
-                                                return (
-                                                <motion.div 
-                                                    key={chart.title}
-                                                    initial={{ y: 20 }}
-                                                    animate={{ y: 0 }}
-                                                    transition={{ delay: idx * 0.1 }}
-                                                    className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700"
-                                                >
-                                                    <h3 className="font-bold text-gray-800 dark:text-white text-sm sm:text-base mb-2 sm:mb-4">{chart.title}</h3>
-                                                    {chart.data.length > 0 ? (
-                                                        <>
-                                                            <div className="flex justify-center">
-                                                                <div style={{ width: '100%', maxWidth: '200px', height: '150px' }}>
-                                                                    <PieChart
-                                                                        series={[{
-                                                                            data: chart.data.map((d, i) => ({ 
-                                                                                value: d.count || 0, 
-                                                                                label: d.status || d.urgency || d.name,
-                                                                                color: chart.colors[i % chart.colors.length]
-                                                                            })),
-                                                                            innerRadius: 45,
-                                                                            outerRadius: 65,
-                                                                            paddingAngle: 3,
-                                                                        }]}
-                                                                        width={200}
-                                                                        height={150}
-                                                                        margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
-                                                                    />
-                                                                </div>
+                                    {/* Status & Urgency Breakdown */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        {/* Tickets by Status */}
+                                        <motion.div 
+                                            whileHover={{ y: -4 }}
+                                            className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                                                    <Activity size={18} className="text-indigo-600 dark:text-indigo-400" />
+                                                </div>
+                                                <h3 className="font-bold text-gray-800 dark:text-white">Status Distribution</h3>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {stats.byStatus.map((item) => {
+                                                    const total = stats.byStatus.reduce((sum, s) => sum + s.count, 0);
+                                                    const percentage = total > 0 ? (item.count / total) * 100 : 0;
+                                                    const statusColors = {
+                                                        'Open': 'bg-blue-500',
+                                                        'In Progress': 'bg-yellow-500',
+                                                        'Resolved': 'bg-purple-500',
+                                                        'Closed': 'bg-green-500'
+                                                    };
+                                                    return (
+                                                        <div key={item.status} className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`w-2 h-2 rounded-full ${statusColors[item.status]}`} />
+                                                                <span className="text-sm text-gray-600 dark:text-gray-400">{item.status}</span>
                                                             </div>
-                                                            <div className="flex flex-col gap-1.5 mt-3 px-2">
-                                                                {chart.data.slice(0, 4).map((d, i) => {
-                                                                    const value = d.count || 0;
-                                                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                                                    const label = d.status || d.urgency || d.name;
-                                                                    return (
-                                                                        <div key={i} className="flex items-center justify-between text-xs">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: chart.colors[i % chart.colors.length] }}></span>
-                                                                                <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <span className="font-bold text-gray-900 dark:text-white">{value}</span>
-                                                                                <span className="text-gray-400">({percentage}%)</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <div className="h-[150px] flex items-center justify-center text-gray-400">No data</div>
-                                                    )}
-                                                </motion.div>
-                                                );
-                                            })}
+                                                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.count} ({percentage.toFixed(0)}%)</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Tickets by Urgency */}
+                                        <motion.div 
+                                            whileHover={{ y: -4 }}
+                                            className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg">
+                                                    <AlertTriangle size={18} className="text-red-600 dark:text-red-400" />
+                                                </div>
+                                                <h3 className="font-bold text-gray-800 dark:text-white">Urgency Breakdown</h3>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {[
+                                                    { label: 'Critical', value: stats.byUrgency.find(u => u.urgency === 'Critical')?.count || 0, color: 'bg-red-500' },
+                                                    { label: 'High', value: stats.byUrgency.find(u => u.urgency === 'High')?.count || 0, color: 'bg-orange-500' },
+                                                    { label: 'Medium', value: stats.byUrgency.find(u => u.urgency === 'Medium')?.count || 0, color: 'bg-yellow-500' },
+                                                    { label: 'Low', value: stats.byUrgency.find(u => u.urgency === 'Low')?.count || 0, color: 'bg-green-500' },
+                                                ].map(item => (
+                                                    <div key={item.label} className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                                                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
+                                                        </div>
+                                                        <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Performance Summary */}
+                                        <motion.div 
+                                            whileHover={{ y: -4 }}
+                                            className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-2xl shadow-lg text-white"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Gauge size={20} className="text-white/80" />
+                                                <h3 className="font-bold">Performance Summary</h3>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center p-3 bg-white/10 rounded-xl">
+                                                    <span className="text-sm text-blue-100">Health Score</span>
+                                                    <span className={`text-xl font-bold ${stats.healthScore >= 70 ? 'text-green-300' : stats.healthScore >= 40 ? 'text-yellow-300' : 'text-red-300'}`}>
+                                                        {stats.healthScore}/100
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-white/10 rounded-xl">
+                                                    <span className="text-sm text-blue-100">Avg Resolution</span>
+                                                    <span className="text-xl font-bold">{stats.avgRes.value}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center p-3 bg-white/10 rounded-xl">
+                                                    <span className="text-sm text-blue-100">Satisfaction</span>
+                                                    <span className="text-xl font-bold">{stats.sat.value}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Response Analytics Section */}
+                                    <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg">
+                                                    <MessageCircle size={18} className="text-cyan-600 dark:text-cyan-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 dark:text-white">Response Analytics</h3>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">How quickly support responds to your tickets</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                                <div className="p-2 bg-blue-500 rounded-lg">
+                                                    <Timer size={18} className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.avgResponse.value}</p>
+                                                    <p className="text-xs text-blue-600/70 dark:text-blue-400/70">Avg Response Time</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                                <div className="p-2 bg-green-500 rounded-lg">
+                                                    <Zap size={18} className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.firstResponseRate.value}</p>
+                                                    <p className="text-xs text-green-600/70 dark:text-green-400/70">First Response Rate</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                                                <div className="p-2 bg-purple-500 rounded-lg">
+                                                    <ThumbsUp size={18} className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.firstResponseData.withResponse}/{stats.firstResponseData.total}</p>
+                                                    <p className="text-xs text-purple-600/70 dark:text-purple-400/70">Tickets Responded</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </motion.div>
                             )}
 
@@ -1954,95 +1755,59 @@ const ClientReportPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-4 sm:space-y-6"
+                                    className="space-y-6"
                                 >
-                                    {/* Performance Overview Cards */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                                        <motion.div
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 sm:p-5 rounded-2xl border border-green-100 dark:border-green-800"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="p-2 bg-green-500 rounded-lg">
-                                                    <Zap size={18} className="text-white" />
-                                                </div>
-                                                <TrendingUp size={18} className="text-green-500" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">{stats.firstResponseRate.value}</p>
-                                            <p className="text-xs font-semibold text-green-700 dark:text-green-300 mt-1">First Response Rate</p>
-                                            <p className="text-[10px] text-green-600/70 dark:text-green-400/70 mt-0.5">Tickets with initial response</p>
-                                        </motion.div>
-
-                                        <motion.div
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: 0.1 }}
-                                            className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 sm:p-5 rounded-2xl border border-blue-100 dark:border-blue-800"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="p-2 bg-blue-500 rounded-lg">
-                                                    <Timer size={18} className="text-white" />
-                                                </div>
-                                                <Clock size={18} className="text-blue-500" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.avgResponse.value}</p>
-                                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mt-1">Avg Response Time</p>
-                                            <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 mt-0.5">Time to first reply</p>
-                                        </motion.div>
-
-                                        <motion.div
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: 0.2 }}
-                                            className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 p-4 sm:p-5 rounded-2xl border border-purple-100 dark:border-purple-800"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="p-2 bg-purple-500 rounded-lg">
-                                                    <CheckCircle size={18} className="text-white" />
-                                                </div>
-                                                <Target size={18} className="text-purple-500" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.avgRes.value}</p>
-                                            <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mt-1">Avg Resolution</p>
-                                            <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 mt-0.5">Time to close ticket</p>
-                                        </motion.div>
-
-                                        <motion.div
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-4 sm:p-5 rounded-2xl border border-orange-100 dark:border-orange-800"
-                                        >
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="p-2 bg-orange-500 rounded-lg">
-                                                    <Star size={18} className="text-white" />
-                                                </div>
-                                                <Award size={18} className="text-orange-500" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.sat.value}</p>
-                                            <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 mt-1">Satisfaction</p>
-                                            <p className="text-[10px] text-orange-600/70 dark:text-orange-400/70 mt-0.5">Resolved tickets rate</p>
-                                        </motion.div>
+                                    {/* Performance Metrics Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <MetricCard 
+                                            title="First Response Rate" 
+                                            value={stats.firstResponseRate.value}
+                                            icon={<Zap size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-green-500 to-emerald-600"
+                                            trend="Tickets with response"
+                                        />
+                                        <MetricCard 
+                                            title="Avg Response Time" 
+                                            value={stats.avgResponse.value}
+                                            icon={<Timer size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-blue-500 to-indigo-600"
+                                            trend="Time to first reply"
+                                        />
+                                        <MetricCard 
+                                            title="Avg Resolution" 
+                                            value={stats.avgRes.value}
+                                            icon={<CheckCircle size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-purple-500 to-violet-600"
+                                            trend="Time to close"
+                                        />
+                                        <MetricCard 
+                                            title="Satisfaction" 
+                                            value={stats.sat.value}
+                                            icon={<Star size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-orange-500 to-amber-600"
+                                            trend="Resolved rate"
+                                        />
                                     </div>
 
                                     {/* Charts Row */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {/* Response Time Trend */}
                                         {hasChartData(stats.avgResponseTimeOverTime.data) && (
                                             <motion.div 
                                                 initial={{ y: 20 }} 
                                                 animate={{ y: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                                             >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <Timer size={16} className="text-blue-500 sm:w-5" />
-                                                        <span>Response Time Trend</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">Avg hours</span>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                                                            <Timer size={18} className="text-blue-600 dark:text-blue-400" />
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Response Time Trend</h3>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Avg hours</span>
                                                 </div>
-                                                <div style={{ height: '180px' }}>
+                                                <div style={{ height: '200px' }}>
                                                     <LineChart 
                                                         series={[{ 
                                                             data: stats.avgResponseTimeOverTime.data, 
@@ -2056,7 +1821,7 @@ const ClientReportPage = () => {
                                                             data: stats.avgResponseTimeOverTime.months,
                                                             tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
                                                         }]}
-                                                        height={180}
+                                                        height={200}
                                                         margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
                                                         sx={{ 
                                                             '.MuiAreaElement-root': { fillOpacity: 0.2 },
@@ -2073,16 +1838,18 @@ const ClientReportPage = () => {
                                             <motion.div 
                                                 initial={{ y: 20 }} 
                                                 animate={{ y: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
                                             >
-                                                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 text-sm sm:text-base">
-                                                        <CheckCircle size={16} className="text-green-500 sm:w-5" />
-                                                        <span>Resolution Rate</span>
-                                                    </h3>
-                                                    <span className="text-[10px] sm:text-xs text-gray-400">% resolved</span>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                                                            <CheckCircle size={18} className="text-green-600 dark:text-green-400" />
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Resolution Rate</h3>
+                                                    </div>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">% resolved</span>
                                                 </div>
-                                                <div style={{ height: '180px' }}>
+                                                <div style={{ height: '200px' }}>
                                                     <LineChart 
                                                         series={[{ 
                                                             data: stats.resolutionRateOverTime.data, 
@@ -2096,7 +1863,7 @@ const ClientReportPage = () => {
                                                             data: stats.resolutionRateOverTime.months,
                                                             tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
                                                         }]}
-                                                        height={180}
+                                                        height={200}
                                                         margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
                                                         sx={{ 
                                                             '.MuiAreaElement-root': { fillOpacity: 0.2 },
@@ -2109,16 +1876,21 @@ const ClientReportPage = () => {
                                         )}
                                     </div>
 
-                                    {/* Category & Status Breakdown */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                                    {/* Category Breakdown */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {/* Open Tickets by Category */}
                                         {stats.categories.some(c => c.count > 0) && (
-                                            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                                                <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-sm sm:text-base">
-                                                    <BarChart3 size={16} className="text-purple-500 sm:w-5" />
-                                                    Open Tickets by Category
-                                                </h3>
-                                                <div className="space-y-3">
+                                            <motion.div 
+                                                whileHover={{ y: -4 }}
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                            >
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                                                        <BarChart3 size={18} className="text-purple-600 dark:text-purple-400" />
+                                                    </div>
+                                                    <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Category</h3>
+                                                </div>
+                                                <div className="space-y-4">
                                                     {stats.categories.filter(c => c.count > 0).map((cat, idx) => {
                                                         const maxCount = Math.max(...stats.categories.map(c => c.count));
                                                         const percentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
@@ -2126,8 +1898,8 @@ const ClientReportPage = () => {
                                                         return (
                                                             <div key={cat.type} className="space-y-1">
                                                                 <div className="flex justify-between items-center">
-                                                                    <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{cat.displayName}</span>
-                                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{cat.count}</span>
+                                                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{cat.displayName}</span>
+                                                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{cat.count}</span>
                                                                 </div>
                                                                 <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                                                     <motion.div 
@@ -2141,17 +1913,22 @@ const ClientReportPage = () => {
                                                         );
                                                     })}
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         )}
 
                                         {/* Tickets by Status */}
                                         {stats.byStatus.length > 0 && (
-                                            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                                                <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-sm sm:text-base">
-                                                    <Activity size={16} className="text-indigo-500 sm:w-5" />
-                                                    Tickets by Status
-                                                </h3>
-                                                <div className="space-y-3">
+                                            <motion.div 
+                                                whileHover={{ y: -4 }}
+                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                            >
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                                                        <Activity size={18} className="text-indigo-600 dark:text-indigo-400" />
+                                                    </div>
+                                                    <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Status</h3>
+                                                </div>
+                                                <div className="space-y-4">
                                                     {stats.byStatus.map((item, idx) => {
                                                         const total = stats.byStatus.reduce((sum, s) => sum + s.count, 0);
                                                         const percentage = total > 0 ? (item.count / total) * 100 : 0;
@@ -2166,9 +1943,9 @@ const ClientReportPage = () => {
                                                                 <div className="flex justify-between items-center">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`w-2 h-2 rounded-full ${statusColors[item.status]}`} />
-                                                                        <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{item.status}</span>
+                                                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.status}</span>
                                                                     </div>
-                                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{item.count}</span>
+                                                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{item.count} ({percentage.toFixed(0)}%)</span>
                                                                 </div>
                                                                 <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                                                     <motion.div 
@@ -2182,35 +1959,38 @@ const ClientReportPage = () => {
                                                         );
                                                     })}
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         )}
                                     </div>
 
-                                    {/* Quick Stats Summary */}
-                                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
-                                        <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-sm sm:text-base">
-                                            <Gauge size={16} className="text-blue-500 sm:w-5" />
-                                            Performance Summary
-                                        </h3>
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                            <div className="text-center">
-                                                <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Tickets</p>
+                                    {/* Performance Summary */}
+                                    <motion.div 
+                                        whileHover={{ y: -4 }}
+                                        className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-2xl shadow-lg text-white"
+                                    >
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Gauge size={20} className="text-white/80" />
+                                            <h3 className="font-bold">Performance Summary</h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="text-center p-3 bg-white/10 rounded-xl">
+                                                <p className="text-3xl font-bold">{stats.healthScore}</p>
+                                                <p className="text-xs text-blue-200 mt-1">Health Score</p>
                                             </div>
-                                            <div className="text-center">
-                                                <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.resolved}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Resolved</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-xl">
+                                                <p className="text-3xl font-bold">{stats.slaCompliance.compliance}%</p>
+                                                <p className="text-xs text-blue-200 mt-1">SLA Compliance</p>
                                             </div>
-                                            <div className="text-center">
-                                                <p className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.inProgress}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-xl">
+                                                <p className="text-3xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
+                                                <p className="text-xs text-blue-200 mt-1">Engagement</p>
                                             </div>
-                                            <div className="text-center">
-                                                <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">{stats.critical}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">High Priority</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-xl">
+                                                <p className="text-3xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
+                                                <p className="text-xs text-blue-200 mt-1">Avg Messages</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 </motion.div>
                             )}
 
@@ -2223,32 +2003,50 @@ const ClientReportPage = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-6"
                                 >
-                                    {/* Enhanced Activity Stats */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
-                                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.feedback.ticketsWithFeedback}</p>
-                                            <p className="text-xs text-blue-600/70 dark:text-blue-400/70 font-medium mt-1">With Feedback</p>
-                                        </div>
-                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-800 text-center">
-                                            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.feedback.totalFeedbackCount}</p>
-                                            <p className="text-xs text-green-600/70 dark:text-green-400/70 font-medium mt-1">Total Messages</p>
-                                        </div>
-                                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 p-4 rounded-2xl border border-purple-100 dark:border-purple-800 text-center">
-                                            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.activeDiscussions}</p>
-                                            <p className="text-xs text-purple-600/70 dark:text-purple-400/70 font-medium mt-1">Active</p>
-                                        </div>
-                                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800 text-center">
-                                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.feedback.engagementRate}%</p>
-                                            <p className="text-xs text-orange-600/70 dark:text-orange-400/70 font-medium mt-1">Engagement</p>
-                                        </div>
-                                        <div className="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-900/20 dark:to-sky-900/20 p-4 rounded-2xl border border-cyan-100 dark:border-cyan-800 text-center">
-                                            <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.feedback.recentFeedback}</p>
-                                            <p className="text-xs text-cyan-600/70 dark:text-cyan-400/70 font-medium mt-1">This Week</p>
-                                        </div>
-                                        <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 p-4 rounded-2xl border border-pink-100 dark:border-pink-800 text-center">
-                                            <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">{stats.feedback.feedbackRate}%</p>
-                                            <p className="text-xs text-pink-600/70 dark:text-pink-400/70 font-medium mt-1">Response Rate</p>
-                                        </div>
+                                    {/* Activity Metrics Row */}
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                        <MetricCard 
+                                            title="With Feedback" 
+                                            value={stats.feedback.ticketsWithFeedback}
+                                            icon={<MessageCircle size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-blue-500 to-indigo-600"
+                                            trend="Tickets"
+                                        />
+                                        <MetricCard 
+                                            title="Total Messages" 
+                                            value={stats.feedback.totalFeedbackCount}
+                                            icon={<Activity size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-green-500 to-emerald-600"
+                                            trend="All time"
+                                        />
+                                        <MetricCard 
+                                            title="Active" 
+                                            value={stats.activeDiscussions}
+                                            icon={<Zap size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-purple-500 to-violet-600"
+                                            trend="Discussions"
+                                        />
+                                        <MetricCard 
+                                            title="Engagement" 
+                                            value={`${stats.feedback.engagementRate}%`}
+                                            icon={<TrendingUp size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-orange-500 to-amber-600"
+                                            trend="Rate"
+                                        />
+                                        <MetricCard 
+                                            title="This Week" 
+                                            value={stats.feedback.recentFeedback}
+                                            icon={<Clock size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-cyan-500 to-sky-600"
+                                            trend="Recent activity"
+                                        />
+                                        <MetricCard 
+                                            title="Response Rate" 
+                                            value={`${stats.feedback.feedbackRate}%`}
+                                            icon={<ThumbsUp size={20} className="text-white" />}
+                                            color="bg-gradient-to-br from-pink-500 to-rose-600"
+                                            trend="Tickets"
+                                        />
                                     </div>
 
                                     {/* Engagement Metrics */}

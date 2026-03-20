@@ -61,6 +61,18 @@ const useNotificationStore = create((set) => ({
         }
     },
 
+    unmarkAllAsRead: async () => {
+        try {
+            await api.put("/notifications/unread-all");
+            set((state) => ({
+                notifications: state.notifications.map(n => ({ ...n, read: false })),
+                unreadCount: state.notifications.length
+            }));
+        } catch (error) {
+            console.error("Error unmarking all notifications as read:", error);
+        }
+    },
+
     addNotification: (notification) => {
         set((state) => ({
             notifications: [notification, ...state.notifications],

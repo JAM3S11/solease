@@ -198,9 +198,9 @@ const LoginForm = () => {
         default: navigate("/");
       }
       
-      toast.success(`Welcome back, ${user.name || "User"}. Pleasure seeing you back`, {
+      toast.success(`Welcome back, ${user.name || "User"}.`, {
         position,
-        description: `Its about time ${new Date().toLocaleString()}`,
+        description: `${new Date().toLocaleString()}`,
         action: {
           label: "Welcome back"
         }
@@ -209,9 +209,9 @@ const LoginForm = () => {
       toast.error(err.message || "Invalid credentials.", {
         position,
         description: `Try again later ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
-        action: {
-          label: "Invalid"
-        }
+        // action: {
+        //   label: "Invalid"
+        // }
       });
     }
   };

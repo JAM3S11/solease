@@ -89,19 +89,19 @@ export function AppSidebar({ userRole }) {
       await logout();
       toast.success(`See you later ${user.name}`, {
         position,
-        description: `It was a pleasure having you in our platform ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
-        action: {
-          label: "Sign out successfully"
-        }
+        description: `${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
+        // action: {
+        //   label: "Sign out successfully"
+        // }
       });
       navigate("/auth/login");
     } catch {
-      toast.error("Signing out failed.", {
+      toast.error("Signing out failed, try again later.", {
         position,
-        description: "Please try again later!",
-        action: {
-          label: "Sign out unsuccessfull"
-        }
+        description: `${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
+        // action: {
+        //   label: "Sign out unsuccessfull"
+        // }
       });
     }
   }, [logout, navigate]);

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import useNotificationStore from "../../store/notificationStore";
 import { 
   Bell, CheckCheck, Clock, Filter, Search, ChevronLeft, ChevronRight,
-  CheckCircle, AlertCircle, Info, X
+  CheckCircle, AlertCircle, Info, X, RotateCcw
 } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -19,7 +19,9 @@ const STATUS_COLORS = {
 const AllNotificationsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthenticationStore();
-  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead, unmarkAllAsRead } = useNotificationStore();
+
+  const allRead = unreadCount === 0 && notifications.length > 0;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all"); // all, unread, read
@@ -81,7 +83,11 @@ const AllNotificationsPage = () => {
   };
 
   const handleMarkAllRead = async () => {
-    await markAllAsRead();
+    if (allRead) {
+      await unmarkAllAsRead();
+    } else {
+      await markAllAsRead();
+    }
   };
 
   const getNotificationIcon = (type, read) => {
@@ -141,13 +147,13 @@ const AllNotificationsPage = () => {
                 {unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : "You're all caught up!"}
               </p>
             </div>
-            {unreadCount > 0 && (
+            {notifications.length > 0 && (
               <button
                 onClick={handleMarkAllRead}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
-                <CheckCheck size={16} />
-                Mark all as read
+                {allRead ? <RotateCcw size={16} /> : <CheckCheck size={16} />}
+                {allRead ? "Unmark all as read" : "Mark all as read"}
               </button>
             )}
           </div>

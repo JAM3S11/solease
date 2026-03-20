@@ -90,6 +90,35 @@ export const markAllNotificationsAsRead = async (req, res) => {
     }
 };
 
+export const unmarkAllNotificationsAsRead = async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { user: req.user._id, read: true },
+            {
+                read: false,
+                readAt: null
+            }
+        );
+
+        const unreadCount = await Notification.countDocuments({
+            user: req.user._id,
+            read: false
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "All notifications unmarked as read",
+            unreadCount
+        });
+    } catch (error) {
+        console.error("Error unmarking all notifications as read:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error unmarking all notifications as read"
+        });
+    }
+};
+
 export const getUnreadCount = async (req, res) => {
     try {
         const unreadCount = await Notification.countDocuments({

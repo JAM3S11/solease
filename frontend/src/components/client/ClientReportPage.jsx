@@ -540,33 +540,33 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
 
 const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge }) => (
     <motion.div 
-        whileHover={{ y: -4 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all relative overflow-hidden"
+        whileHover={{ y: -2 }}
+        className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all relative overflow-hidden"
     >
         {badge && (
-            <div className={`absolute top-0 right-0 px-2 py-1 text-[10px] font-bold rounded-bl-lg ${badge.bg} ${badge.text}`}>
+            <div className={`absolute top-0 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-bold rounded-bl-lg ${badge.bg} ${badge.text}`}>
                 {badge.label}
             </div>
         )}
-        <div className="flex items-center justify-between mb-3">
-            <div className={`p-2.5 rounded-xl ${color}`}>
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className={`p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl ${color}`}>
                 {icon}
             </div>
             {trend && (
-                <div className={`flex items-center gap-1 text-xs font-medium ${trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                    {trend}
+                <div className={`flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs font-medium ${trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                    <span className="hidden xs:inline">{trend}</span>
                 </div>
             )}
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5 sm:space-y-1">
             <NumberTicker 
                 value={typeof value === 'number' ? value : 0} 
-                className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white"
             />
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
         </div>
-        {children && <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">{children}</div>}
+        {children && <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700">{children}</div>}
     </motion.div>
 );
 
@@ -1061,14 +1061,14 @@ const ClientReportPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-6"
+                                    className="space-y-4 sm:space-y-6"
                                 >
                                     {/* Key Metrics Row */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
                                             title="Total Tickets" 
                                             value={stats.total} 
-                                            icon={<Tickets size={20} className="text-white" />}
+                                            icon={<Tickets size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-blue-500 to-blue-600"
                                             trend={stats.trends.totalChange !== 0 ? `${stats.trends.totalChange > 0 ? '+' : ''}${stats.trends.totalChange}%` : null}
                                             trendUp={stats.trends.totalChange >= 0}
@@ -1076,7 +1076,7 @@ const ClientReportPage = () => {
                                         <MetricCard 
                                             title="Resolution Rate" 
                                             value={`${stats.trends.resolutionRate}%`}
-                                            icon={<Target size={20} className="text-white" />}
+                                            icon={<Target size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-emerald-500 to-emerald-600"
                                             trend={stats.trends.resolvedChange !== 0 ? `${stats.trends.resolvedChange > 0 ? '+' : ''}${stats.trends.resolvedChange}%` : null}
                                             trendUp={stats.trends.resolvedChange >= 0}
@@ -1084,48 +1084,48 @@ const ClientReportPage = () => {
                                         <MetricCard 
                                             title="Avg Response" 
                                             value={stats.avgResponse.value}
-                                            icon={<Timer size={20} className="text-white" />}
+                                            icon={<Timer size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-indigo-500 to-blue-600"
-                                            trend="Time to first reply"
+                                            trend="Time"
                                         />
                                         <MetricCard 
                                             title="Active Tickets" 
                                             value={stats.inProgress} 
-                                            icon={<Clock size={20} className="text-white" />}
+                                            icon={<Clock size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-amber-500 to-orange-500"
-                                            trend="In progress now"
+                                            trend="Now"
                                         />
                                     </div>
 
                                     {/* Secondary Stats Row */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
                                             title="Resolved" 
                                             value={stats.resolved} 
-                                            icon={<CheckCircle size={20} className="text-white" />}
+                                            icon={<CheckCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="Tickets closed"
+                                            trend="Closed"
                                         />
                                         <MetricCard 
                                             title="Response Rate" 
                                             value={stats.firstResponseRate.value}
-                                            icon={<Zap size={20} className="text-white" />}
+                                            icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="First response"
+                                            trend="First"
                                         />
                                         <MetricCard 
                                             title="SLA Compliance" 
                                             value={`${stats.slaCompliance.compliance}%`}
-                                            icon={<Gauge size={20} className="text-white" />}
+                                            icon={<Gauge size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            badge={{ label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total} on time`, bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', text: 'text-green-700 dark:text-green-400' }}
+                                            badge={{ label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total}`, bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', text: 'text-green-700 dark:text-green-400' }}
                                         />
                                         <MetricCard 
                                             title="Critical/High" 
                                             value={stats.critical} 
-                                            icon={<AlertTriangle size={20} className="text-white" />}
+                                            icon={<AlertTriangle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-red-500 to-rose-600"
-                                            badge={stats.critical > 0 ? { label: 'Needs attention', bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', text: 'text-red-700 dark:text-red-400' } : null}
+                                            badge={stats.critical > 0 ? { label: '!', bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', text: 'text-red-700 dark:text-red-400' } : null}
                                         />
                                     </div>
 
@@ -1755,37 +1755,37 @@ const ClientReportPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-6"
+                                    className="space-y-4 sm:space-y-6"
                                 >
                                     {/* Performance Metrics Row */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
-                                            title="First Response Rate" 
+                                            title="First Response" 
                                             value={stats.firstResponseRate.value}
-                                            icon={<Zap size={20} className="text-white" />}
+                                            icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="Tickets with response"
+                                            trend="Tickets"
                                         />
                                         <MetricCard 
-                                            title="Avg Response Time" 
+                                            title="Avg Response" 
                                             value={stats.avgResponse.value}
-                                            icon={<Timer size={20} className="text-white" />}
+                                            icon={<Timer size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-blue-500 to-indigo-600"
-                                            trend="Time to first reply"
+                                            trend="Time"
                                         />
                                         <MetricCard 
                                             title="Avg Resolution" 
                                             value={stats.avgRes.value}
-                                            icon={<CheckCircle size={20} className="text-white" />}
+                                            icon={<CheckCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Time to close"
+                                            trend="Close time"
                                         />
                                         <MetricCard 
                                             title="Satisfaction" 
                                             value={stats.sat.value}
-                                            icon={<Star size={20} className="text-white" />}
+                                            icon={<Star size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-orange-500 to-amber-600"
-                                            trend="Resolved rate"
+                                            trend="Resolved"
                                         />
                                     </div>
 
@@ -1965,29 +1965,29 @@ const ClientReportPage = () => {
 
                                     {/* Performance Summary */}
                                     <motion.div 
-                                        whileHover={{ y: -4 }}
-                                        className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-2xl shadow-lg text-white"
+                                        whileHover={{ y: -2 }}
+                                        className="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg text-white"
                                     >
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <Gauge size={20} className="text-white/80" />
-                                            <h3 className="font-bold">Performance Summary</h3>
+                                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                                            <Gauge size={18} className="text-white/80" />
+                                            <h3 className="font-bold text-sm sm:text-base">Performance Summary</h3>
                                         </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <div className="text-center p-3 bg-white/10 rounded-xl">
-                                                <p className="text-3xl font-bold">{stats.healthScore}</p>
-                                                <p className="text-xs text-blue-200 mt-1">Health Score</p>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-2xl sm:text-3xl font-bold">{stats.healthScore}</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Health</p>
                                             </div>
-                                            <div className="text-center p-3 bg-white/10 rounded-xl">
-                                                <p className="text-3xl font-bold">{stats.slaCompliance.compliance}%</p>
-                                                <p className="text-xs text-blue-200 mt-1">SLA Compliance</p>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-2xl sm:text-3xl font-bold">{stats.slaCompliance.compliance}%</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">SLA</p>
                                             </div>
-                                            <div className="text-center p-3 bg-white/10 rounded-xl">
-                                                <p className="text-3xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
-                                                <p className="text-xs text-blue-200 mt-1">Engagement</p>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Engage</p>
                                             </div>
-                                            <div className="text-center p-3 bg-white/10 rounded-xl">
-                                                <p className="text-3xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
-                                                <p className="text-xs text-blue-200 mt-1">Avg Messages</p>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Msg/Ticket</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -2001,139 +2001,139 @@ const ClientReportPage = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-6"
+                                    className="space-y-4 sm:space-y-6"
                                 >
                                     {/* Activity Metrics Row */}
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
                                             title="With Feedback" 
                                             value={stats.feedback.ticketsWithFeedback}
-                                            icon={<MessageCircle size={20} className="text-white" />}
+                                            icon={<MessageCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-blue-500 to-indigo-600"
                                             trend="Tickets"
                                         />
                                         <MetricCard 
                                             title="Total Messages" 
                                             value={stats.feedback.totalFeedbackCount}
-                                            icon={<Activity size={20} className="text-white" />}
+                                            icon={<Activity size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
                                             trend="All time"
                                         />
                                         <MetricCard 
                                             title="Active" 
                                             value={stats.activeDiscussions}
-                                            icon={<Zap size={20} className="text-white" />}
+                                            icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
                                             trend="Discussions"
                                         />
                                         <MetricCard 
                                             title="Engagement" 
                                             value={`${stats.feedback.engagementRate}%`}
-                                            icon={<TrendingUp size={20} className="text-white" />}
+                                            icon={<TrendingUp size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-orange-500 to-amber-600"
                                             trend="Rate"
                                         />
                                         <MetricCard 
                                             title="This Week" 
                                             value={stats.feedback.recentFeedback}
-                                            icon={<Clock size={20} className="text-white" />}
+                                            icon={<Clock size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            trend="Recent activity"
+                                            trend="Recent"
                                         />
                                         <MetricCard 
                                             title="Response Rate" 
                                             value={`${stats.feedback.feedbackRate}%`}
-                                            icon={<ThumbsUp size={20} className="text-white" />}
+                                            icon={<ThumbsUp size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-pink-500 to-rose-600"
                                             trend="Tickets"
                                         />
                                     </div>
 
                                     {/* Engagement Metrics */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                         {/* Message Breakdown */}
-                                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-5">
-                                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
-                                                <MessageCircle size={18} className="text-blue-500" />
-                                                Message Breakdown
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-5">
+                                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-3 sm:mb-4">
+                                                <MessageCircle size={16} className="text-blue-500" />
+                                                <span className="text-sm sm:text-base">Message Breakdown</span>
                                             </h3>
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 bg-blue-500 rounded-lg">
-                                                            <Send size={16} className="text-white" />
+                                            <div className="space-y-3 sm:space-y-4">
+                                                <div className="flex items-center justify-between p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl">
+                                                    <div className="flex items-center gap-2 sm:gap-3">
+                                                        <div className="p-1.5 sm:p-2 bg-blue-500 rounded-lg">
+                                                            <Send size={14} className="text-white" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Messages</span>
+                                                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Your Messages</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0)}</p>
-                                                        <p className="text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
+                                                        <p className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0)}</p>
+                                                        <p className="text-[10px] sm:text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.clientMessages, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 bg-green-500 rounded-lg">
-                                                            <User size={16} className="text-white" />
+                                                <div className="flex items-center justify-between p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 rounded-lg sm:rounded-xl">
+                                                    <div className="flex items-center gap-2 sm:gap-3">
+                                                        <div className="p-1.5 sm:p-2 bg-green-500 rounded-lg">
+                                                            <User size={14} className="text-white" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Staff Responses</span>
+                                                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Staff Responses</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0)}</p>
-                                                        <p className="text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
+                                                        <p className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400">{stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0)}</p>
+                                                        <p className="text-[10px] sm:text-xs text-gray-500">{((stats.feedbackDetailed.detailed.reduce((sum, d) => sum + d.staffResponses, 0) / Math.max(stats.feedbackDetailed.totalFeedback, 1) * 100)).toFixed(0)}%</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-500">Avg messages per ticket</span>
+                                            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                <div className="flex justify-between text-xs sm:text-sm">
+                                                    <span className="text-gray-500">Avg messages/ticket</span>
                                                     <span className="font-bold text-gray-800 dark:text-white">{stats.feedbackDetailed.avgMessagesPerTicket}</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Recent Feedback */}
-                                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                                            <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
                                                 <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                                    <Clock size={18} className="text-purple-500" />
-                                                    Recent Activity
+                                                    <Clock size={16} className="text-purple-500" />
+                                                    <span className="text-sm sm:text-base">Recent Activity</span>
                                                 </h3>
                                             </div>
-                                            <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
+                                            <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[300px] sm:max-h-80 overflow-y-auto">
                                                 {stats.recentFeedback.length > 0 ? stats.recentFeedback.map((feedback, idx) => (
                                                     <motion.div 
                                                         key={`${feedback.ticketId}-${idx}`}
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         transition={{ delay: idx * 0.05 }}
-                                                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                                                        className="p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                                     >
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                        <div className="flex items-start gap-2 sm:gap-3">
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-[10px] sm:text-xs flex-shrink-0">
                                                                 {feedback.user?.name?.charAt(0) || feedback.user?.username?.charAt(0) || 'U'}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <span className="font-semibold text-sm text-gray-800 dark:text-white">
+                                                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                                                    <span className="font-semibold text-xs sm:text-sm text-gray-800 dark:text-white truncate">
                                                                         {feedback.user?.name || feedback.user?.username || 'Unknown'}
                                                                     </span>
-                                                                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${feedback.isStaff ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'}`}>
+                                                                    <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold rounded-full ${feedback.isStaff ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'}`}>
                                                                         {feedback.isStaff ? 'Staff' : 'You'}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-xs text-gray-500 truncate mt-0.5">{feedback.ticketSubject}</p>
-                                                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{feedback.content}</p>
-                                                                <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
-                                                                    <Clock size={10} />
+                                                                <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5">{feedback.ticketSubject}</p>
+                                                                <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{feedback.content}</p>
+                                                                <p className="text-[8px] sm:text-[10px] text-gray-400 mt-1 sm:mt-2 flex items-center gap-1">
+                                                                    <Clock size={8} />
                                                                     {formatFullDate(feedback.createdAt)}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                     </motion.div>
                                                 )) : (
-                                                    <div className="p-8 text-center text-gray-400">
-                                                        <MessageCircle size={40} className="mx-auto mb-2 opacity-50" />
-                                                        <p>No recent activity</p>
+                                                    <div className="p-6 sm:p-8 text-center text-gray-400">
+                                                        <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
+                                                        <p className="text-sm">No recent activity</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -2141,19 +2141,19 @@ const ClientReportPage = () => {
                                     </div>
 
                                     {/* Ticket Activity Timeline */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                                        <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+                                    <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
                                             <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                                <Activity size={18} className="text-green-500" />
-                                                Your Ticket Activity Timeline
+                                                <Activity size={16} className="text-green-500" />
+                                                <span className="text-sm sm:text-base">Activity Timeline</span>
                                             </h3>
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-3 sm:p-5">
                                             <div className="relative">
                                                 {/* Timeline line */}
-                                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500"></div>
+                                                <div className="absolute left-3 sm:left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500"></div>
                                                 
-                                                <div className="space-y-4">
+                                                <div className="space-y-3 sm:space-y-4">
                                                     {stats.feedbackDetailed.detailed.slice(0, 5).map((item, idx) => {
                                                         const ticket = clientTickets.find(t => t._id === item.ticketId);
                                                         if (!ticket) return null;
@@ -2164,18 +2164,18 @@ const ClientReportPage = () => {
                                                                 initial={{ opacity: 0, y: 10 }}
                                                                 animate={{ opacity: 1, y: 0 }}
                                                                 transition={{ delay: idx * 0.1 }}
-                                                                className="relative flex items-start gap-4 pl-10"
+                                                                className="relative flex items-start gap-3 sm:gap-4 pl-8 sm:pl-10"
                                                             >
-                                                                <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${
+                                                                <div className={`absolute left-1.5 sm:left-2 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 ${
                                                                     SUCCESS_STATUSES.includes(ticket.status) 
                                                                         ? 'bg-green-500 border-green-500' 
                                                                         : ticket.status === 'In Progress'
                                                                             ? 'bg-yellow-500 border-yellow-500'
                                                                             : 'bg-blue-500 border-blue-500'
                                                                 }`}></div>
-                                                                <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
-                                                                    <div className="flex items-center justify-between mb-2">
-                                                                        <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${
+                                                                <div className="flex-1 p-2 sm:p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg sm:rounded-xl">
+                                                                    <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
+                                                                        <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold rounded-full ${
                                                                             ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' :
                                                                             ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' :
                                                                             SUCCESS_STATUSES.includes(ticket.status) ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
@@ -2183,13 +2183,13 @@ const ClientReportPage = () => {
                                                                         }`}>
                                                                             {ticket.status}
                                                                         </span>
-                                                                        <span className="text-[10px] text-gray-400">
-                                                                            {item.totalMessages} messages
+                                                                        <span className="text-[8px] sm:text-[10px] text-gray-400">
+                                                                            {item.totalMessages} msgs
                                                                         </span>
                                                                     </div>
-                                                                    <p className="font-medium text-sm text-gray-800 dark:text-white">{item.subject}</p>
-                                                                    <p className="text-xs text-gray-500 mt-1">
-                                                                        {item.staffResponses} staff • {item.clientMessages} your messages
+                                                                    <p className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white truncate">{item.subject}</p>
+                                                                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
+                                                                        {item.staffResponses} staff • {item.clientMessages} your
                                                                     </p>
                                                                 </div>
                                                             </motion.div>
@@ -2208,33 +2208,35 @@ const ClientReportPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 }}
-                            className="mt-8"
+                            className="mt-6 sm:mt-8"
                         >
-                            <div className="p-5">
-                                <h3 className="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4 text-center">
+                            <div className="p-4 sm:p-5">
+                                <h3 className="text-xs sm:text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 sm:mb-4 text-center">
                                     Quick Actions
                                 </h3>
-                                <div className="flex flex-wrap justify-center gap-4">
+                                <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
                                     <Link 
                                         to="/client-dashboard/new-ticket"
-                                        className="group relative flex flex-col items-center text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
+                                        className="group relative flex flex-col items-center text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
                                     >
                                         <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity"></span>
-                                        <span className="relative flex items-center justify-center w-8 h-8 bg-white/20 rounded-lg backdrop-blur-sm mb-2">
-                                            <Tickets size={16} />
+                                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-lg backdrop-blur-sm mb-1.5 sm:mb-2">
+                                            <Tickets size={14} className="sm:hidden" />
+                                            <Tickets size={16} className="hidden sm:block" />
                                         </span>
-                                        <span className="relative text-sm">New Ticket</span>
-                                        <span className="relative text-[10px] opacity-70 mt-1">Submit a new support request</span>
+                                        <span className="relative text-xs sm:text-sm">New Ticket</span>
+                                        <span className="relative text-[8px] sm:text-[10px] opacity-70 mt-0.5 sm:mt-1 hidden xs:block">Submit a request</span>
                                     </Link>
                                     <Link 
                                         to="/client-dashboard/all-tickets"
-                                        className="group relative flex flex-col items-center text-center bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-5 py-3 rounded-xl font-semibold border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+                                        className="group relative flex flex-col items-center text-center bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 w-full sm:w-auto"
                                     >
-                                        <span className="flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors mb-2">
-                                            <Eye size={16} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                                        <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors mb-1.5 sm:mb-2">
+                                            <Eye size={14} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors sm:hidden" />
+                                            <Eye size={16} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors hidden sm:block" />
                                         </span>
-                                        <span className="relative text-sm">View All Tickets</span>
-                                        <span className="relative text-[10px] text-gray-400 mt-1">Browse your ticket history</span>
+                                        <span className="relative text-xs sm:text-sm">View Tickets</span>
+                                        <span className="relative text-[8px] sm:text-[10px] text-gray-400 mt-0.5 sm:mt-1 hidden xs:block">Browse history</span>
                                     </Link>
                                 </div>
                             </div>

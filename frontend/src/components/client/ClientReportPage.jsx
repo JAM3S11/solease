@@ -1082,18 +1082,18 @@ const ClientReportPage = () => {
                                             trendUp={stats.trends.resolvedChange >= 0}
                                         />
                                         <MetricCard 
-                                            title="Avg Response" 
+                                            title="Avg Response Time" 
                                             value={stats.avgResponse.value}
                                             icon={<Timer size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-indigo-500 to-blue-600"
-                                            trend="Time"
+                                            trend={stats.avgResponse.hours ? `${stats.avgResponse.hours}h avg` : null}
                                         />
                                         <MetricCard 
                                             title="Active Tickets" 
                                             value={stats.inProgress} 
                                             icon={<Clock size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-amber-500 to-orange-500"
-                                            trend="Now"
+                                            trend="Currently Open"
                                         />
                                     </div>
 
@@ -1104,14 +1104,14 @@ const ClientReportPage = () => {
                                             value={stats.resolved} 
                                             icon={<CheckCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="Closed"
+                                            trend={`${stats.trends.resolutionRate}% Resolved`}
                                         />
                                         <MetricCard 
-                                            title="Response Rate" 
+                                            title="First Response Rate" 
                                             value={stats.firstResponseRate.value}
                                             icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="First"
+                                            trend="Quick Response"
                                         />
                                         <MetricCard 
                                             title="SLA Compliance" 
@@ -1143,7 +1143,10 @@ const ClientReportPage = () => {
                                                         <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
                                                             <TrendingUp size={18} className="text-blue-600 dark:text-blue-400" />
                                                         </div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Resolution Time</h3>
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-800 dark:text-white">Resolution Time</h3>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Average days to close tickets</p>
+                                                        </div>
                                                     </div>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Avg days</span>
                                                 </div>
@@ -1185,7 +1188,10 @@ const ClientReportPage = () => {
                                                         <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
                                                             <Flame size={18} className="text-orange-600 dark:text-orange-400" />
                                                         </div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Ticket Volume</h3>
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-800 dark:text-white">Ticket Volume</h3>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Number of tickets created per month</p>
+                                                        </div>
                                                     </div>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Monthly</span>
                                                 </div>
@@ -1760,32 +1766,32 @@ const ClientReportPage = () => {
                                     {/* Performance Metrics Row */}
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
-                                            title="First Response" 
+                                            title="First Response Rate" 
                                             value={stats.firstResponseRate.value}
                                             icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="Tickets"
+                                            trend="Quick Reply %"
                                         />
                                         <MetricCard 
-                                            title="Avg Response" 
+                                            title="Avg Response Time" 
                                             value={stats.avgResponse.value}
                                             icon={<Timer size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-blue-500 to-indigo-600"
-                                            trend="Time"
+                                            trend="Hours to Respond"
                                         />
                                         <MetricCard 
-                                            title="Avg Resolution" 
+                                            title="Avg Resolution Time" 
                                             value={stats.avgRes.value}
                                             icon={<CheckCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Close time"
+                                            trend="Days to Close"
                                         />
                                         <MetricCard 
-                                            title="Satisfaction" 
+                                            title="Satisfaction Score" 
                                             value={stats.sat.value}
                                             icon={<Star size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-orange-500 to-amber-600"
-                                            trend="Resolved"
+                                            trend="Avg Rating"
                                         />
                                     </div>
 
@@ -1803,7 +1809,10 @@ const ClientReportPage = () => {
                                                         <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
                                                             <Timer size={18} className="text-blue-600 dark:text-blue-400" />
                                                         </div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Response Time Trend</h3>
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-800 dark:text-white">Response Time Trend</h3>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Average hours to first response</p>
+                                                        </div>
                                                     </div>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Avg hours</span>
                                                 </div>
@@ -1845,7 +1854,10 @@ const ClientReportPage = () => {
                                                         <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
                                                             <CheckCircle size={18} className="text-green-600 dark:text-green-400" />
                                                         </div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Resolution Rate</h3>
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-800 dark:text-white">Resolution Rate</h3>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Percentage of tickets resolved</p>
+                                                        </div>
                                                     </div>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">% resolved</span>
                                                 </div>
@@ -1888,7 +1900,10 @@ const ClientReportPage = () => {
                                                     <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
                                                         <BarChart3 size={18} className="text-purple-600 dark:text-purple-400" />
                                                     </div>
-                                                    <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Category</h3>
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Category</h3>
+                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Distribution of issue types</p>
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-4">
                                                     {stats.categories.filter(c => c.count > 0).map((cat, idx) => {
@@ -1926,7 +1941,10 @@ const ClientReportPage = () => {
                                                     <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
                                                         <Activity size={18} className="text-indigo-600 dark:text-indigo-400" />
                                                     </div>
-                                                    <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Status</h3>
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Status</h3>
+                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Current ticket status breakdown</p>
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-4">
                                                     {stats.byStatus.map((item, idx) => {
@@ -1975,19 +1993,19 @@ const ClientReportPage = () => {
                                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                                             <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
                                                 <p className="text-2xl sm:text-3xl font-bold">{stats.healthScore}</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Health</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Health Score</p>
                                             </div>
                                             <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
                                                 <p className="text-2xl sm:text-3xl font-bold">{stats.slaCompliance.compliance}%</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">SLA</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">SLA Compliance</p>
                                             </div>
                                             <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
                                                 <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Engage</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Engagement</p>
                                             </div>
                                             <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
                                                 <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Msg/Ticket</p>
+                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Msgs per Ticket</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -2006,46 +2024,46 @@ const ClientReportPage = () => {
                                     {/* Activity Metrics Row */}
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
                                         <MetricCard 
-                                            title="With Feedback" 
+                                            title="Feedback Tickets" 
                                             value={stats.feedback.ticketsWithFeedback}
                                             icon={<MessageCircle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-blue-500 to-indigo-600"
-                                            trend="Tickets"
+                                            trend="With Feedback"
                                         />
                                         <MetricCard 
                                             title="Total Messages" 
                                             value={stats.feedback.totalFeedbackCount}
                                             icon={<Activity size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="All time"
+                                            trend="All Time"
                                         />
                                         <MetricCard 
-                                            title="Active" 
+                                            title="Active Discussions" 
                                             value={stats.activeDiscussions}
                                             icon={<Zap size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Discussions"
+                                            trend="In Progress"
                                         />
                                         <MetricCard 
-                                            title="Engagement" 
+                                            title="Engagement Rate" 
                                             value={`${stats.feedback.engagementRate}%`}
                                             icon={<TrendingUp size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-orange-500 to-amber-600"
-                                            trend="Rate"
+                                            trend="Active %"
                                         />
                                         <MetricCard 
-                                            title="This Week" 
+                                            title="Recent Activity" 
                                             value={stats.feedback.recentFeedback}
                                             icon={<Clock size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            trend="Recent"
+                                            trend="This Week"
                                         />
                                         <MetricCard 
-                                            title="Response Rate" 
+                                            title="Feedback Rate" 
                                             value={`${stats.feedback.feedbackRate}%`}
                                             icon={<ThumbsUp size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-pink-500 to-rose-600"
-                                            trend="Tickets"
+                                            trend="Response %"
                                         />
                                     </div>
 
@@ -2053,10 +2071,13 @@ const ClientReportPage = () => {
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                         {/* Message Breakdown */}
                                         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 p-4 sm:p-5">
-                                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-3 sm:mb-4">
-                                                <MessageCircle size={16} className="text-blue-500" />
-                                                <span className="text-sm sm:text-base">Message Breakdown</span>
-                                            </h3>
+                                            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                                    <MessageCircle size={16} className="text-blue-500" />
+                                                    <span className="text-sm sm:text-base">Message Breakdown</span>
+                                                </h3>
+                                                <span className="text-[10px] text-gray-500">Communication overview</span>
+                                            </div>
                                             <div className="space-y-3 sm:space-y-4">
                                                 <div className="flex items-center justify-between p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg sm:rounded-xl">
                                                     <div className="flex items-center gap-2 sm:gap-3">
@@ -2094,10 +2115,13 @@ const ClientReportPage = () => {
                                         {/* Recent Feedback */}
                                         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                                             <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
-                                                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                                    <Clock size={16} className="text-purple-500" />
-                                                    <span className="text-sm sm:text-base">Recent Activity</span>
-                                                </h3>
+                                                <div className="flex items-center justify-between">
+                                                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                                        <Clock size={16} className="text-purple-500" />
+                                                        <span className="text-sm sm:text-base">Recent Activity</span>
+                                                    </h3>
+                                                    <span className="text-[10px] text-gray-500">Latest interactions</span>
+                                                </div>
                                             </div>
                                             <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[300px] sm:max-h-80 overflow-y-auto">
                                                 {stats.recentFeedback.length > 0 ? stats.recentFeedback.map((feedback, idx) => (
@@ -2143,10 +2167,13 @@ const ClientReportPage = () => {
                                     {/* Ticket Activity Timeline */}
                                     <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                                         <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
-                                            <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                                <Activity size={16} className="text-green-500" />
-                                                <span className="text-sm sm:text-base">Activity Timeline</span>
-                                            </h3>
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                                    <Activity size={16} className="text-green-500" />
+                                                    <span className="text-sm sm:text-base">Activity Timeline</span>
+                                                </h3>
+                                                <span className="text-[10px] text-gray-500">Ticket history</span>
+                                            </div>
                                         </div>
                                         <div className="p-3 sm:p-5">
                                             <div className="relative">

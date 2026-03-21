@@ -1285,8 +1285,18 @@ const AdminReportPage = () => {
                         <tr key={user._id} className="hover:bg-muted/30 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                {user.name?.charAt(0).toUpperCase()}
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold text-xs ${user.profilePhoto ? '' : 'bg-primary/10'}`}>
+                                {user.profilePhoto ? (
+                                  <img 
+                                    src={user.profilePhoto} 
+                                    alt={user.name}
+                                    className="w-full h-full rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-primary">
+                                    {user.name?.charAt(0).toUpperCase()}
+                                  </span>
+                                )}
                               </div>
                               <div>
                                 <p className="font-medium text-foreground text-sm">{user.name}</p>
@@ -1473,8 +1483,18 @@ const AdminReportPage = () => {
               <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 p-6 border-b border-border">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-                      {selectedUser?.name?.charAt(0).toUpperCase()}
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-primary font-bold text-2xl ${selectedUser?.profilePhoto ? '' : 'bg-primary/10'}`}>
+                      {selectedUser?.profilePhoto ? (
+                        <img 
+                          src={selectedUser.profilePhoto} 
+                          alt={selectedUser?.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-primary">
+                          {selectedUser?.name?.charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <DialogTitle className="text-xl font-bold text-foreground">

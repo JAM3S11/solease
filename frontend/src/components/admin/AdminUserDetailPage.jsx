@@ -202,8 +202,8 @@ const AdminUserDetailPage = () => {
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMjAiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50" />
                 <div className="relative flex flex-col items-center">
                   <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 ring-4 ring-white/20">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.username} className="w-full h-full rounded-full object-cover" />
+                    {user.profilePhoto ? (
+                      <img src={user.profilePhoto} alt={user.username} className="w-full h-full rounded-full object-cover" />
                     ) : (
                       <span className="text-4xl font-bold">{user.username?.charAt(0).toUpperCase()}</span>
                     )}

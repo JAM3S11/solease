@@ -271,10 +271,18 @@ const AdminUsersPage = () => {
                           <td className="px-4 py-3.5 pl-5">
                             <div className="flex items-center gap-3">
                               <div className="relative flex-shrink-0">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
-                                  <span className="text-sm font-bold text-white">
-                                    {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
-                                  </span>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${user.profilePhoto ? '' : 'bg-gradient-to-br from-blue-400 to-blue-600'}`}>
+                                  {user.profilePhoto ? (
+                                    <img 
+                                      src={user.profilePhoto} 
+                                      alt={user.name || user.username}
+                                      className="w-full h-full rounded-xl object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-sm font-bold text-white">
+                                      {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
                                 </div>
                                 {/* Online Indicator */}
                                 <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${user.isOnline ? "bg-green-500" : "bg-red-500"}`}>
@@ -504,10 +512,18 @@ const UserCard = ({ user, onDelete }) => {
       
       <div className="flex items-start justify-between mb-5">
         <div className="relative">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="text-xl font-bold text-white tracking-tighter">
-              {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
-            </span>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 ${user.profilePhoto ? '' : 'bg-gradient-to-br from-blue-500 to-indigo-600'}`}>
+            {user.profilePhoto ? (
+              <img 
+                src={user.profilePhoto} 
+                alt={user.name || user.username}
+                className="w-full h-full rounded-2xl object-cover"
+              />
+            ) : (
+              <span className="text-xl font-bold text-white tracking-tighter">
+                {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
           {/* Online Indicator */}
           <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${user.isOnline ? "bg-green-500" : "bg-red-500"}`}>

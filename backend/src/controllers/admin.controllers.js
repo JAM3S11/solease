@@ -1,11 +1,16 @@
 // controllers/admin.controller.js
 import { User } from "../models/user.model.js";
 
+const getBaseUrl = (req) => {
+  return `${req.protocol}://${req.get("host")}`;
+};
+
 // Get all users in the system
 export const getAllUsers = async (req, res) => {
   try {
     const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
     const now = new Date();
+    const baseUrl = getBaseUrl(req);
 
     // First, find all users and update their isOnline status based on lastActivity
     const users = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
@@ -22,11 +27,17 @@ export const getAllUsers = async (req, res) => {
     // Fetch updated users
     const updatedUsers = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
 
+    // Add full URL for profilePhoto
+    const usersWithFullPhotoUrl = updatedUsers.map(user => ({
+      ...user.toObject(),
+      profilePhoto: user.profilePhoto ? `${baseUrl}${user.profilePhoto}` : null
+    }));
+
     // Return a response
     return res.status(200).json({
       success: true,
       count: updatedUsers.length,
-      users: updatedUsers,
+      users: usersWithFullPhotoUrl,
     });
   } catch (error) {
     console.error("Error Fetching users from the admin panel:", error);

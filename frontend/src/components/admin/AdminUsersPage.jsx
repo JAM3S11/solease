@@ -149,7 +149,7 @@ const AdminUsersPage = () => {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="-mt-2">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
             User Management
           </h2>
           <p className="text-gray-400 text-sm sm:text-base mt-1">

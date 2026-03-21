@@ -88,7 +88,7 @@ const Header = () => {
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10">
         {/* Logo */}
-        <div className={`text-3xl md:text-4xl font-black tracking-tighter drop-shadow-sm ${
+          <div className={`text-xl md:text-2xl font-bold tracking-tighter drop-shadow-sm ${
           isHomepage && !isBlurred ? "text-white" : "text-blue-600"
         }`}>
           <Link to="/" onClick={onScrollToTop} className="flex m-0">
@@ -98,7 +98,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <ul className="hidden md:flex items-center space-x-8 uppercase text-sm font-bold tracking-[0.06em]">
+        <ul className="hidden md:flex items-center space-x-8 text-sm font-medium tracking-[0.01rem]">
           {navLinks.map((link) => (
             <li key={link.name}>
               <Link
@@ -121,7 +121,7 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           <Link
             to="/auth/login"
-            className={`text-sm font-bold transition-all px-4 ${
+            className={`text-sm font-medium transition-all px-4 ${
               isHomepage && !isBlurred
                 ? "text-white hover:text-blue-300"
                 : "text-gray-900 hover:text-blue-700"
@@ -131,7 +131,7 @@ const Header = () => {
           </Link>
           <Link
             to="/auth/signup"
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm px-6 py-2.5 rounded-full shadow-lg shadow-blue-500/25 hover:bg-blue-500 hover:-translate-y-0.5 transition-all duration-300 font-bold"
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm px-6 py-2.5 rounded-full shadow-lg shadow-blue-500/25 hover:bg-blue-500 hover:-translate-y-0.5 transition-all duration-300 font-medium"
           >
             Get Started
             <ArrowRight size={15} />
@@ -166,10 +166,10 @@ const Header = () => {
                 key={link.name}
                 to={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="group flex items-center justify-between py-5 px-2 text-lg font-semibold text-white hover:text-blue-400 border-b border-white/8 transition-all duration-300"
+                className="group flex items-center justify-between py-4 px-2 text-base font-medium text-white hover:text-blue-400 border-b border-white/8 transition-all duration-300"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
-                <span className="tracking-wide">{link.name}</span>
+                <span className="tracking-normal">{link.name}</span>
                 <ArrowRight size={18} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 text-blue-400" />
               </Link>
             ))}

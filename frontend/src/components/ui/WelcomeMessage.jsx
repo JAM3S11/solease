@@ -86,7 +86,7 @@ const WelcomeMessage = () => {
       animate="visible"
     >
       <motion.div variants={itemVariants}>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
           How IT Support Works
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -124,7 +124,7 @@ const WelcomeMessage = () => {
           >
             <div className="flex items-center gap-3 mb-1">
               <Plus size={20} className="text-white/90" />
-              <span className="text-base font-semibold text-white">Create New Ticket</span>
+              <span className="text-sm font-medium text-white">Create New Ticket</span>
             </div>
             <p className="text-xs text-blue-100">Submit a support request for any IT issue</p>
           </Link>
@@ -135,7 +135,7 @@ const WelcomeMessage = () => {
           >
             <div className="flex items-center gap-3 mb-1">
               <MessageSquare size={20} className="text-purple-600 dark:text-purple-400" />
-              <span className="text-base font-semibold text-gray-900 dark:text-white">Knowledge Base</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Knowledge Base</span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Browse helpful articles and FAQs</p>
           </Link>
@@ -146,7 +146,7 @@ const WelcomeMessage = () => {
           >
             <div className="flex items-center gap-3 mb-1">
               <Clock size={20} className="text-green-600 dark:text-green-400" />
-              <span className="text-base font-semibold text-gray-900 dark:text-white">View Tickets</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">View Tickets</span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Track status of your submitted tickets</p>
           </Link>
@@ -154,7 +154,7 @@ const WelcomeMessage = () => {
       </motion.div>
 
       <motion.div variants={itemVariants} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
           What to Include in Your Ticket
         </h3>
         <div className="grid gap-2 sm:grid-cols-2">

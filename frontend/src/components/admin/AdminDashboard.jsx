@@ -159,7 +159,7 @@ const AdminDashboard = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 -mt-2">
           <motion.div variants={itemVars} className="flex flex-col">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{getGreeting()},</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
               {user?.name || user?.username}!
             </h3>
             <p className="text-sm text-gray-500 mt-1">Here's what's happening with your tickets today.</p>
@@ -196,7 +196,7 @@ const AdminDashboard = () => {
                 <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
               </div>
               <div>
-                <p className="font-semibold text-red-800 dark:text-red-200">Action Required</p>
+                <p className="font-medium text-red-800 dark:text-red-200">Action Required</p>
                 <p className="text-sm text-red-600 dark:text-red-300">{criticalTickets.length} critical ticket{criticalTickets.length > 1 ? 's' : ''} need{criticalTickets.length === 1 ? 's' : ''} attention</p>
               </div>
             </div>
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
                   {loading ? "..." : <NumberTicker value={stat.value} />}
                 </p>
               </div>
@@ -263,7 +263,7 @@ const AdminDashboard = () => {
                   <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'purple' ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/30' : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'}`}>
                     <link.icon size={22} className="text-white" />
                   </div>
-                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {link.label}
                   </h3>
                   <div className="mt-auto pt-3 flex items-center text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
                   <Tickets className="text-blue-600 dark:text-blue-400" size={18} />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Recent Tickets</h4>
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Recent Tickets</h4>
               </div>
               <button onClick={() => navigate("/admin-dashboard/admin-tickets")} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium">
                 View All <ArrowRight size={14} />
@@ -387,7 +387,7 @@ const AdminDashboard = () => {
                       }`}
                     />
                   </div>
-                  <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+                  <h5 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                     {ticket.subject}
                   </h5>
                   <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
@@ -424,7 +424,7 @@ const AdminDashboard = () => {
                   <div className="p-2 bg-violet-100 dark:bg-violet-900/40 rounded-lg">
                     <BarChart3 className="text-violet-600 dark:text-violet-400" size={18} />
                   </div>
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Weekly Activity</h4>
+                  <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Weekly Activity</h4>
                 </div>
                 <div className="flex items-center gap-4 text-xs">
                   <div className="flex items-center gap-1.5">
@@ -464,7 +464,7 @@ const AdminDashboard = () => {
                   <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
                     <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={18} />
                   </div>
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Status Distribution</h4>
+                  <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Status Distribution</h4>
                 </div>
                 <span className="text-xs text-gray-500 dark:text-gray-400">{totalTickets} total</span>
               </div>
@@ -509,28 +509,28 @@ const AdminDashboard = () => {
                     <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Open</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{openTickets}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{openTickets}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400">In Progress</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{inProgressTickets}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{inProgressTickets}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Resolved</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{resolvedTickets}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{resolvedTickets}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-gray-500"></span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Closed</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{closedTickets}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{closedTickets}</span>
                 </div>
               </div>
             </motion.div>
@@ -553,7 +553,7 @@ const AdminDashboard = () => {
                     <AlertTriangle className="text-red-600 dark:text-red-400" size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-red-800 dark:text-red-200">Critical Tickets</h3>
+                    <h3 className="text-base font-semibold text-red-800 dark:text-red-200">Critical Tickets</h3>
                     <p className="text-sm text-red-600 dark:text-red-300">{criticalTickets.length} ticket{criticalTickets.length > 1 ? 's' : ''} requiring immediate attention</p>
                   </div>
                 </div>
@@ -597,7 +597,7 @@ const AdminDashboard = () => {
                           {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
                         </span>
                       </div>
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">{ticket.subject}</h4>
+                      <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1">{ticket.subject}</h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{ticket.description}</p>
                     </div>
                   ))}

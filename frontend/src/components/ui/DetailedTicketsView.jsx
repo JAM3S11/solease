@@ -21,7 +21,7 @@ const DetailedTicketsView = ({ tickets = [], role = "admin", onRowClick = () => 
         <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4 px-1">
                 <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                <h4 className="text-lg font-bold text-gray-900 dark:text-white">Category Detailed View</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">Category Detailed View</h4>
             </div>
 
             <AnimatePresence>
@@ -45,7 +45,7 @@ const DetailedTicketsView = ({ tickets = [], role = "admin", onRowClick = () => 
                                     <dt className="flex items-center gap-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                                         <Hash size={12} /> Ticket ID
                                     </dt>
-                                    <dd className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">
+                                    <dd className="font-mono text-sm font-medium text-blue-600 dark:text-blue-400">
                                         #{ticket._id.slice(-6).toUpperCase()}
                                     </dd>
                                 </div>
@@ -56,7 +56,7 @@ const DetailedTicketsView = ({ tickets = [], role = "admin", onRowClick = () => 
                                         <ActivityIcon status={ticket.status} /> Status
                                     </dt>
                                     <dd className="flex items-center gap-2">
-                                        <span className={cn("text-sm font-semibold", getStatusColor(ticket.status))}>
+                                        <span className={cn("text-sm font-medium", getStatusColor(ticket.status))}>
                                             {ticket.status}
                                         </span>
                                     </dd>
@@ -112,7 +112,7 @@ const DetailedTicketsView = ({ tickets = [], role = "admin", onRowClick = () => 
                             </dl>
 
                             {/* Action indicator */}
-                            <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-end items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-end items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-medium uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                                 See full details <ArrowRightIcon />
                             </div>
                         </motion.div>

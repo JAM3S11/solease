@@ -140,7 +140,7 @@ export function AppSidebar({ userRole }) {
                 {!isCollapsed && (
                   <div className="flex items-center justify-between flex-1 min-w-0">
                     <div className="grid flex-1 text-left text-sm leading-tight animate-in fade-in slide-in-from-left-2">
-                      <span className="truncate font-bold text-gray-900 dark:text-white text-base">
+                      <span className="truncate font-semibold text-gray-900 dark:text-white text-sm">
                         SOLEASE
                       </span>
                       <span className="truncate text-xs text-gray-500 dark:text-gray-400 font-medium capitalize">

@@ -224,7 +224,7 @@ const ClientDashboard = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight mb-2">
               {isNewUser ? `Welcome to SOLEASE, ${userName}!` : `Welcome back, ${userName}!`}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -311,7 +311,7 @@ const ClientDashboard = () => {
                     <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30' : 'bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30'}`}>
                       <link.icon size={22} className="text-white" />
                     </div>
-                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {link.label}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
@@ -364,7 +364,7 @@ const ClientDashboard = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
                       {<NumberTicker value={stat.val} />}
                     </p>
                   </div>
@@ -416,7 +416,7 @@ const ClientDashboard = () => {
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 dark:bg-gray-800/40">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Recent Tickets</h2>
+                <h2 className="text-sm font-medium text-gray-900 dark:text-white tracking-tight">Recent Tickets</h2>
                 
                 {/* Mobile: Stack vertically, Desktop: Horizontal */}
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

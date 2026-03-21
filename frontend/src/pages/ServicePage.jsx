@@ -137,7 +137,7 @@ const ServicePage = () => {
   return (
     <div className="w-full bg-white font-sans">
       {/* Hero Section */}
-      <section className="relative min-h-[100vh] flex items-center justify-center pt-32 pb-16 md:pt-40 md:pb-20 bg-white overflow-hidden">
+      <section className="relative min-h-[100vh] flex items-center justify-center pt-24 pb-12 md:pt-32 md:pb-16 bg-white overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] bg-gray-300/10 rounded-full blur-[200px]" />
           <div className="absolute -bottom-1/2 -right-1/4 w-[600px] h-[600px] bg-gray-400/10 rounded-full blur-[180px]" />
@@ -151,17 +151,17 @@ const ServicePage = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Our Services</span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">Powerful Support Solutions</h1>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed mb-8">
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Our Services</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-4 tracking-tight">Powerful Support Solutions</h1>
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto font-normal leading-relaxed mb-6">
               Comprehensive platform designed to streamline your{" "}
-              <span className="text-blue-600 font-semibold">IT support operations</span> and deliver exceptional user experiences. From AI-powered triage to enterprise-grade security.
+              <span className="text-blue-600 font-medium">IT support operations</span> and deliver exceptional user experiences. From AI-powered triage to enterprise-grade security.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold inline-flex items-center justify-center gap-2 transition-all">
-                Start Free Trial <ArrowRight size={20} />
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2 transition-all text-sm">
+                Start Free Trial <ArrowRight size={16} />
               </Link>
-              <Link to="/about" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-semibold transition-all">
+              <Link to="/about" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm">
                 Learn More
               </Link>
             </div>
@@ -170,20 +170,20 @@ const ServicePage = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-white flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-white flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">How It Works</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Getting Started is Easy</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Follow these four simple steps to transform your support operations with SOLEASE</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">How It Works</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Getting Started is Easy</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Follow these four simple steps to transform your support operations with SOLEASE</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {processSteps.map((step, index) => (
               <motion.div
                 key={step.title}
@@ -191,12 +191,12 @@ const ServicePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center bg-gray-50 rounded-3xl p-8 hover:bg-blue-50 transition-colors"
+                className="text-center bg-gray-50 rounded-2xl p-6 hover:bg-blue-50 transition-colors"
               >
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-6">
-                  <step.icon size={32} />
+                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-4">
+                  <step.icon size={24} />
                 </div>
-                <h4 className="font-bold text-gray-900 mb-3 text-lg">{step.title}</h4>
+                <h4 className="font-medium text-gray-900 mb-2 text-xs md:text-sm">{step.title}</h4>
                 <p className="text-gray-600 text-sm leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
@@ -205,20 +205,20 @@ const ServicePage = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-gray-50 flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-gray-50 flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Why SOLEASE</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Benefits That Matter</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Discover why thousands of organizations trust SOLEASE for their support operations</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Why SOLEASE</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Benefits That Matter</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Discover why thousands of organizations trust SOLEASE for their support operations</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={benefit.title}
@@ -226,12 +226,12 @@ const ServicePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-3xl p-8 hover:shadow-xl transition-all"
+                className="bg-white rounded-xl p-6 hover:shadow-lg transition-all"
               >
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
-                  <benefit.icon size={32} />
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
+                  <benefit.icon size={24} />
                 </div>
-                <h4 className="font-bold text-gray-900 mb-3 text-lg">{benefit.title}</h4>
+                <h4 className="font-medium text-gray-900 mb-2 text-xs md:text-sm">{benefit.title}</h4>
                 <p className="text-gray-600 text-sm leading-relaxed">{benefit.desc}</p>
               </motion.div>
             ))}
@@ -240,34 +240,34 @@ const ServicePage = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-white flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-white flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">What We Offer</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Explore Our Services</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Comprehensive solutions tailored to transform your support operations</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">What We Offer</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Explore Our Services</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Comprehensive solutions tailored to transform your support operations</p>
           </motion.div>
 
-          <div className="relative max-w-xl mx-auto mb-16 group">
+          <div className="relative max-w-xl mx-auto mb-12 group">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
               type="text"
               placeholder="Search for a service..."
-              className="block w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-gray-900 font-medium placeholder:text-gray-400"
+              className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-gray-900 font-normal placeholder:text-gray-400 text-sm"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           <motion.div 
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             <AnimatePresence mode='popLayout'>
               {filteredServices.map((service) => (
@@ -278,38 +278,38 @@ const ServicePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   whileHover={{ y: -8 }}
-                  className="group bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
+                  className="group bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
                 >
                   {service.isAI && (
                     <div className="absolute top-4 right-4 z-20">
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded-full">
+                      <span className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-[10px] font-medium uppercase rounded-full">
                         <Sparkles size={10} /> AI Powered
                       </span>
                     </div>
                   )}
 
-                  <div className="relative h-56 overflow-hidden">
+                  <div className="relative h-40 overflow-hidden">
                     <img
                       src={service.image}
                       alt={service.title}
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <h3 className="text-xl font-bold">{service.title}</h3>
+                    <div className="absolute bottom-3 left-4 text-white">
+                      <h3 className="text-base font-semibold">{service.title}</h3>
                     </div>
                   </div>
 
-                  <div className="p-8 flex flex-col flex-grow">
-                    <p className="text-gray-600 text-sm mb-6 leading-relaxed">{service.description}</p>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">{service.description}</p>
                     
                     {service.features && (
-                      <div className="mb-6">
-                        <p className="text-xs font-semibold text-gray-400 uppercase mb-3">Key Features</p>
-                        <ul className="space-y-2">
+                      <div className="mb-4">
+                        <p className="text-[10px] font-medium text-gray-400 uppercase mb-2">Key Features</p>
+                        <ul className="space-y-1.5">
                           {service.features.slice(0, 4).map((feature, i) => (
-                            <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
-                              <Check size={14} className="text-blue-600 flex-shrink-0" />
+                            <li key={i} className="flex items-center gap-2 text-gray-600 text-xs">
+                              <Check size={12} className="text-blue-600 flex-shrink-0" />
                               {feature}
                             </li>
                           ))}
@@ -318,9 +318,9 @@ const ServicePage = () => {
                     )}
 
                     {service.tasks && (
-                      <div className="mt-auto flex flex-wrap gap-2 mb-4">
+                      <div className="mt-auto flex flex-wrap gap-2 mb-2">
                         {service.tasks.map((task, i) => (
-                          <span key={i} className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-semibold uppercase rounded-full">
+                          <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium uppercase rounded-full">
                             {task}
                           </span>
                         ))}
@@ -335,47 +335,47 @@ const ServicePage = () => {
       </section>
 
       {/* Pricing/Comparison Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-gray-50 flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-gray-50 flex items-center">
         <div className="max-w-5xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Plans & Pricing</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Choose Your Plan</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Select the perfect plan for your team's needs. All plans include a 14-day free trial.</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Plans & Pricing</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Choose Your Plan</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Select the perfect plan for your team's needs. All plans include a 14-day free trial.</p>
           </motion.div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-6 px-6 font-bold text-gray-900">Feature</th>
-                  <th className="text-center py-6 px-6 font-bold text-gray-600">Basic</th>
-                  <th className="text-center py-6 px-6 font-bold text-blue-600 bg-blue-50 rounded-t-2xl">Pro</th>
-                  <th className="text-center py-6 px-6 font-bold text-gray-900">Enterprise</th>
+                  <th className="text-left py-4 px-4 font-medium text-gray-900 text-sm">Feature</th>
+                  <th className="text-center py-4 px-4 font-medium text-gray-600 text-sm">Basic</th>
+                  <th className="text-center py-4 px-4 font-medium text-blue-600 bg-blue-50 rounded-t-xl text-sm">Pro</th>
+                  <th className="text-center py-4 px-4 font-medium text-gray-900 text-sm">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map((row, index) => (
                   <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-5 px-6 text-gray-700 font-medium">{row.feature}</td>
-                    <td className="py-5 px-6 text-center">
+                    <td className="py-3 px-4 text-gray-700 font-normal text-sm">{row.feature}</td>
+                    <td className="py-3 px-4 text-center">
                       {typeof row.basic === 'boolean' ? (
-                        row.basic ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
-                      ) : <span className="text-gray-500">{row.basic}</span>}
+                        row.basic ? <Check className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                      ) : <span className="text-gray-500 text-sm">{row.basic}</span>}
                     </td>
-                    <td className="py-5 px-6 text-center bg-blue-50/50">
+                    <td className="py-3 px-4 text-center bg-blue-50/50">
                       {typeof row.pro === 'boolean' ? (
-                        row.pro ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
-                      ) : <span className="text-gray-700 font-medium">{row.pro}</span>}
+                        row.pro ? <Check className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                      ) : <span className="text-gray-700 font-normal text-sm">{row.pro}</span>}
                     </td>
-                    <td className="py-5 px-6 text-center">
+                    <td className="py-3 px-4 text-center">
                       {typeof row.enterprise === 'boolean' ? (
-                        row.enterprise ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
-                      ) : <span className="text-gray-900 font-bold">{row.enterprise}</span>}
+                        row.enterprise ? <Check className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                      ) : <span className="text-gray-900 font-medium text-sm">{row.enterprise}</span>}
                     </td>
                   </tr>
                 ))}
@@ -386,29 +386,29 @@ const ServicePage = () => {
       </section>
 
       {/* Enterprise Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-white flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-white flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] p-10 md:p-16 text-center relative overflow-hidden min-h-[60vh] flex items-center justify-center">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 md:p-12 text-center relative overflow-hidden min-h-[60vh] flex items-center justify-center">
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-600/20 blur-[100px] rounded-full"></div>
             <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-500/20 blur-[80px] rounded-full"></div>
             
             <div className="relative z-10">
-              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center text-white mx-auto mb-8">
-                <Building2 size={48} />
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-white mx-auto mb-6">
+                <Building2 size={32} />
               </div>
-              <h3 className="text-3xl md:text-5xl font-black text-white mb-6">Enterprise Solutions</h3>
-              <p className="text-gray-400 max-w-2xl mx-auto mb-8 text-lg leading-relaxed">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-4">Enterprise Solutions</h3>
+              <p className="text-gray-400 max-w-2xl mx-auto mb-6 text-sm md:text-base leading-relaxed">
                 Need a custom solution? Our enterprise team specializes in tailored implementations for large organizations with complex requirements. Get dedicated support, custom integrations, on-premise deployment, and more.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link 
                   to="/contact"
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold inline-flex items-center justify-center gap-2 transition-all"
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2 transition-all text-sm"
                 >
                   Contact Sales
-                  <ArrowRight size={20} />
+                  <ArrowRight size={16} />
                 </Link>
-                <button className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 py-4 rounded-xl font-semibold transition-all">
+                <button className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-medium transition-all text-sm">
                   Schedule Demo
                 </button>
               </div>
@@ -418,30 +418,30 @@ const ServicePage = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 md:py-32 min-h-[100vh] bg-gray-50 flex items-center">
+      <section className="py-16 md:py-24 min-h-[100vh] bg-gray-50 flex items-center">
         <div className="max-w-4xl mx-auto px-6 w-full">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className=" rounded-3xl shadow-md p-8 md:p-12"
+            className=" rounded-2xl shadow-sm p-6 md:p-8"
           >
-            <div className="text-center mb-12">
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">FAQ</span>
-              <h2 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
-              <p className="text-gray-600 mt-4">Everything you need to know about SOLEASE</p>
+            <div className="text-center mb-8">
+              <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">FAQ</span>
+              <h2 className="text-xl font-medium text-gray-900">Frequently Asked Questions</h2>
+              <p className="text-gray-600 mt-2 text-sm">Everything you need to know about SOLEASE</p>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               {faqs.map((faq, i) => (
-                <div key={i} className="collapse collapse-plus bg-gray-50 rounded-xl border border-gray-100">
+                <div key={i} className="collapse collapse-plus bg-gray-50 rounded-lg border border-gray-100">
                   <input type="checkbox" />
-                  <div className="collapse-title text-base font-semibold text-gray-900 flex items-center gap-3">
-                    <span className="text-blue-600 text-sm font-bold">0{i + 1}</span>
+                  <div className="collapse-title text-sm font-normal text-gray-900 flex items-center gap-3">
+                    <span className="text-blue-600 text-xs font-medium">0{i + 1}</span>
                     {faq.q}
                   </div>
                   <div className="collapse-content text-gray-600 pl-8">
-                    <p>{faq.a}</p>
+                    <p className="text-sm">{faq.a}</p>
                   </div>
                 </div>
               ))}
@@ -451,31 +451,31 @@ const ServicePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 md:py-32 min-h-[35vh] flex items-center">
+      <section className="py-16 md:py-24 min-h-[35vh] flex items-center">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-3xl shadow-sm p-10 md:p-12"
+            className="bg-white rounded-2xl shadow-sm p-8 md:p-10"
           >
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-3">
               Ready to Get Started?
             </h2>
-            <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+            <p className="text-gray-600 mb-6 max-w-xl mx-auto text-sm">
               Join thousands of organizations already using SOLEASE to transform their support operations.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link 
                 to="/auth/signup"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold inline-flex items-center justify-center gap-2 transition-all"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2 transition-all text-sm"
               >
                 Start Free Trial
-                <ArrowRight size={20} />
+                <ArrowRight size={16} />
               </Link>
               <Link 
                 to="/contact"
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-semibold transition-all"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm"
               >
                 Talk to Us
               </Link>

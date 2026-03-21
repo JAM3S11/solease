@@ -412,7 +412,7 @@ const ProfileSettings = ({
 
       {/* Header */}
       <header className='flex flex-col items-start space-y-3 mb-8'>
-        <h2 className={`font-bold text-slate-900 dark:text-white tracking-tight ${role === 'client' ? 'text-3xl font-black' : 'text-2xl md:text-3xl'
+        <h2 className={`font-semibold text-slate-900 dark:text-white tracking-tight ${role === 'client' ? 'text-2xl' : 'text-lg md:text-xl'
           }`}>
           {role === 'client' ? 'Account Settings' : 'Profile Settings'}
         </h2>
@@ -507,7 +507,7 @@ const ProfileSettings = ({
               {/* Main Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
-                  <h2 className='text-2xl sm:text-3xl font-bold tracking-wide text-white truncate'>
+                  <h2 className='text-lg font-semibold tracking-wide text-white truncate'>
                     {personalData.name || user?.name || 'Your Name'}
                   </h2>
                   <div className="flex items-center gap-2">
@@ -638,7 +638,7 @@ const ProfileSettings = ({
               />
             </div>
             <div className="flex-1">
-              <h2 className='text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
+              <h2 className='text-sm font-medium text-slate-900 dark:text-white tracking-tight'>
                 {user?.name || user?.username}
               </h2>
               <p className='text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1 tracking-wider'>
@@ -699,7 +699,7 @@ const ProfileSettings = ({
           {/* Section Header */}
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <h3 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-3">
                 <User size={20} className="text-blue-600 dark:text-blue-400" />
                 Personal Information
               </h3>
@@ -775,7 +775,7 @@ const ProfileSettings = ({
           {/* Section Header */}
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <h3 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-3">
                 <MapPin size={20} className="text-blue-600 dark:text-blue-400" />
                 Contact Details
               </h3>
@@ -846,7 +846,7 @@ const ProfileSettings = ({
           </DrawerClose>
           
           <div className="border-b border-slate-200 dark:border-slate-700 p-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-3">
               <User size={24} className="text-blue-600 dark:text-blue-400" />
               Edit Personal Information
             </h2>
@@ -921,7 +921,7 @@ const ProfileSettings = ({
           </DrawerClose>
           
           <div className="border-b border-slate-200 dark:border-slate-700 p-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-3">
               <MapPin size={24} className="text-blue-600 dark:text-blue-400" />
               Edit Contact Details
             </h2>
@@ -1007,7 +1007,7 @@ const ProfileSettings = ({
         className='space-y-4'
       >
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-3">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-3">
             <Shield size={20} className="text-blue-600 dark:text-blue-400" />
             Security & Privacy
           </h3>

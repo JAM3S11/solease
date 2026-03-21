@@ -111,33 +111,33 @@ const Homepage = () => {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <span className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-md text-blue-300 text-xs sm:text-sm font-semibold px-4 py-2 rounded-full uppercase tracking-[0.15em] mb-8 border border-blue-500/30">
+            <span className="inline-flex items-center gap-2 bg-blue-600/20 backdrop-blur-md text-blue-300 text-xs font-medium px-4 py-2 rounded-full uppercase tracking-[0.15em] mb-6 border border-blue-500/30">
               <Sparkles className="w-3.5 h-3.5" />
               AI-Powered Support Platform
             </span>
             
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight leading-[1.1]">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-6 tracking-tight leading-[1.1]">
               Intelligent Support.<br />
               <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
                 Simplified Resolution.
               </span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 mb-10 max-w-2xl leading-relaxed">
+            <p className="text-base md:text-lg text-slate-300 mb-10 max-w-2xl leading-relaxed">
               SOLEASE is an <span className="text-white font-semibold">AI-powered ticketing platform</span> that automates support workflows, 
               provides real-time insights, and connects users with the right support teams—faster.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
               <Link to="/auth/signup" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 font-semibold text-base flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1 active:scale-95 font-medium text-sm flex items-center justify-center gap-2">
                   Start Free Trial 
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>
               
               <Link to="/contact" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-white/10 backdrop-blur-xl hover:bg-white/15 text-white border border-white/20 px-8 py-4 rounded-xl transition-all duration-300 hover:-translate-y-1 active:scale-95 font-semibold text-base flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto bg-white/10 backdrop-blur-xl hover:bg-white/15 text-white border border-white/20 px-6 py-3 rounded-xl transition-all duration-300 hover:-translate-y-1 active:scale-95 font-medium text-sm flex items-center justify-center gap-2">
                   Talk to Sales
                 </button>
               </Link>
@@ -178,7 +178,7 @@ const Homepage = () => {
                 className="text-center"
               >
                 <stat.icon className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                <span className="text-2xl md:text-3xl font-black text-gray-900">{stat.value}</span>
+                <span className="text-base md:text-lg font-medium text-gray-900">{stat.value}</span>
                 <p className="text-gray-500 text-sm">{stat.label}</p>
               </motion.div>
             ))}
@@ -187,7 +187,7 @@ const Homepage = () => {
       </section>
 
       {/* What is SOLEASE? */}
-      <section id="what-is" className="py-24 md:py-32 bg-white">
+      <section id="what-is" className="py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -195,11 +195,11 @@ const Homepage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">What is SOLEASE?</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">What is SOLEASE?</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4 tracking-tight">
               The Modern Support Platform
             </h2>
-            <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
+            <p className="text-gray-600 text-sm md:text-base max-w-3xl mx-auto leading-relaxed">
               SOLEASE combines <span className="text-gray-900 font-semibold">artificial intelligence</span> with 
               <span className="text-gray-900 font-semibold"> intuitive design</span> to transform how organizations 
               handle support tickets—from submission to resolution.
@@ -219,7 +219,7 @@ const Homepage = () => {
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                   <problem.icon size={24} />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">{problem.title}</h3>
+                <h3 className="font-medium text-gray-900 mb-2 text-xs md:text-sm">{problem.title}</h3>
                 <p className="text-gray-600 text-sm">{problem.desc}</p>
               </motion.div>
             ))}
@@ -240,7 +240,7 @@ const Homepage = () => {
       </section>
 
       {/* Key Solutions */}
-      <section className="py-24 md:py-32 bg-gray-50">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -248,9 +248,9 @@ const Homepage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">What We Offer</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6">Powerful Features</h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">What We Offer</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">Powerful Features</h2>
+            <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
               Everything you need to deliver exceptional support experiences
             </p>
           </motion.div>
@@ -266,17 +266,17 @@ const Homepage = () => {
                 className="bg-white border border-gray-200 rounded-[2rem] p-8 hover:shadow-xl transition-all duration-300 group"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                    <solution.icon size={28} strokeWidth={1.5} />
+                  <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                    <solution.icon size={22} strokeWidth={1.5} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">{solution.title}</h3>
-                      <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                      <h3 className="text-xs md:text-sm font-medium text-gray-900">{solution.title}</h3>
+                      <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
                         {solution.highlight}
                       </span>
                     </div>
-                    <p className="text-gray-600 leading-relaxed">{solution.description}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{solution.description}</p>
                   </div>
                 </div>
               </motion.div>
@@ -284,7 +284,7 @@ const Homepage = () => {
           </div>
 
           <div className="text-center mt-12">
-            <Link to="/services" className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:gap-3 transition-all">
+            <Link to="/services" className="inline-flex items-center gap-2 text-blue-600 font-medium hover:gap-3 transition-all text-sm">
               View All Features <ArrowRight size={18} />
             </Link>
           </div>
@@ -292,7 +292,7 @@ const Homepage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -300,9 +300,9 @@ const Homepage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">How It Works</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6">Simple Process</h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">How It Works</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">Simple Process</h2>
+            <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
               Get started in minutes, resolve issues in seconds
             </p>
           </motion.div>
@@ -317,11 +317,11 @@ const Homepage = () => {
                 transition={{ delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-black text-xl mx-auto mb-4 shadow-lg shadow-blue-500/30">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-base mx-auto mb-3 shadow-lg shadow-blue-500/30">
                   {item.step}
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm">{item.desc}</p>
+                <h3 className="font-medium text-gray-900 mb-2 text-xs md:text-sm">{item.title}</h3>
+                <p className="text-gray-500 text-sm md:text-base">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -329,7 +329,7 @@ const Homepage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 md:py-32 bg-gray-50">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -337,8 +337,8 @@ const Homepage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Testimonials</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6">Trusted by Teams</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Testimonials</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">Trusted by Teams</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -356,13 +356,13 @@ const Homepage = () => {
                     <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-6">"{testimonial.content}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {testimonial.avatar}
-                  </div>
+                <p className="text-gray-600 text-sm mb-4">"{testimonial.content}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
+                      {testimonial.avatar}
+                    </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">{testimonial.name}</h4>
+                    <h4 className="font-medium text-gray-900 text-sm">{testimonial.name}</h4>
                     <p className="text-gray-500 text-xs">{testimonial.role}</p>
                   </div>
                 </div>
@@ -373,7 +373,7 @@ const Homepage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full blur-[100px]" />
         <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] rounded-full blur-[80px]" />
         
@@ -383,23 +383,23 @@ const Homepage = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">
               Ready to Transform Your <span className="text-blue-600">Support?</span>
             </h2>
-            <p className="text-gray-600 text-lg mb-10 max-w-xl mx-auto">
+            <p className="text-gray-600 text-base md:text-lg mb-10 max-w-xl mx-auto">
               Join thousands of organizations delivering exceptional support with SOLEASE.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link 
                 to="/auth/signup"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-1"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all hover:-translate-y-1 text-sm"
               >
                 Get Started Free <ArrowRight size={20} />
               </Link>
               <Link 
                 to="/about"
-                className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-semibold transition-all hover:-translate-y-1"
+                className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all hover:-translate-y-1 text-sm"
               >
                 Learn More
               </Link>

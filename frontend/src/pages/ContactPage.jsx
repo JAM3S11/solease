@@ -94,7 +94,7 @@ const ContactPage = () => {
   return (
     <div className="w-full bg-white font-sans">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 bg-white overflow-hidden min-h-[60vh] flex items-center">
+      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 bg-white overflow-hidden min-h-[60vh] flex items-center">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[200px]" />
           <div className="absolute -bottom-1/2 -right-1/4 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[180px]" />
@@ -102,9 +102,9 @@ const ContactPage = () => {
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <motion.div {...fadeInUp} className="max-w-3xl text-center">
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Contact Us</span>
-            <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">We're Here to Help</h1>
-            <p className="text-gray-600 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Contact Us</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-4 tracking-tight">We're Here to Help</h1>
+            <p className="text-gray-600 text-sm md:text-base font-normal leading-relaxed max-w-2xl mx-auto">
               Have questions about SOLEASE? Need technical support? Want to schedule a demo? 
               Fill out the form below and our team will get back to you within 24 hours.
             </p>
@@ -120,61 +120,61 @@ const ContactPage = () => {
             <motion.div 
               {...fadeInUp}
               transition={{ delay: 0.2 }}
-              className="shadow-lg rounded-[2.5rem] p-8 md:p-12 border border-gray-100 h-3/4"
+              className="shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100 h-3/4"
             >
-              <h2 className="text-2xl font-black text-gray-900 mb-2 flex items-center gap-3">
+              <h2 className="text-sm sm:text-base font-medium text-gray-900 mb-2 flex items-center gap-3">
                 Send us a Message
               </h2>
-              <p className="text-gray-500 text-sm mb-8">Fill out the form below and we'll respond within 24 hours.</p>
+              <p className="text-gray-500 text-xs mb-6">Fill out the form below and we'll respond within 24 hours.</p>
               
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 ml-1">Full Name <span className="text-red-500">*</span></label>
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-700 ml-1">Full Name <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
                       placeholder="Enter your full name"
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-normal text-gray-900 placeholder:text-gray-400 text-sm"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 ml-1">Email Address <span className="text-red-500">*</span></label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-700 ml-1">Email Address <span className="text-red-500">*</span></label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@company.com"
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900 placeholder:text-gray-400"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-normal text-gray-900 placeholder:text-gray-400 text-sm"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 ml-1">Your Message <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700 ml-1">Your Message <span className="text-red-500">*</span></label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Tell us about your needs... (e.g., pricing inquiry, technical support, demo request)"
-                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-medium text-gray-900 h-48 resize-none placeholder:text-gray-400"
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all outline-none font-normal text-gray-900 h-40 resize-none placeholder:text-gray-400 text-sm"
                   ></textarea>
-                  <p className="text-xs text-gray-400 ml-1">Be as detailed as possible so we can help you better.</p>
+                  <p className="text-[10px] text-gray-400 ml-1">Be as detailed as possible so we can help you better.</p>
                 </div>
 
                 <motion.button 
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-5 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg hover:bg-blue-700 transition-all duration-300 disabled:bg-gray-400 flex items-center justify-center gap-2" 
+                  className="w-full py-3 rounded-xl bg-blue-600 text-white font-medium text-sm shadow-lg hover:bg-blue-700 transition-all duration-300 disabled:bg-gray-400 flex items-center justify-center gap-2" 
                   disabled={isSending}
                 >
                   {isSending ? (
                     <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                       </svg>
@@ -182,7 +182,7 @@ const ContactPage = () => {
                     </>
                   ) : (
                     <>
-                      Send Message <Send size={18} />
+                      Send Message <Send size={16} />
                     </>
                   )}
                 </motion.button>
@@ -195,31 +195,31 @@ const ContactPage = () => {
               <motion.div 
                 {...fadeInUp}
                 transition={{ delay: 0.3 }}
-                className="shadow-lg rounded-[2.5rem] p-8 md:p-10 border border-gray-100"
+                className="shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100"
               >
-                <h2 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-3">
+                <h2 className="text-sm md:text-base font-medium text-gray-900 mb-2 flex items-center gap-3">
                   <ShieldCheck className="text-blue-600" /> Contact Information
                 </h2>
-                <p className="text-gray-500 text-sm mb-6">
+                <p className="text-gray-500 text-xs mb-4">
                   Prefer to reach out directly? Here's how you can contact us.
                 </p>
-                <ul className="space-y-4">
+                <ul className="space-y-3">
                   {[
                     { icon: MapPin, label: "Visit Our Office", val: "GPO, Huduma Center, Nairobi", action: "Get Directions" },
                     { icon: Phone, label: "Call Us", val: "+254 700 123 456", action: "Call Now" },
                     { icon: Mail, label: "Email Us", val: "support@solease.com", action: "Send Email" }
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center justify-between group/item p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-all duration-300">
-                          <item.icon size={20} />
+                    <li key={i} className="flex items-center justify-between group/item p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-blue-50 rounded-lg text-blue-600 group-hover/item:bg-blue-600 group-hover/item:text-white transition-all duration-300">
+                          <item.icon size={16} />
                         </div>
                         <div>
-                          <span className="text-xs font-bold uppercase tracking-wider text-gray-500 block">{item.label}</span>
-                          <span className="text-gray-900 font-semibold">{item.val}</span>
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-500 block">{item.label}</span>
+                          <span className="text-gray-900 text-sm font-normal">{item.val}</span>
                         </div>
                       </div>
-                      <span className="text-blue-600 text-sm font-medium opacity-0 group-hover/item:opacity-100 transition-opacity">{item.action}</span>
+                      <span className="text-blue-600 text-xs font-normal opacity-0 group-hover/item:opacity-100 transition-opacity">{item.action}</span>
                     </li>
                   ))}
                 </ul>
@@ -229,33 +229,33 @@ const ContactPage = () => {
               <motion.div 
                 {...fadeInUp}
                 transition={{ delay: 0.4 }}
-                className="bg-slate-900 p-8 md:p-10 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden"
+                className="bg-slate-900 p-6 md:p-8 rounded-2xl text-white shadow-xl relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-[50px] rounded-full" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-green-500/10 blur-[30px] rounded-full" />
                 
-                <p className="font-bold mb-6 text-blue-400 flex items-center gap-2 uppercase tracking-wider text-xs">
-                  <Clock className="size-4" /> Service Status
+                <p className="font-medium mb-4 text-blue-400 flex items-center gap-2 uppercase tracking-wider text-[10px]">
+                  <Clock className="size-3" /> Service Status
                 </p>
                 
-                <div className="space-y-4 relative z-10">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                    <p className="font-bold flex items-center gap-3">
-                      <Activity size={18} className="text-green-400 animate-pulse" /> System Status
+                <div className="space-y-3 relative z-10">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                    <p className="font-medium flex items-center gap-2 text-sm">
+                      <Activity size={14} className="text-green-400 animate-pulse" /> System Status
                     </p>
-                    <span className="px-3 py-1 bg-green-500/10 text-green-400 text-xs font-bold uppercase rounded-full">
+                    <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] font-medium uppercase rounded-full">
                       All Systems Operational
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                    <p className="text-slate-300">Average Response Time</p>
-                    <p className="font-bold text-white">Under 4 hours</p>
+                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                    <p className="text-slate-300 text-sm">Average Response Time</p>
+                    <p className="font-medium text-white text-sm">Under 4 hours</p>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-slate-300">Support Availability</p>
-                    <p className="text-blue-400 font-bold">24/7 for Enterprise</p>
+                    <p className="text-slate-300 text-sm">Support Availability</p>
+                    <p className="text-blue-400 font-medium text-sm">24/7 for Enterprise</p>
                   </div>
                 </div>
               </motion.div>
@@ -264,15 +264,15 @@ const ContactPage = () => {
               <motion.div 
                 {...fadeInUp}
                 transition={{ delay: 0.5 }}
-                className="bg-blue-50 p-6 rounded-2xl border border-blue-100"
+                className="bg-blue-50 p-5 rounded-xl border border-blue-100"
               >
-                <h3 className="font-bold text-gray-900 mb-2">Need Immediate Help?</h3>
-                <p className="text-gray-600 text-sm mb-4">Check our knowledge base or browse common topics.</p>
-                <div className="flex gap-3">
-                  <a href="#" className="flex-1 bg-blue-600 text-white text-center py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+                <h3 className="font-medium text-gray-900 mb-1.5 text-sm">Need Immediate Help?</h3>
+                <p className="text-gray-600 text-xs mb-3">Check our knowledge base or browse common topics.</p>
+                <div className="flex gap-2">
+                  <a href="#" className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
                     Knowledge Base
                   </a>
-                  <a href="#" className="flex-1 bg-white text-blue-600 border border-blue-200 text-center py-2 rounded-xl text-sm font-medium hover:bg-blue-50 transition-colors">
+                  <a href="#" className="flex-1 bg-white text-blue-600 border border-blue-200 text-center py-2 rounded-lg text-xs font-medium hover:bg-blue-50 transition-colors">
                     Browse Topics
                   </a>
                 </div>
@@ -289,14 +289,14 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-10"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Multiple Ways to Reach Us</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Choose Your Preferred Channel</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">We're available through various channels to ensure you get the help you need, when you need it.</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Multiple Ways to Reach Us</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Choose Your Preferred Channel</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">We're available through various channels to ensure you get the help you need, when you need it.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {supportChannels.map((channel, index) => (
               <motion.div
                 key={channel.name}
@@ -304,14 +304,14 @@ const ContactPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gray-50 rounded-2xl p-6 text-center hover:bg-blue-50 transition-colors cursor-pointer group"
+                className="bg-gray-50 rounded-xl p-5 text-center hover:bg-blue-50 transition-colors cursor-pointer group"
               >
-                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-blue-600 mx-auto mb-4 shadow-md group-hover:scale-110 transition-transform">
-                  <channel.icon size={24} />
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 mx-auto mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                  <channel.icon size={20} />
                 </div>
-                <h4 className="font-bold text-gray-900 mb-1">{channel.name}</h4>
-                <p className="text-gray-500 text-sm mb-3">{channel.desc}</p>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">{channel.name}</h4>
+                <p className="text-gray-500 text-xs md:text-sm mb-2">{channel.desc}</p>
+                <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                   {channel.available || channel.response}
                 </span>
               </motion.div>
@@ -374,41 +374,41 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-10"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Our Commitments</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Support Response Times</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">We know quick response times are critical. Here's what you can expect with each plan.</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Our Commitments</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Support Response Times</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">We know quick response times are critical. Here's what you can expect with each plan.</p>
           </motion.div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-6 px-6 font-bold text-gray-900">SLA Metric</th>
-                  <th className="text-center py-6 px-6 font-bold text-gray-600">Basic</th>
-                  <th className="text-center py-6 px-6 font-bold text-blue-600 bg-blue-50 rounded-t-2xl">Pro</th>
-                  <th className="text-center py-6 px-6 font-bold text-gray-900">Enterprise</th>
+                  <th className="text-left py-4 px-4 font-medium text-gray-900 text-sm">SLA Metric</th>
+                  <th className="text-center py-4 px-4 font-medium text-gray-600 text-sm">Basic</th>
+                  <th className="text-center py-4 px-4 font-medium text-blue-600 bg-blue-50 rounded-t-xl text-sm">Pro</th>
+                  <th className="text-center py-4 px-4 font-medium text-gray-900 text-sm">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {slaGuarantees.map((row, index) => (
                   <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-5 px-6 text-gray-700 font-medium">{row.title}</td>
-                    <td className="py-5 px-6 text-center text-gray-500">
+                    <td className="py-3 px-4 text-gray-700 font-normal text-sm">{row.title}</td>
+                    <td className="py-3 px-4 text-center text-gray-500 text-sm">
                       {typeof row.basic === 'boolean' ? (
-                        row.basic ? <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                        row.basic ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
                       ) : row.basic}
                     </td>
-                    <td className="py-5 px-6 text-center bg-blue-50/50">
+                    <td className="py-3 px-4 text-center bg-blue-50/50">
                       {typeof row.pro === 'boolean' ? (
-                        row.pro ? <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
-                      ) : <span className="text-blue-600 font-semibold">{row.pro}</span>}
+                        row.pro ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                      ) : <span className="text-blue-600 font-normal text-sm">{row.pro}</span>}
                     </td>
-                    <td className="py-5 px-6 text-center">
+                    <td className="py-3 px-4 text-center">
                       {typeof row.enterprise === 'boolean' ? (
-                        row.enterprise ? <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
-                      ) : <span className="text-gray-900 font-bold">{row.enterprise}</span>}
+                        row.enterprise ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <span className="text-gray-300">—</span>
+                      ) : <span className="text-gray-900 font-medium text-sm">{row.enterprise}</span>}
                     </td>
                   </tr>
                 ))}
@@ -425,32 +425,32 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-[3rem] p-8 md:p-12 shadow-lg"
+            className="rounded-2xl p-6 md:p-8 shadow-sm"
           >
-            <div className="text-center mb-10">
-              <HelpCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Common Questions</h2>
-              <p className="text-gray-600 mt-2">Find quick answers to common questions before contacting us.</p>
+            <div className="text-center mb-8">
+              <HelpCircle className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+              <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Common Questions</h2>
+              <p className="text-gray-600 text-sm md:text-base mt-2">Find quick answers to common questions before contacting us.</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {preSalesFAQs.map((faq, i) => (
-                <div key={i} className="collapse collapse-plus border border-gray-200 rounded-2xl bg-gray-50 hover:bg-white transition-all">
+                <div key={i} className="collapse collapse-plus border border-gray-200 rounded-lg bg-gray-50 hover:bg-white transition-all">
                   <input type="checkbox" />
-                  <div className="collapse-title font-semibold text-gray-900 flex items-center gap-3">
-                    <span className="text-blue-600 text-sm font-bold">0{i + 1}</span>
+                  <div className="collapse-title font-normal text-gray-900 flex items-center gap-3 text-sm">
+                    <span className="text-blue-600 text-xs font-medium">0{i + 1}</span>
                     {faq.q}
                   </div>
                   <div className="collapse-content text-gray-600 pl-8">
-                    <p>{faq.a}</p>
+                    <p className="text-sm">{faq.a}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 p-4 bg-blue-50 rounded-xl text-center">
-              <p className="text-gray-700 text-sm">Can't find what you're looking for?</p>
-              <a href="#" className="text-blue-600 font-semibold hover:underline">Browse all FAQs</a> or use the contact form above.
+            <div className="mt-6 p-3 bg-blue-50 rounded-lg text-center">
+              <p className="text-gray-700 text-xs">Can't find what you're looking for?</p>
+              <a href="#" className="text-blue-600 font-medium hover:underline text-xs">Browse all FAQs</a> or use the contact form above.
             </div>
           </motion.div>
         </div>
@@ -463,17 +463,17 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-br from-blue-200 to-blue-400 rounded-[3rem] p-10 md:p-16 text-white"
+            className="bg-gradient-to-br from-blue-200 to-blue-400 rounded-2xl p-8 md:p-12 text-white"
           >
-            <h2 className="text-3xl md:text-4xl font-black mb-4">Ready to Get Started?</h2>
-            <p className="text-blue-100 mb-8 max-w-xl mx-auto">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3">Ready to Get Started?</h2>
+            <p className="text-blue-100 mb-6 max-w-xl mx-auto text-sm">
               Join thousands of organizations using SOLEASE to transform their support operations. Start your free trial today.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/auth/signup" className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <a href="/auth/signup" className="bg-white text-blue-600 px-6 py-3 rounded-xl font-medium hover:bg-gray-100 transition-colors text-sm">
                 Start Free Trial
               </a>
-              <a href="/services" className="bg-blue-500 text-white border border-blue-400 px-8 py-4 rounded-xl font-bold hover:bg-blue-400 transition-colors">
+              <a href="/services" className="bg-blue-500 text-white border border-blue-400 px-6 py-3 rounded-xl font-medium hover:bg-blue-400 transition-colors text-sm">
                 View Pricing
               </a>
             </div>

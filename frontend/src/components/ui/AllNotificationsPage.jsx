@@ -139,7 +139,7 @@ const AllNotificationsPage = () => {
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-3">
                 <Bell className="h-7 w-7 text-blue-600" />
                 Notifications
               </h1>
@@ -223,7 +223,7 @@ const AllNotificationsPage = () => {
               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bell size={32} className="text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+              <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                 {searchQuery || filter !== "all" ? "No matching notifications" : "No notifications yet"}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">

@@ -62,7 +62,7 @@ const Aboutpage = () => {
   return (
     <main className="w-full bg-white font-sans">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-white overflow-hidden">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 bg-white overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] bg-gray-300/10 rounded-full blur-[200px]" />
           <div className="absolute -bottom-1/2 -right-1/4 w-[600px] h-[600px] bg-gray-400/10 rounded-full blur-[180px]" />
@@ -86,22 +86,22 @@ const Aboutpage = () => {
               About SOLEASE
             </motion.span>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 tracking-tight leading-[1.1]">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-4 tracking-tight leading-[1.1]">
               The intelligent<br />
               <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
                 support platform
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-10">
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
               SOLEASE is an AI-powered ticketing platform that streamlines support operations—from ticket creation to resolution—with intelligent automation and actionable insights.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
-                Start Free Trial <ArrowRight size={18} />
+              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
+                Start Free Trial <ArrowRight size={16} />
               </Link>
-              <Link to="/services" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
+              <Link to="/services" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
                 View Features
               </Link>
             </div>
@@ -110,9 +110,9 @@ const Aboutpage = () => {
       </section>
 
       {/* Stats */}
-      <section className="py-12 bg-white border-b border-gray-100">
+      <section className="py-8 bg-white border-b border-gray-100">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
               <motion.div
                 key={stat.label}
@@ -122,10 +122,10 @@ const Aboutpage = () => {
                 transition={{ delay: index * 0.1 }}
                 className="text-center"
               >
-                <span className="text-4xl md:text-5xl font-black text-gray-900">
+                <span className="text-base md:text-lg font-medium text-gray-900">
                   {stat.value}{stat.suffix}
                 </span>
-                <p className="text-gray-500 font-medium mt-2">{stat.label}</p>
+                <p className="text-gray-500 text-sm font-normal mt-1">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -133,20 +133,20 @@ const Aboutpage = () => {
       </section>
 
       {/* Platform Capabilities */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Platform</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Everything you need</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">A complete ticketing solution built for modern support teams</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Platform</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Everything you need</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">A complete ticketing solution built for modern support teams</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {capabilities.map((cap, index) => (
               <motion.div
                 key={cap.title}
@@ -154,13 +154,13 @@ const Aboutpage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-8 bg-gray-50 rounded-2xl hover:bg-blue-50 transition-colors"
+                className="p-6 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors"
               >
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm mb-4">
-                  <cap.icon size={24} />
+                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-sm mb-3">
+                  <cap.icon size={20} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{cap.title}</h3>
-                <p className="text-gray-600">{cap.desc}</p>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-1">{cap.title}</h3>
+                <p className="text-gray-600 text-sm">{cap.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -168,20 +168,20 @@ const Aboutpage = () => {
       </section>
 
       {/* Role-Based Access */}
-      <section className="py-24 md:py-32 bg-gray-50">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">User Roles</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Built for every team</h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Three distinct roles tailored to your organization structure</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">User Roles</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Built for every team</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Three distinct roles tailored to your organization structure</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {roles.map((role, index) => (
               <motion.div
                 key={role.title}
@@ -189,12 +189,12 @@ const Aboutpage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-8 shadow-sm"
+                className="bg-white rounded-xl p-6 shadow-sm"
               >
-                <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6">
-                  <role.icon size={28} />
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
+                  <role.icon size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{role.title}</h3>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{role.title}</h3>
                 <p className="text-gray-600 text-sm">{role.desc}</p>
               </motion.div>
             ))}
@@ -203,19 +203,19 @@ const Aboutpage = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Features</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Platform capabilities</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Features</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Platform capabilities</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -223,13 +223,13 @@ const Aboutpage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gray-50 rounded-2xl p-6"
+                className="bg-gray-50 rounded-xl p-4"
               >
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{feature.title}</h3>
-                <ul className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">{feature.title}</h3>
+                <ul className="space-y-1.5">
                   {feature.items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-gray-600 text-sm">
-                      <CheckCircle2 size={14} className="text-blue-600" />
+                    <li key={i} className="flex items-center gap-2 text-gray-600 text-xs md:text-sm">
+                      <CheckCircle2 size={12} className="text-blue-600" />
                       {item}
                     </li>
                   ))}
@@ -241,19 +241,19 @@ const Aboutpage = () => {
       </section>
 
       {/* Integrations */}
-      <section className="py-24 md:py-32 bg-gray-50">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Integrations</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Connect your tools</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Integrations</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Connect your tools</h2>
           </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-3">
             {integrations.map((item, index) => (
               <motion.div
                 key={item.name}
@@ -261,14 +261,14 @@ const Aboutpage = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-white px-6 py-4 rounded-xl shadow-sm flex items-center gap-3 hover:shadow-md transition-shadow"
+                className="bg-white px-4 py-3 rounded-lg shadow-sm flex items-center gap-2 hover:shadow-md transition-shadow"
               >
-                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center font-bold text-gray-700">
+                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center font-medium text-gray-700 text-sm">
                   {item.icon}
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900">{item.name}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
+                  <p className="font-medium text-gray-900 text-sm">{item.name}</p>
+                  <p className="text-[10px] text-gray-500">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -277,29 +277,29 @@ const Aboutpage = () => {
       </section>
 
       {/* Security */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Security</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Enterprise-grade protection</h2>
-              <p className="text-gray-600 mb-8">
+              <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Security</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">Enterprise-grade protection</h2>
+              <p className="text-gray-600 text-sm mb-6">
                 Your data security is our top priority. SOLEASE implements industry-leading security measures to protect your information.
               </p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   { icon: Lock, label: "AES-256 Encryption" },
                   { icon: ShieldCheck, label: "SOC 2 Compliant" },
                   { icon: Database, label: "GDPR Ready" },
                   { icon: Server, label: "99.9% Uptime" }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <item.icon className="text-blue-600" size={20} />
-                    <span className="font-semibold text-gray-900 text-sm">{item.label}</span>
+                  <div key={i} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <item.icon className="text-blue-600" size={16} />
+                    <span className="font-medium text-gray-900 text-xs">{item.label}</span>
                   </div>
                 ))}
               </div>
@@ -308,17 +308,17 @@ const Aboutpage = () => {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[3rem] p-8"
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6"
             >
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-bold text-gray-900">Security Features</span>
-                  <ShieldCheck className="text-green-500" size={20} />
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium text-gray-900 text-sm">Security Features</span>
+                  <ShieldCheck className="text-green-500" size={16} />
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {["End-to-end encryption", "Role-based access control", "Audit logging", "SSO integration", "Data backup & recovery", "Penetration testing"].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 text-gray-600 text-sm">
-                      <CheckCircle2 size={14} className="text-green-500" />
+                    <div key={i} className="flex items-center gap-2 text-gray-600 text-xs">
+                      <CheckCircle2 size={12} className="text-green-500" />
                       {item}
                     </div>
                   ))}
@@ -330,19 +330,19 @@ const Aboutpage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 md:py-32 bg-gray-50">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-bold uppercase tracking-[0.2em] mb-4 block">Testimonials</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Trusted by teams</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Testimonials</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Trusted by teams</h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
@@ -350,21 +350,21 @@ const Aboutpage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-8 shadow-sm"
+                className="bg-white rounded-xl p-6 shadow-sm"
               >
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-1 mb-3">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                    <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-6">"{testimonial.content}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <p className="text-gray-600 text-sm mb-4">"{testimonial.content}"</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">{testimonial.name}</h4>
-                    <p className="text-gray-500 text-xs">{testimonial.role}</p>
+                    <h4 className="font-medium text-gray-900 text-xs">{testimonial.name}</h4>
+                    <p className="text-gray-500 text-[10px]">{testimonial.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -374,25 +374,25 @@ const Aboutpage = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="px-6 md:px-12 w-full max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-900 mb-4">
               Ready to transform<br />
               <span className="text-blue-600">your support?</span>
             </h2>
-            <p className="text-gray-600 text-lg mb-10 max-w-xl mx-auto">
+            <p className="text-gray-600 text-sm md:text-base mb-8 max-w-xl mx-auto">
               Join thousands of organizations delivering exceptional support with SOLEASE.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
-                Start Free Trial <ArrowRight size={18} />
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
+                Start Free Trial <ArrowRight size={16} />
               </Link>
-              <Link to="/contact" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-semibold transition-all">
+              <Link to="/contact" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm">
                 Contact Sales
               </Link>
             </div>

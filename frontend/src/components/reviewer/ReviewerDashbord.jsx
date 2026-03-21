@@ -146,7 +146,7 @@ const ReviewerDashbord = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight mb-2">
               Welcome back, {userName}!
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -195,7 +195,7 @@ const ReviewerDashbord = () => {
                     <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'orange' ? 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30' : 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30'}`}>
                       <link.icon size={22} className="text-white" />
                     </div>
-                    <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {link.label}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
@@ -249,7 +249,7 @@ const ReviewerDashbord = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
                       {<NumberTicker value={stat.val} />}
                     </p>
                   </div>
@@ -301,7 +301,7 @@ const ReviewerDashbord = () => {
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
               <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 dark:bg-gray-800/40">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Recent Assigned Tickets</h2>
+                <h2 className="text-sm font-medium text-gray-900 dark:text-white tracking-tight">Recent Assigned Tickets</h2>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <motion.div className="relative flex-1 sm:w-64" whileFocus={{ scale: 1.02 }}>
                     <Search
@@ -764,7 +764,7 @@ const ReviewerDashbord = () => {
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
             >
               <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <h2 className="text-sm font-medium text-gray-800 dark:text-white flex items-center gap-2">
                   <MessageCircle size={20} className="text-blue-600 dark:text-blue-400" />
                   Recent Client Conversations
                 </h2>
@@ -869,7 +869,7 @@ const ReviewerDashbord = () => {
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                         <MessageCircle size={32} className="text-gray-400 dark:text-gray-500" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         No Conversations Yet
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">

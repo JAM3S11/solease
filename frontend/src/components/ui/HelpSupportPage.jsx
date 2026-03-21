@@ -260,14 +260,14 @@ const HelpSupportPage = () => {
               <CreditCard className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 dark:text-white">Current Plan</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Current Plan</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Your subscription details</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Pro Plan</span>
+                <span className="text-lg font-medium text-gray-900 dark:text-white">Pro Plan</span>
                 <span className="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium rounded-full">Active</span>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">$29.99/month</p>
@@ -302,7 +302,7 @@ const HelpSupportPage = () => {
       {/* Payment History */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
         <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="font-bold text-gray-900 dark:text-white">Payment History</h3>
+          <h3 className="font-medium text-gray-900 dark:text-white">Payment History</h3>
         </div>
         <div className="divide-y divide-gray-100 dark:divide-gray-800">
           {[
@@ -412,7 +412,7 @@ const HelpSupportPage = () => {
                 <Rocket className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Welcome to SOLEASE</h3>
+                <h3 className="text-base font-medium text-gray-900 dark:text-white">Welcome to SOLEASE</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Your complete guide to getting started</p>
               </div>
             </div>
@@ -438,7 +438,7 @@ const HelpSupportPage = () => {
                     <guide.icon className="w-5 h-5 sm:w-5 sm:h-5" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{guide.title}</h4>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">{guide.title}</h4>
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{guide.description}</p>
                   </div>
                 </div>
@@ -595,7 +595,7 @@ const HelpSupportPage = () => {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Hero Search Section */}
         <section className="text-center mb-8 md:mb-12 py-6 md:py-10 px-4 md:px-6 rounded-xl bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-800">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-semibold mb-3 md:mb-4 text-gray-900 dark:text-white">
             {roleContent[userRole]?.title || roleContent.client.title}
           </h1>
           <div className="max-w-2xl mx-auto relative group mb-4">
@@ -665,7 +665,7 @@ const HelpSupportPage = () => {
                   }`}>
                     <category.icon size={20} className="sm:size-6" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold mb-1 text-gray-900 dark:text-white">{category.title}</h3>
+                  <h3 className="text-sm font-medium mb-1 text-gray-900 dark:text-white">{category.title}</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{category.description}</p>
                 </motion.div>
               ))}
@@ -679,7 +679,7 @@ const HelpSupportPage = () => {
             >
               <div className="flex items-center gap-2 mb-4">
                 <MessageSquare className="w-5 h-5 text-primary" />
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-base font-medium text-gray-900 dark:text-white">
                   {activeSection === "tickets" ? "Your Tickets" : activeSection === "getting-started" ? "Getting Started Guide" : "Frequently Asked Questions"}
                 </h2>
               </div>
@@ -696,7 +696,7 @@ const HelpSupportPage = () => {
               transition={{ delay: 0.3 }}
               className="p-4 sm:p-6 rounded-xl bg-gray-900 dark:bg-gray-800 text-white shadow-xl"
             >
-              <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Need more help?</h3>
+              <h3 className="text-sm font-medium mb-3 sm:mb-4">Need more help?</h3>
               <p className="text-gray-300 text-xs sm:text-sm mb-4 sm:mb-6">
                 Our dedicated support team is available 24/7.
               </p>
@@ -722,7 +722,7 @@ const HelpSupportPage = () => {
               transition={{ delay: 0.4 }}
               className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
             >
-              <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white">My Recent Tickets</h3>
+              <h3 className="text-sm font-medium mb-3 sm:mb-4 text-gray-900 dark:text-white">My Recent Tickets</h3>
               <div className="space-y-3 sm:space-y-4">
                 {recentTickets.length === 0 ? (
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center py-4">
@@ -771,7 +771,7 @@ const HelpSupportPage = () => {
               transition={{ delay: 0.5 }}
               className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
             >
-              <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white">Quick Stats</h3>
+              <h3 className="text-sm font-medium mb-3 sm:mb-4 text-gray-900 dark:text-white">Quick Stats</h3>
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Open Tickets</span>
@@ -815,7 +815,7 @@ const HelpSupportPage = () => {
                       <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Add Payment Method</h3>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Add Payment Method</h3>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:block">Securely add your card details</p>
                     </div>
                   </div>

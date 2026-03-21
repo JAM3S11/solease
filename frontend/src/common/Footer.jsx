@@ -8,7 +8,7 @@ const Footer = () => {
         
         {/* Brand Section */}
         <div className="space-y-6">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tighter">
+          <h2 className="text-xl font-bold text-gray-900 tracking-tighter">
             SOLEASE<span className="text-blue-600">.</span>
           </h2>
           <p className="text-sm leading-relaxed font-medium max-w-xs">
@@ -34,8 +34,8 @@ const Footer = () => {
 
         {/* Quick Links */}
         <div>
-          <h3 className="text-[13px] font-extrabold text-gray-900 uppercase tracking-[0.02em] mb-8">Navigation</h3>
-          <ul className="space-y-4 text-sm font-semibold">
+          <h3 className="text-[11px] font-bold text-gray-900 uppercase tracking-[0.02em] mb-6">Navigation</h3>
+          <ul className="space-y-3 text-sm font-medium">
             {["Home", "About", "Services", "Contact"].map((link) => (
               <li key={link}>
                 <a 
@@ -52,8 +52,8 @@ const Footer = () => {
 
         {/* Services */}
         <div>
-          <h3 className="text-[13px] font-extrabold text-gray-900 uppercase tracking-[0.02em] mb-8">Offerings</h3>
-          <ul className="space-y-4 text-sm font-medium">
+          <h3 className="text-[11px] font-bold text-gray-900 uppercase tracking-[0.02em] mb-6">Offerings</h3>
+          <ul className="space-y-3 text-sm font-normal">
             <li className="hover:text-blue-500 transition-colors cursor-default">Ticket Management</li>
             <li className="hover:text-blue-500 transition-colors cursor-default">Analytics & Reporting</li>
             <li className="hover:text-blue-500 transition-colors cursor-default">User Management</li>
@@ -63,8 +63,8 @@ const Footer = () => {
 
         {/* Contact */}
         <div>
-          <h3 className="text-[13px] font-extrabold text-gray-900 uppercase tracking-[0.02em] mb-8">Get In Touch</h3>
-          <div className="space-y-4 text-sm font-medium">
+          <h3 className="text-[11px] font-bold text-gray-900 uppercase tracking-[0.02em] mb-6">Get In Touch</h3>
+          <div className="space-y-3 text-sm font-normal">
             <p className="flex items-start gap-3">
               <span className="text-blue-500">📍</span> 
               Crossways, Westlands
@@ -83,7 +83,7 @@ const Footer = () => {
 
       {/* Bottom Section */}
       <div className="max-w-7xl mx-auto px-6">
-        <div className="border-t border-gray-300/5 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] font-bold uppercase tracking-wide text-gray-600">
+        <div className="border-t border-gray-300/5 mt-16 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-medium uppercase tracking-wide text-gray-600">
           <p>&copy; {new Date().getFullYear()} SOLEASE. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="/privacy-policy" className="hover:text-gray-500 transition">Privacy Policy</a>

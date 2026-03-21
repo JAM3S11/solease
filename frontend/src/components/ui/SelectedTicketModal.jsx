@@ -440,9 +440,12 @@ const UserAvatar = ({ user, size = "md" }) => {
       : "bg-gradient-to-br from-green-500 to-green-600";
 
   if (user?.profilePhoto) {
+    const photoUrl = user.profilePhoto.startsWith("http") 
+      ? user.profilePhoto 
+      : `${import.meta.env.VITE_API_URL}${user.profilePhoto}`;
     return (
       <img
-        src={`${import.meta.env.VITE_API_URL}${user.profilePhoto}`}
+        src={photoUrl}
         alt={user?.name || user?.username}
         className={`${containerClass} object-cover`}
       />

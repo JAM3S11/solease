@@ -836,13 +836,17 @@ const FeedbackComponent = () => {
                       key={`${message.type}-${message.id}`}
                       className={`group flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
                     >
-                      <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0`}>
-                        {isSelf ? (
-                          <span className="font-bold text-xs text-primary">
-                            {user?.name?.slice(0, 2)?.toUpperCase() || "DJ"}
-                          </span>
+                      <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden`}>
+                        {message.user?.profilePhoto ? (
+                          <img 
+                            src={message.user.profilePhoto} 
+                            alt={messageOwner}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <MessageCircle size={20} className="text-primary" />
+                          <span className="font-bold text-xs text-primary">
+                            {messageOwner?.slice(0, 2)?.toUpperCase() || "ST"}
+                          </span>
                         )}
                       </div>
                       <div className={isSelf ? "flex flex-col items-end" : ""}>

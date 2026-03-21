@@ -107,6 +107,7 @@ export const getTickets = async (req, res) => {
     try {
         let query = {};
         let sort = { createdAt: -1 };
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
 
         if (req.user.role === "Client") {
             query.user = req.user._id;
@@ -126,9 +127,34 @@ export const getTickets = async (req, res) => {
             .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments assignedTo")
             .sort(sort);
 
+        // Add full URL for profilePhoto in all user references
+        const ticketsWithFullPhotoUrl = tickets.map(ticket => {
+            const addFullUrl = (user) => {
+                if (!user) return null;
+                return {
+                    ...user.toObject(),
+                    profilePhoto: user.profilePhoto ? `${baseUrl}${user.profilePhoto}` : null
+                };
+            };
+
+            return {
+                ...ticket.toObject(),
+                user: addFullUrl(ticket.user),
+                assignedTo: addFullUrl(ticket.assignedTo),
+                comments: ticket.comments?.map(comment => ({
+                    ...comment.toObject(),
+                    user: addFullUrl(comment.user),
+                    replies: comment.replies?.map(reply => ({
+                        ...reply.toObject(),
+                        user: addFullUrl(reply.user)
+                    }))
+                }))
+            };
+        });
+
         res.status(200).json({
             success: true,
-            tickets
+            tickets: ticketsWithFullPhotoUrl
         });
     } catch (error) {
         console.log("Error fetching the tickets", error);

@@ -249,7 +249,7 @@ const ReviewerDashbord = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {<NumberTicker value={stat.val} />}
                     </p>
                   </div>

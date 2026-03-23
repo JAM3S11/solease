@@ -48,7 +48,7 @@ const NoTicketComponent = ({ noTicket, type = "client" }) => {
           </div>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           {isReviewer 
             ? `No assigned tickets yet${noTicket ? `, ${noTicket}` : ""}`
             : `No tickets yet${noTicket ? `, ${noTicket}` : ""}`

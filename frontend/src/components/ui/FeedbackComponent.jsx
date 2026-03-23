@@ -504,7 +504,7 @@ const FeedbackComponent = () => {
           >
             <Menu size={20} />
           </button>
-          <span className="text-sm font-bold text-foreground">Ticket #{ticket._id.slice(-6).toUpperCase()}</span>
+          <span className="text-sm font-semibold text-foreground">Ticket #{ticket._id.slice(-6).toUpperCase()}</span>
           <button
             onClick={() => setMobileView(mobileView === "summary" ? "notes" : "summary")}
             className="p-2 text-muted-foreground hover:text-foreground"
@@ -532,7 +532,7 @@ const FeedbackComponent = () => {
                   setMobileView("content");
                 }
               }}
-              className={`flex-1 min-w-0 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex-1 min-w-0 px-4 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                 (mobileView === "summary" && id === "summary") || activeView === id
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground"
@@ -549,13 +549,13 @@ const FeedbackComponent = () => {
         }`}>
           <div className="flex-1 overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground">Current View</p>
+              <p className="text-[10px] uppercase font-medium text-muted-foreground">Current View</p>
               <button onClick={() => setShowMobileSidebar(false)} className="p-1 text-muted-foreground">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 hidden lg:block">Current View</p>
-            <h2 className="text-xl font-bold text-foreground mb-1">
+            <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2 hidden lg:block">Current View</p>
+            <h2 className="text-lg font-semibold text-foreground mb-1">
               Ticket #{ticket._id.slice(-6).toUpperCase()}
             </h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">
@@ -565,12 +565,12 @@ const FeedbackComponent = () => {
 
             <div className="space-y-4 mb-8">
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Status</p>
+                <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Status</p>
                 {canChangeStatus ? (
                   <Listbox value={ticket.status} onChange={handleStatusChange}>
                     <div className="relative inline-block">
                       <ListboxButton
-                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass__(
                           ticket.status
                         )}`}
                       >
@@ -596,7 +596,7 @@ const FeedbackComponent = () => {
                   </Listbox>
                 ) : (
                   <span
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass__(
                       ticket.status
                     )}`}
                   >
@@ -604,21 +604,21 @@ const FeedbackComponent = () => {
                   </span>
                 )}
                 {statusLoading && (
-                  <span className="ml-2 text-xs font-semibold text-muted-foreground">Updating...</span>
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">Updating...</span>
                 )}
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Priority</p>
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Priority</p>
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span className={`w-2.5 h-2.5 rounded-full ${getPriorityDotClass(ticket.urgency)}`} />
                   <span>{ticket.urgency || "Low"}</span>
                 </div>
               </div>
 
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Type</p>
-                <p className="text-sm font-semibold text-muted-foreground">{ticket.issueType || "Other"}</p>
+                <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Type</p>
+                <p className="text-sm font-medium text-muted-foreground">{ticket.issueType || "Other"}</p>
               </div>
             </div>
 
@@ -641,7 +641,7 @@ const FeedbackComponent = () => {
                     }`}
                 >
                   <Icon size={18} />
-                  <span className="text-sm font-semibold">{label}</span>
+                  <span className="text-sm font-medium">{label}</span>
                 </button>
               ))}
             </nav>
@@ -654,7 +654,7 @@ const FeedbackComponent = () => {
               className="w-full py-3 px-4 bg-destructive text-white rounded-lg flex items-center justify-center gap-2 hover:bg-destructive/90 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               <X size={16} />
-              <span className="text-sm font-bold">Close Ticket</span>
+              <span className="text-sm font-medium">Close Ticket</span>
             </button>
           </div>
         </aside>
@@ -664,17 +664,17 @@ const FeedbackComponent = () => {
           <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Overview Header */}
             <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
-              <h3 className="font-bold text-foreground text-xl">Ticket Overview</h3>
+              <h3 className="font-semibold text-foreground text-lg">Ticket Overview</h3>
             </div>
 
             <div className="p-6 space-y-6">
               {/* Subject / Description */}
               <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Subject</p>
-                <p className="text-base font-semibold text-foreground">{ticket.subject || ticket.issueType || "No subject provided"}</p>
+                <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wider">Subject</p>
+                <p className="text-sm font-medium text-foreground">{ticket.subject || ticket.issueType || "No subject provided"}</p>
                 {ticket.description && (
                   <>
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mt-2">Description</p>
+                    <p className="text-[10px] uppercase font-medium text-muted-foreground tracking-wider mt-2">Description</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">{ticket.description}</p>
                   </>
                 )}
@@ -683,60 +683,60 @@ const FeedbackComponent = () => {
               {/* Meta grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Status</p>
-                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusPillClass(ticket.status)}`}>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Status</p>
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass(ticket.status)}`}>
                     {ticket.status}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Priority</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Priority</p>
                   <div className="flex items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${getPriorityDotClass(ticket.urgency)}`} />
-                    <span className="text-sm font-semibold text-foreground">{ticket.urgency || "Low"}</span>
+                    <span className="text-sm font-medium text-foreground">{ticket.urgency || "Low"}</span>
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Issue Type</p>
-                  <p className="text-sm font-semibold text-foreground capitalize">{ticket.issueType || "Other"}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Issue Type</p>
+                  <p className="text-sm font-medium text-foreground capitalize">{ticket.issueType || "Other"}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Location</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Location</p>
                   <div className="flex items-center gap-2">
                     <MapPin size={13} className="text-muted-foreground" />
-                    <span className="text-sm font-semibold text-foreground">{ticket.location || "—"}</span>
+                    <span className="text-sm font-medium text-foreground">{ticket.location || "—"}</span>
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Submitted By</p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Submitted By</p>
+                  <p className="text-sm font-medium text-foreground">
                     {ticket.user?.name || ticket.user?.username || "—"}
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Assigned To</p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Assigned To</p>
+                  <p className="text-sm font-medium text-foreground">
                     {ticket.assignedTo?.name || ticket.assignedTo?.username || "Unassigned"}
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Date Submitted</p>
-                  <p className="text-sm font-semibold text-foreground">{formatReadableDate(ticket.createdAt)}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Date Submitted</p>
+                  <p className="text-sm font-medium text-foreground">{formatReadableDate(ticket.createdAt)}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Last Updated</p>
-                  <p className="text-sm font-semibold text-foreground">{formatReadableDate(ticket.updatedAt)}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-2">Last Updated</p>
+                  <p className="text-sm font-medium text-foreground">{formatReadableDate(ticket.updatedAt)}</p>
                 </div>
               </div>
 
               {/* Message count */}
               <div className="rounded-xl border border-border bg-card p-5 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Conversation Replies</p>
-                  <p className="text-2xl font-bold text-foreground">{allMessages.length}</p>
+                  <p className="text-[10px] uppercase font-medium text-muted-foreground mb-1">Conversation Replies</p>
+                  <p className="text-xl font-semibold text-foreground">{allMessages.length}</p>
                 </div>
                 <button
                   onClick={() => setActiveView("feedback")}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
                   <MessageCircle size={15} />
                   View Conversation
@@ -749,8 +749,8 @@ const FeedbackComponent = () => {
             {/* Chat Header */}
             <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
               <div className="flex items-center gap-3">
-                <h3 className="font-bold text-foreground text-xl">Conversation</h3>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider">
+                <h3 className="font-semibold text-foreground text-lg">Conversation</h3>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-medium uppercase tracking-wider">
                   Live Support
                 </span>
               </div>
@@ -811,7 +811,7 @@ const FeedbackComponent = () => {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <div className="flex justify-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
+                <span className="text-[10px] uppercase font-medium text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
                   Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
                 </span>
               </div>
@@ -844,7 +844,7 @@ const FeedbackComponent = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="font-bold text-xs text-primary">
+                          <span className="font-medium text-xs text-primary">
                             {messageOwner?.slice(0, 2)?.toUpperCase() || "ST"}
                           </span>
                         )}
@@ -853,14 +853,14 @@ const FeedbackComponent = () => {
                         <div className="flex items-center gap-2 mb-1">
                           {!isSelf && (
                             <>
-                              <span className="text-sm font-bold text-foreground">{messageOwner}</span>
+                              <span className="text-sm font-medium text-foreground">{messageOwner}</span>
                               <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
                             </>
                           )}
                           {isSelf && (
                             <>
                               <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
-                              <span className="text-sm font-bold text-foreground">You</span>
+                              <span className="text-sm font-medium text-foreground">You</span>
                             </>
                           )}
                         </div>
@@ -875,7 +875,7 @@ const FeedbackComponent = () => {
                         </div>
 
                         {isHidden && canModerate && (
-                          <p className="text-xs font-semibold text-amber-500 mt-1">This comment is hidden.</p>
+                          <p className="text-xs font-medium text-amber-500 mt-1">This comment is hidden.</p>
                         )}
 
                         <div className="flex items-center gap-1 mt-2 opacity-0 transition-opacity group-hover:opacity-100">
@@ -1008,7 +1008,7 @@ const FeedbackComponent = () => {
                     <button
                       onClick={handleSubmitMessage}
                       disabled={loading || !newMessage.trim()}
-                      className="group relative flex items-center gap-2 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-white dark:text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md hover:shadow-lg"
+                      className="group relative flex items-center gap-2 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-white dark:text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md hover:shadow-lg"
                     >
                       <Send size={16} className="transition-transform group-hover:translate-x-0.1" />
                       <span>Send</span>
@@ -1029,7 +1029,7 @@ const FeedbackComponent = () => {
           <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Audit Trail Header */}
             <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
-              <h3 className="font-bold text-foreground text-xl">Audit Trail</h3>
+              <h3 className="font-semibold text-foreground text-lg">Audit Trail</h3>
             </div>
 
             <div className="p-6">
@@ -1072,10 +1072,10 @@ const FeedbackComponent = () => {
           <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
             {/* Documents Header */}
             <div className="h-14 flex items-center justify-between px-6 border-b border-border bg-card/50 shrink-0">
-              <h3 className="font-bold text-foreground text-xl">Documents</h3>
+              <h3 className="font-semibold text-foreground text-lg">Documents</h3>
               <button
                 onClick={() => setUploadModal({ show: true })}
-                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 <Upload size={16} />
                 Upload
@@ -1130,7 +1130,7 @@ const FeedbackComponent = () => {
           <div className="flex-1 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Pencil size={18} className="text-primary" />
-              <h3 className="font-bold text-foreground text-xl">Personal Notes</h3>
+              <h3 className="font-semibold text-foreground text-lg">Personal Notes</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-6">
               Add private notes for your own reference. These are not visible to the support team.
@@ -1148,7 +1148,7 @@ const FeedbackComponent = () => {
                 <button
                   onClick={handleSaveLocal}
                   disabled={!draft.trim()}
-                  className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[10px] font-bold py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[10px] font-medium py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Save Note
                 </button>
@@ -1162,7 +1162,7 @@ const FeedbackComponent = () => {
                       }
                     }}
                     disabled={!draft.trim() || moderating === "intervention"}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-medium py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {moderating === "intervention" ? "Saving..." : "Save Internal"}
                   </button>
@@ -1171,7 +1171,7 @@ const FeedbackComponent = () => {
             </div>
 
             <div className="space-y-4">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground">Your Saved Notes</p>
+              <p className="text-[10px] uppercase font-medium text-muted-foreground">Your Saved Notes</p>
               {notes.length === 0 ? (
                 <div className="bg-card/50 border border-border p-4 rounded-xl text-sm text-muted-foreground">
                   No personal notes yet.
@@ -1195,7 +1195,7 @@ const FeedbackComponent = () => {
           </div>
 
           <div className="mt-auto p-6 border-t border-border">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground mb-4">Associated Entities</p>
+            <p className="text-[10px] uppercase font-medium text-muted-foreground mb-4">Associated Entities</p>
             <div className="flex flex-wrap gap-2">
               <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-medium text-muted-foreground">
                 {ticket.location || "Location"}
@@ -1232,7 +1232,7 @@ const FeedbackComponent = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Hide Comment</h3>
+              <h3 className="text-base font-medium text-foreground">Hide Comment</h3>
               <button
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setHideModal({ show: false, commentId: null })}
@@ -1255,7 +1255,7 @@ const FeedbackComponent = () => {
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 onClick={handleHide}
                 disabled={!hideCode.trim() || moderating === hideModal.commentId}
               >
@@ -1276,7 +1276,7 @@ const FeedbackComponent = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Unhide Comment</h3>
+              <h3 className="text-base font-medium text-foreground">Unhide Comment</h3>
               <button
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setUnhideModal({ show: false, commentId: null })}
@@ -1299,7 +1299,7 @@ const FeedbackComponent = () => {
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-emerald-500 hover:bg-emerald-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-emerald-500 hover:bg-emerald-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 onClick={handleUnhide}
                 disabled={!unhideCode.trim() || moderating === unhideModal.commentId}
               >
@@ -1320,7 +1320,7 @@ const FeedbackComponent = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Edit Message</h3>
+              <h3 className="text-base font-medium text-foreground">Edit Message</h3>
               <button
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setEditModal({ show: false, message: null, content: "" })}
@@ -1342,7 +1342,7 @@ const FeedbackComponent = () => {
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-primary hover:bg-primary/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-primary hover:bg-primary/90 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 onClick={handleEditMessage}
                 disabled={!editModal.content.trim() || moderating === "edit"}
               >
@@ -1363,7 +1363,7 @@ const FeedbackComponent = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Delete Message</h3>
+              <h3 className="text-base font-medium text-foreground">Delete Message</h3>
               <button
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setDeleteModal({ show: false, message: null })}
@@ -1382,7 +1382,7 @@ const FeedbackComponent = () => {
                 Cancel
               </button>
               <button
-                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-destructive hover:bg-destructive/90 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 onClick={handleDeleteMessage}
                 disabled={moderating === "delete"}
               >
@@ -1403,7 +1403,7 @@ const FeedbackComponent = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Upload Documents</h3>
+              <h3 className="text-base font-medium text-foreground">Upload Documents</h3>
               <button
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent"
                 onClick={() => setUploadModal({ show: false })}

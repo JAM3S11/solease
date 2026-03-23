@@ -122,7 +122,7 @@ const TicketsTable = ({
           <div className="flex items-center gap-2">
             <motion.span
               whileHover={{ scale: 1.05 }}
-              className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md transition-all duration-200"
+              className="inline-block font-mono text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md transition-all duration-200"
             >
               #{ticket._id.slice(-6).toUpperCase()}
             </motion.span>
@@ -158,7 +158,7 @@ const TicketsTable = ({
         key: 'issueType',
         label: 'ISSUE TYPE',
         render: (ticket) => (
-          <span className={`text-[10px] inline-flex items-center justify-center px-2 py-1 rounded-md font-bold min-w-[100px] uppercase
+          <span className={`text-[10px] inline-flex items-center justify-center px-2 py-1 rounded-md font-medium min-w-[100px] uppercase
             ${{
               "Hardware Issue": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
               "Software Issue": "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
@@ -177,7 +177,7 @@ const TicketsTable = ({
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
             whileHover={{ scale: 1.05 }}
-            className={`inline-block px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+            className={`inline-block px-2.5 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider transition-all duration-200 ${
               ticket.urgency === "Critical"
                 ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 shadow-sm shadow-red-200/50 dark:shadow-red-900/30"
                 : ticket.urgency === "High"
@@ -201,7 +201,7 @@ const TicketsTable = ({
           </span>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400">
+            <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-medium text-blue-600 dark:text-blue-400">
                 {ticket.assignedTo ? ticket.assignedTo.username[0].toUpperCase() : "?"}
             </div>
             <span className='text-xs font-medium text-gray-700 dark:text-gray-300'>
@@ -385,7 +385,7 @@ const TicketsTable = ({
                         <ListboxOption key={type} value={type} className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
                           {({ selected }) => (
                             <>
-                              <span className={`block truncate ${selected ? 'font-bold text-blue-600' : 'font-normal'}`}>{type}</span>
+                              <span className={`block truncate ${selected ? 'font-medium text-blue-600' : 'font-normal'}`}>{type}</span>
                               {selected && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>}
                             </>
                           )}
@@ -415,7 +415,7 @@ const TicketsTable = ({
                         <ListboxOption key={s} value={s} className={({ active }) => `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-900 dark:text-gray-300'}`}>
                           {({ selected }) => (
                             <>
-                              <span className={`block truncate ${selected ? 'font-bold text-blue-600' : 'font-normal'}`}>{s}</span>
+                              <span className={`block truncate ${selected ? 'font-medium text-blue-600' : 'font-normal'}`}>{s}</span>
                               {selected && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"><Check size={14} /></span>}
                             </>
                           )}
@@ -435,7 +435,7 @@ const TicketsTable = ({
                 type="date"
                 value={dateFilter}
                 onChange={(e) => onDateChange(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
           )}
@@ -506,7 +506,7 @@ const TicketsTable = ({
                       <th
                         key={col.key}
                         onClick={isSortable ? () => handleSort(col.sortable) : undefined}
-                        className={`px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest ${
+                        className={`px-6 py-4 text-left text-[10px] font-medium text-gray-400 uppercase tracking-widest ${
                           isSortable ? "cursor-pointer hover:text-gray-600 dark:hover:text-gray-300" : ""
                         }`}
                       >
@@ -572,7 +572,7 @@ const TicketsTable = ({
                       <div className="flex items-center gap-2">
                         <motion.span
                           whileHover={{ scale: 1.05 }}
-                          className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md"
+                          className="inline-block font-mono text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md"
                         >
                           #{ticket._id.slice(-6).toUpperCase()}
                         </motion.span>
@@ -707,14 +707,14 @@ const TicketsTable = ({
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <motion.span
                         whileHover={{ scale: 1.02 }}
-                        className="inline-block font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded"
+                        className="inline-block font-mono text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded"
                       >
                         #{ticket._id.slice(-6).toUpperCase()}
                       </motion.span>
                       {ticket.urgency === "Critical" && (
                         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
                       )}
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium uppercase ${
                         ticket.urgency === "Critical"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
                           : ticket.urgency === "High"

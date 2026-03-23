@@ -98,7 +98,7 @@ const NoRecordsFound = ({
                                 {days && (
                                     <div className="text-right">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Range</p>
-                                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{days}</p>
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{days}</p>
                                         <p className="text-xs text-gray-400">days</p>
                                     </div>
                                 )}

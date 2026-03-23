@@ -74,7 +74,7 @@ const ProfileInput = React.memo(({
 
   return (
     <div className="w-full">
-      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
+      <label className={`flex items-center gap-2 text-xs font-medium uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
           ? 'text-red-600 dark:text-red-400'
           : isValid
             ? 'text-green-600 dark:text-green-400'
@@ -159,7 +159,7 @@ const PasswordInput = React.memo(({ label, error, success, required, helpText, .
 
   return (
     <div className="w-full">
-      <label className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
+      <label className={`flex items-center gap-2 text-xs font-medium uppercase tracking-wider mb-2 ml-1 transition-colors duration-200 ${error
           ? 'text-red-600 dark:text-red-400'
           : isValid
             ? 'text-green-600 dark:text-green-400'
@@ -446,7 +446,7 @@ const ProfileSettings = ({
                     ) : currentAvatar ? (
                       <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-3xl sm:text-4xl font-bold text-white">
+                      <span className="text-2xl font-semibold text-white">
                         {getInitials(personalData.name || user?.name)}
                       </span>
                     )}
@@ -512,17 +512,17 @@ const ProfileSettings = ({
                   </h2>
                   <div className="flex items-center gap-2">
                     {verified ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-400/30 text-green-100 text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-400/30 text-green-100 text-xs font-medium">
                         <BadgeCheck size={14} />
                         Verified
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-100 text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-100 text-xs font-medium">
                         <AlertCircle size={14} />
                         Unverified
                       </span>
                     )}
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-medium">
                       <Fingerprint size={14} />
                       CLIENT
                     </span>
@@ -641,7 +641,7 @@ const ProfileSettings = ({
               <h2 className='text-sm font-medium text-slate-900 dark:text-white tracking-tight'>
                 {user?.name || user?.username}
               </h2>
-              <p className='text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1 tracking-wider'>
+              <p className='text-xs font-medium text-blue-600 dark:text-blue-400 mt-1 tracking-wider'>
                 {role.toUpperCase()} ID: #{user?._id?.slice(-6).toUpperCase() || "N/A"}
               </p>
             </div>
@@ -721,7 +721,7 @@ const ProfileSettings = ({
           {/* Display Fields */}
           <div className='space-y-4'>
             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+              <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                 Full Name
               </label>
               <p className="text-slate-900 dark:text-white font-medium">
@@ -729,7 +729,7 @@ const ProfileSettings = ({
               </p>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+              <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                 Email Address
               </label>
               <p className="text-slate-900 dark:text-white font-medium">
@@ -738,7 +738,7 @@ const ProfileSettings = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                   Account Role
                 </label>
                 <p className="text-slate-900 dark:text-white font-medium capitalize">
@@ -746,10 +746,10 @@ const ProfileSettings = ({
                 </p>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                   Account Status
                 </label>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                   personalData.status?.toLowerCase() === 'active' 
                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                     : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -797,7 +797,7 @@ const ProfileSettings = ({
           {/* Display Fields */}
           <div className='space-y-4'>
             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+              <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                 <MapPin size={14} className="inline mr-1" />
                 Physical Address
               </label>
@@ -807,7 +807,7 @@ const ProfileSettings = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                   <Globe size={14} className="inline mr-1" />
                   Country
                 </label>
@@ -816,7 +816,7 @@ const ProfileSettings = ({
                 </p>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+                <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                   County
                 </label>
                 <p className="text-slate-900 dark:text-white font-medium">
@@ -825,7 +825,7 @@ const ProfileSettings = ({
               </div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
+              <label className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 block">
                 <Phone size={14} className="inline mr-1" />
                 Telephone Number
               </label>
@@ -846,7 +846,7 @@ const ProfileSettings = ({
           </DrawerClose>
           
           <div className="border-b border-slate-200 dark:border-slate-700 p-4">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+            <h2 className="text-base font-medium text-slate-900 dark:text-white flex items-center gap-3">
               <User size={24} className="text-blue-600 dark:text-blue-400" />
               Edit Personal Information
             </h2>
@@ -894,7 +894,7 @@ const ProfileSettings = ({
           </div>
           
           <div className="border-t border-slate-200 dark:border-slate-700 p-4 flex justify-end gap-3">
-            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-semibold transition-colors">
+            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors">
               Cancel
             </DrawerClose>
             <button
@@ -903,7 +903,7 @@ const ProfileSettings = ({
                 setShowPersonalDrawer(false);
               }}
               disabled={loading}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
             >
               <Save size={18} />
               {loading ? 'Saving...' : 'Save Changes'}
@@ -921,7 +921,7 @@ const ProfileSettings = ({
           </DrawerClose>
           
           <div className="border-b border-slate-200 dark:border-slate-700 p-4">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+            <h2 className="text-base font-medium text-slate-900 dark:text-white flex items-center gap-3">
               <MapPin size={24} className="text-blue-600 dark:text-blue-400" />
               Edit Contact Details
             </h2>
@@ -981,7 +981,7 @@ const ProfileSettings = ({
           </div>
           
           <div className="border-t border-slate-200 dark:border-slate-700 p-4 flex justify-end gap-3">
-            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-semibold transition-colors">
+            <DrawerClose className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors">
               Cancel
             </DrawerClose>
             <button
@@ -990,7 +990,7 @@ const ProfileSettings = ({
                 setShowContactDrawer(false);
               }}
               disabled={loading}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
             >
               <Save size={18} />
               {loading ? 'Saving...' : 'Save Changes'}
@@ -1021,7 +1021,7 @@ const ProfileSettings = ({
           <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                   <Lock size={18} className="text-blue-600 dark:text-blue-400" />
                   Change Password
                 </h4>
@@ -1076,7 +1076,7 @@ const ProfileSettings = ({
                   <button
                     onClick={handlePasswordSubmit}
                     disabled={loading || !passwordData.current || !passwordData.new || !passwordData.confirm}
-                    className="w-full mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold transition-all active:scale-95"
+                    className="w-full mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-all active:scale-95"
                   >
                     Update Password
                   </button>
@@ -1095,7 +1095,7 @@ const ProfileSettings = ({
           <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                   <ShieldCheck size={18} className="text-green-600 dark:text-green-400" />
                   Two-Factor Authentication
                 </h4>
@@ -1140,7 +1140,7 @@ const ProfileSettings = ({
                     className="w-full px-4 py-2.5 border-2 border-slate-200 dark:border-slate-700 rounded-lg focus:border-blue-500 dark:bg-slate-800 dark:text-white"
                   />
                   <button
-                    className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all"
+                    className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all"
                   >
                     Verify &amp; Enable 2FA
                   </button>
@@ -1162,7 +1162,7 @@ const ProfileSettings = ({
           <div className='bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4'>
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                   {notificationsEnabled
                     ? <Bell size={18} className="text-blue-600 dark:text-blue-400" />
                     : <BellOff size={18} className="text-slate-400" />
@@ -1181,7 +1181,7 @@ const ProfileSettings = ({
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
                   Email &amp; in-app alerts
                 </p>
-                <p className={`text-xs mt-0.5 font-semibold ${notificationsEnabled
+                <p className={`text-xs mt-0.5 font-medium ${notificationsEnabled
                     ? 'text-green-600 dark:text-green-400'
                     : 'text-slate-400'
                   }`}>
@@ -1235,7 +1235,7 @@ const ProfileSettings = ({
         <button
           onClick={handleSave}
           disabled={loading || !isDirty}
-          className={`group flex items-center justify-center gap-3 px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold shadow-md hover:shadow-lg dark:shadow-none transition-all active:scale-95 min-h-12 sm:min-h-auto`}
+          className={`group flex items-center justify-center gap-3 px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium shadow-md hover:shadow-lg dark:shadow-none transition-all active:scale-95 min-h-12 sm:min-h-auto`}
           aria-label="Save changes"
         >
           {loading ? (

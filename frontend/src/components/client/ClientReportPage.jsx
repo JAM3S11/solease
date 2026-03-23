@@ -562,7 +562,7 @@ const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge
         <div className="space-y-0.5 sm:space-y-1">
             <NumberTicker 
                 value={typeof value === 'number' ? value : 0} 
-                className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white"
+                className="text-sm font-medium text-gray-900 dark:text-white"
             />
             <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
         </div>
@@ -916,7 +916,7 @@ const ClientReportPage = () => {
                     >
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                                     {user?.name ? `${user.name.split(' ')[0]}'s Dashboard` : "My Dashboard"}
                                 </h1>
                                 <div className="flex items-center gap-4 mt-1">

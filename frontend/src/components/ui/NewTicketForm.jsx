@@ -208,7 +208,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center justify-between w-full">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Submit New Ticket</h1>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Submit New Ticket</h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">
                   {showWelcome ? "Let's submit your first support request!" : "Fill in the details below to request technical assistance."}
                 </p>
@@ -344,7 +344,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
                               : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800"
                           }`}
                         >
-                          <span className={`text-sm font-bold block ${isSelected ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                          <span className={`text-sm font-medium block ${isSelected ? "text-white" : "text-gray-900 dark:text-white"}`}>
                             {option}
                           </span>
                           <span className={`text-xs block mt-1 ${isSelected ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
@@ -463,7 +463,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-5 border border-amber-100 dark:border-amber-800">
               <div className="flex items-center gap-2 mb-4">
                 <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h3 className="font-semibold text-amber-900 dark:text-amber-100">Tips for Faster Resolution</h3>
+                <h3 className="font-medium text-amber-900 dark:text-amber-100">Tips for Faster Resolution</h3>
               </div>
               <div className="space-y-3">
                 {TIPS.map((tip, index) => (
@@ -483,7 +483,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
             <div className="bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-800/50 dark:to-slate-800/30 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">Urgency Guide</h3>
+                <h3 className="font-medium text-gray-900 dark:text-white">Urgency Guide</h3>
               </div>
               <div className="space-y-3">
                 {Object.entries(URGENCY_INFO).map(([level, info]) => (

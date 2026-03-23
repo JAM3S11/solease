@@ -191,7 +191,7 @@ const PasswordChangePage = () => {
         transition={{ duration: 0.6 }}
         className="flex items-center justify-center mb-6"
       >
-        <Link to="/" className="flex items-center gap-1.5 md:gap-2 text-xl md:text-2xl lg:text-3xl font-bold tracking-tight text-gray-900">
+        <Link to="/" className="flex items-center gap-1.5 md:gap-2 text-lg font-semibold tracking-tight text-gray-900">
           <CanvasLogo />
           <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
             SOLEASE
@@ -208,7 +208,7 @@ const PasswordChangePage = () => {
           <div className="mx-auto w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-8 h-8 text-orange-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Update Your Password</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Update Your Password</h2>
           <p className="text-gray-600 text-sm">
             Your password does not meet our security requirements. Please update it to continue.
           </p>
@@ -324,7 +324,7 @@ const PasswordChangePage = () => {
             disabled={loading}
             whileHover={{ scale: loading ? 1 : 1.01 }}
             whileTap={{ scale: loading ? 1 : 0.98 }}
-            className="w-full py-3 md:py-4 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-300 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 md:py-4 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-300 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

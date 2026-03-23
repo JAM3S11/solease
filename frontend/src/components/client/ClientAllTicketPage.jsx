@@ -146,7 +146,7 @@ const ClientAllTicketPage = () => {
             className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
           >
             <div>
-              <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">
                 {user?.name ? `${user.name}'s Tickets` : "My Tickets"}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -204,7 +204,7 @@ const ClientAllTicketPage = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {<NumberTicker value={stat.val} />}
                     </p>
                   </div>

@@ -119,14 +119,14 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
             {!isCollapsed && (
                 <>
                     <div className="flex flex-col flex-1 min-w-0 text-left animate-in fade-in slide-in-from-left-2 duration-300">
-                        <span className="truncate sm:text-sm md:text-[12px] font-semibold text-gray-900 dark:text-white">
+                        <span className="truncate text-xs font-medium text-gray-900 dark:text-white">
                             {user.name ?? "User"}
-                        </span>
-                        <span className="truncate sm:text-xs md:text-[10px] text-gray-500 dark:text-gray-400">
+                          </span>
+                          <span className="truncate text-[10px] text-gray-500 dark:text-gray-400">
                             {user.email ?? ""}
-                        </span>
-                    </div>
-                    <ChevronsUpDown className="size-4 text-gray-500 dark:text-gray-400 flex-shrink-0 ml-auto" />
+                          </span>
+                      </div>
+                      <ChevronsUpDown className="size-4 text-gray-500 dark:text-gray-400 flex-shrink-0 ml-auto" />
                 </>
             )}
         </div>
@@ -163,7 +163,7 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
                         </div>
                     </div>
                     <div className="flex flex-col flex-1 min-w-0">
-                        <span className="truncate text-sm font-bold text-gray-900 dark:text-white">
+                        <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                             {user.name ?? "User"}
                         </span>
                         <span className="truncate text-xs text-gray-500 dark:text-gray-400">

@@ -25,51 +25,143 @@ const URGENCY_OPTIONS = ['All Urgency', 'Critical', 'High', 'Medium', 'Low'];
 const SUCCESS_STATUSES = ['Closed', 'Resolved'];
 const ACTIVE_STATUSES = ['Open', 'In Progress'];
 
-const MetricCard = ({ title, value, icon, color, trend, trendUp, children }) => (
+const getColorClasses = (color) => {
+    const maps = {
+        blue: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+        orange: 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400',
+        green: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+        purple: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+        indigo: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400',
+        cyan: 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400',
+        red: 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400',
+        amber: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
+        violet: 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400',
+    }
+    return maps[color] || maps.blue
+}
+
+const getBgGradient = (color) => {
+    const maps = {
+        blue: 'from-blue-50/80 to-transparent dark:from-blue-900/20',
+        orange: 'from-orange-50/80 to-transparent dark:from-orange-900/20',
+        green: 'from-green-50/80 to-transparent dark:from-green-900/20',
+        purple: 'from-purple-50/80 to-transparent dark:from-purple-900/20',
+        indigo: 'from-indigo-50/80 to-transparent dark:from-indigo-900/20',
+        cyan: 'from-cyan-50/80 to-transparent dark:from-cyan-900/20',
+        red: 'from-red-50/80 to-transparent dark:from-red-900/20',
+        amber: 'from-amber-50/80 to-transparent dark:from-amber-900/20',
+        violet: 'from-violet-50/80 to-transparent dark:from-violet-900/20',
+    }
+    return maps[color] || maps.blue
+}
+
+const getIconBg = (color) => {
+    const maps = {
+        blue: 'bg-blue-500 shadow-blue-500/30',
+        orange: 'bg-orange-500 shadow-orange-500/30',
+        green: 'bg-green-500 shadow-green-500/30',
+        purple: 'bg-purple-500 shadow-purple-500/30',
+        indigo: 'bg-indigo-500 shadow-indigo-500/30',
+        cyan: 'bg-cyan-500 shadow-cyan-500/30',
+        red: 'bg-red-500 shadow-red-500/30',
+        amber: 'bg-amber-500 shadow-amber-500/30',
+        violet: 'bg-violet-500 shadow-violet-500/30',
+    }
+    return maps[color] || maps.blue
+}
+
+const getLiveDotColor = (color) => {
+    const maps = {
+        blue: 'bg-blue-500',
+        orange: 'bg-orange-500',
+        green: 'bg-green-500',
+        purple: 'bg-purple-500',
+        indigo: 'bg-indigo-500',
+        cyan: 'bg-cyan-500',
+        red: 'bg-red-500',
+        amber: 'bg-amber-500',
+        violet: 'bg-violet-500',
+    }
+    return maps[color] || maps.blue
+}
+
+const COLOR_MAP = {
+    'bg-gradient-to-br from-blue-500 to-blue-600': 'blue',
+    'bg-gradient-to-br from-emerald-500 to-emerald-600': 'green',
+    'bg-gradient-to-br from-amber-500 to-orange-500': 'orange',
+    'bg-gradient-to-br from-red-500 to-rose-600': 'red',
+    'bg-gradient-to-br from-green-500 to-emerald-600': 'green',
+    'bg-gradient-to-br from-indigo-500 to-blue-600': 'indigo',
+    'bg-gradient-to-br from-cyan-500 to-sky-600': 'cyan',
+    'bg-gradient-to-br from-purple-500 to-violet-600': 'purple',
+    'bg-gradient-to-br from-cyan-500 to-sky-600 text-white': 'cyan',
+    'bg-gradient-to-br from-purple-500 to-violet-600 text-white': 'purple',
+    'bg-gradient-to-br from-amber-500 to-orange-500 text-white': 'amber',
+    'bg-gradient-to-br from-green-500 to-emerald-600 text-white': 'green',
+};
+
+const MetricCard = ({ title, value, icon, color, trend, trendUp, children }) => {
+    const colorKey = color || 'bg-gradient-to-br from-blue-500 to-blue-600';
+    const mappedColor = COLOR_MAP[colorKey] || 'blue';
+    
+    return (
     <motion.div 
-        whileHover={{ scale: 1.02, y: -2 }}
-        className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+        whileHover={{ y: -2, scale: 1.01 }}
+        className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(mappedColor)}`}
     >
-        <div className="flex items-start justify-between">
-            <div className={`${color} p-2 md:p-3 rounded-lg md:rounded-xl text-white shadow-lg`}>
-                {React.cloneElement(icon, { size: icon.props?.size >= 22 ? 18 : 16 })}
+        <div className="relative">
+            <div className={`p-3 rounded-xl ${getIconBg(mappedColor)}`}>
+                {React.cloneElement(icon, { size: 22, className: "text-white" })}
             </div>
+            <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(mappedColor)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+            </span>
+        </div>
+        <div className="flex-1">
+            <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{value}</p>
             {trend && (
-                <div className={`flex items-center gap-0.5 md:gap-1 text-[10px] md:text-xs font-medium ${trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className={`flex items-center gap-1 mt-0.5 ${trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                     {trendUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                    <span className="hidden sm:inline">{trend}</span>
+                    <span className="text-[10px] sm:text-xs font-medium">{trend}</span>
                 </div>
             )}
         </div>
-        <div className="mt-3 md:mt-4">
-            <p className="text-[10px] md:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</p>
-            <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mt-0.5 md:mt-1">{value}</p>
-            {children}
-        </div>
     </motion.div>
-);
+    );
+}
 
-const DetailedMetric = ({ label, value, icon, color, trend, trendUp }) => (
+const DetailedMetric = ({ label, value, icon, color, trend, trendUp }) => {
+    const colorKey = color || 'bg-gradient-to-br from-blue-500 to-blue-600';
+    const mappedColor = COLOR_MAP[colorKey] || 'blue';
+    
+    return (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-800 p-3 md:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-2 md:gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+        className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${getBgGradient(mappedColor)}`}
     >
-        <div className={`p-2 md:p-3 rounded-lg md:rounded-xl shadow-md ${color}`}>
-            {React.cloneElement(icon, { size: 18 })}
+        <div className="relative">
+            <div className={`p-3 rounded-xl ${getIconBg(mappedColor)}`}>
+                {React.cloneElement(icon, { size: 22, className: "text-white" })}
+            </div>
+            <span className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 ${getLiveDotColor(mappedColor)} border-2 border-white dark:border-gray-800 rounded-full`}>
+                <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 animate-ping opacity-75"></span>
+            </span>
         </div>
-        <div className="flex-1 min-w-0">
-            <p className="text-[10px] md:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">{label}</p>
-            <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <div className="flex-1">
+            <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{value}</p>
             {trend && (
-                <div className={`flex items-center gap-0.5 md:gap-1 mt-0.5 md:mt-1 ${trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                <div className={`flex items-center gap-1 mt-0.5 ${trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                     {trendUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                    <span className="text-[10px] md:text-xs font-medium hidden sm:inline">{trend}</span>
+                    <span className="text-[10px] sm:text-xs font-medium">{trend}</span>
                 </div>
             )}
         </div>
     </motion.div>
-);
+    );
+}
 
 const ReviewerReportPage = () => {
     const { tickets, fetchTickets, loading } = useTicketStore();
@@ -375,69 +467,65 @@ const ReviewerReportPage = () => {
                                 />
                             ) : stats.total > 0 && (
                                 <>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <MetricCard 
-                                            title="Total Assigned" 
+                                            title="Total" 
                                             value={stats.total} 
-                                            icon={<Ticket size={22} />} 
+                                            icon={<Ticket size={18} />} 
                                             color="bg-gradient-to-br from-blue-500 to-blue-600"
-                                            trend="+12% from last week"
+                                            trend="+12%"
                                             trendUp={true}
                                         />
                                         <MetricCard 
                                             title="Resolution Rate" 
                                             value={`${stats.successRate}%`} 
-                                            icon={<Target size={22} />} 
+                                            icon={<Target size={18} />} 
                                             color="bg-gradient-to-br from-emerald-500 to-emerald-600"
-                                            trend="+5% improvement"
+                                            trend="+5%"
                                             trendUp={true}
                                         />
                                         <MetricCard 
                                             title="In Progress" 
                                             value={stats.inProgress} 
-                                            icon={<Clock size={22} />} 
+                                            icon={<Clock size={18} />} 
                                             color="bg-gradient-to-br from-amber-500 to-orange-500"
-                                            trend="-2 from yesterday"
+                                            trend="-2"
                                             trendUp={true}
                                         />
                                         <MetricCard 
-                                            title="Critical Issues" 
+                                            title="Critical" 
                                             value={stats.urgencyBreakdown.critical} 
-                                            icon={<AlertTriangle size={22} />} 
+                                            icon={<AlertTriangle size={18} />} 
                                             color="bg-gradient-to-br from-red-500 to-rose-600"
-                                            trend={stats.urgencyBreakdown.critical > 0 ? "Requires attention" : "All clear"}
+                                            trend={stats.urgencyBreakdown.critical > 0 ? "Attention" : "Clear"}
                                             trendUp={stats.urgencyBreakdown.critical > 0}
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <MetricCard 
                                             title="Completed" 
                                             value={stats.resolved} 
-                                            icon={<CheckCircle size={22} />} 
+                                            icon={<CheckCircle size={18} />} 
                                             color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="This period"
                                         />
                                         <MetricCard 
                                             title="Pending" 
                                             value={stats.open} 
-                                            icon={<Clock3 size={22} />} 
+                                            icon={<Clock3 size={18} />} 
                                             color="bg-gradient-to-br from-indigo-500 to-blue-600"
-                                            trend="Awaiting action"
                                         />
                                         <MetricCard 
-                                            title="Avg Resolution" 
+                                            title="Avg Time" 
                                             value={stats.avgResolutionTime} 
-                                            icon={<Activity size={22} />} 
+                                            icon={<Activity size={18} />} 
                                             color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            trend="Per ticket"
                                         />
                                         <MetricCard 
                                             title="Satisfaction" 
                                             value={`${stats.satisfactionRate}%`} 
-                                            icon={<ThumbsUp size={22} />} 
+                                            icon={<ThumbsUp size={18} />} 
                                             color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Client rating"
                                         />
                                     </div>
 
@@ -630,69 +718,70 @@ const ReviewerReportPage = () => {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-8"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <DetailedMetric 
-                                    label="Total Resolved" 
+                                    label="Resolved" 
                                     value={stats.resolved} 
-                                    icon={<CheckCircle size={24} />} 
+                                    icon={<CheckCircle size={18} />} 
                                     color="bg-gradient-to-br from-green-500 to-emerald-600 text-white"
-                                    trend="+8 this week"
+                                    trend="+8"
                                     trendUp={true}
                                 />
                                 <DetailedMetric 
-                                    label="Avg Response Time" 
+                                    label="Avg Time" 
                                     value={stats.avgResolutionTime} 
-                                    icon={<Clock size={24} />} 
+                                    icon={<Clock size={18} />} 
                                     color="bg-gradient-to-br from-cyan-500 to-sky-600 text-white"
-                                    trend="-15% faster"
+                                    trend="-15%"
                                     trendUp={true}
                                 />
                                 <DetailedMetric 
                                     label="Success Rate" 
                                     value={`${stats.successRate}%`} 
-                                    icon={<Target size={24} />} 
+                                    icon={<Target size={18} />} 
                                     color="bg-gradient-to-br from-purple-500 to-violet-600 text-white"
-                                    trend="+3% from last period"
+                                    trend="+3%"
                                     trendUp={true}
                                 />
                                 <DetailedMetric 
-                                    label="Client Satisfaction" 
+                                    label="Satisfaction" 
                                     value={`${stats.satisfactionRate}%`} 
-                                    icon={<Star size={24} />} 
+                                    icon={<Star size={18} />} 
                                     color="bg-gradient-to-br from-amber-500 to-orange-500 text-white"
-                                    trend="Based on feedback"
+                                    trend="Rating"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700">
-                                    <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4 md:mb-6 flex items-center gap-2">
-                                        <TrendingUp size={18} className="text-indigo-500" />
-                                        <span className="hidden md:inline">Resolution Trend (Last 6 Months)</span>
-                                        <span className="md:hidden">Resolution Trend</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-gray-800 p-3 md:p-8 rounded-xl md:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700">
+                                    <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-3 md:mb-6 flex items-center gap-2">
+                                        <TrendingUp size={16} className="text-indigo-500" />
+                                        <span className="hidden md:inline">Resolution Trend</span>
+                                        <span className="md:hidden">Trend</span>
                                     </h3>
-                                    <div className="h-48 md:h-64 overflow-x-auto">
+                                    <div className="h-40 md:h-56 overflow-x-auto">
                                         <LineChart
                                             dataset={stats.resolutionTrend}
                                             xAxis={[{ scaleType: 'band', dataKey: 'month' }]}
-                                            series={[{ dataKey: 'resolved', label: 'Tickets Resolved', color: '#6366f1', area: true }]}
-                                            height={200}
-                                            margin={{ left: 20, right: 20, top: 10, bottom: 20 }}
+                                            series={[{ dataKey: 'resolved', label: 'Resolved', color: '#6366f1', area: true }]}
+                                            height={180}
+                                            margin={{ left: 15, right: 15, top: 10, bottom: 15 }}
                                             sx={{ '.MuiAreaElement-root': { fillOpacity: 0.1 } }}
                                         />
                                     </div>
                                 </motion.div>
 
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700">
-                                    <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4 md:mb-6 flex items-center gap-2">
-                                        <Activity size={18} className="text-blue-500" />
-                                        Work Status Distribution
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-gray-800 p-3 md:p-8 rounded-xl md:rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700">
+                                    <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white mb-3 md:mb-6 flex items-center gap-2">
+                                        <Activity size={16} className="text-blue-500" />
+                                        <span className="hidden md:inline">Work Status</span>
+                                        <span className="md:hidden">Status</span>
                                     </h3>
-                                    <div className="h-48 md:h-64 flex justify-center overflow-x-auto">
+                                    <div className="h-40 md:h-56 flex justify-center overflow-x-auto">
                                         <PieChart
-                                            series={[{ data: stats.pieData, innerRadius: 40, paddingAngle: 4, cornerRadius: 4 }]}
-                                            width={280}
-                                            height={200}
+                                            series={[{ data: stats.pieData, innerRadius: 35, paddingAngle: 3, cornerRadius: 3 }]}
+                                            width={220}
+                                            height={180}
                                         />
                                     </div>
                                 </motion.div>
@@ -748,13 +837,33 @@ const ReviewerReportPage = () => {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-8"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <MetricCard 
                                     title="Total Clients" 
                                     value={stats.userSummary.length} 
                                     icon={<Users size={22} />} 
                                     color="bg-gradient-to-br from-blue-500 to-blue-600"
                                     trend="Active clients"
+                                />
+                                <MetricCard 
+                                    title="Total Tickets" 
+                                    value={stats.total} 
+                                    icon={<Ticket size={22} />} 
+                                    color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+                                    trend="In period"
+                                />
+                                <MetricCard 
+                                    title="Resolved" 
+                                    value={stats.resolved} 
+                                    icon={<CheckCircle size={22} />} 
+                                    color="bg-gradient-to-br from-green-500 to-emerald-600"
+                                    trend="Successfully closed"
+                                />
+                                <MetricCard 
+                                    title="Avg per Client" 
+                                    value={stats.userSummary.length > 0 ? Math.round(stats.total / stats.userSummary.length) : 0} 
+                                    icon={<BarChart3 size={22} />} 
+                                    color="bg-gradient-to-br from-purple-500 to-violet-600"
                                 />
                                 <MetricCard 
                                     title="Total Tickets" 
@@ -792,48 +901,90 @@ const ReviewerReportPage = () => {
                                     <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">Breakdown of support engagements for each unique user.</p>
                                 </div>
 
-                                <div className="overflow-x-auto p-2 md:p-4">
-                                    <table className="w-full text-left min-w-[600px]">
-                                        <thead className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50/50 dark:bg-gray-900/50 rounded-xl">
-                                            <tr>
-                                                <th className="px-3 md:px-6 py-3 md:py-4 rounded-l-xl">Client</th>
-                                                <th className="px-3 md:px-6 py-3 md:py-4">Total</th>
-                                                <th className="px-3 md:px-6 py-3 md:py-4 text-green-600">Resolved</th>
-                                                <th className="px-3 md:px-6 py-3 md:py-4 text-blue-600">Open</th>
-                                                <th className="px-3 md:px-6 py-3 md:py-4 text-amber-600">In Progress</th>
-                                                <th className="px-3 md:px-6 py-3 md:py-4 rounded-r-xl">Last Activity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                                            {stats.userSummary.map((summary, idx) => (
-                                                <tr key={idx} className="group hover:bg-gray-50/50 dark:hover:bg-blue-900/10 transition-colors">
-                                                    <td className="px-3 md:px-6 py-3 md:py-5">
-                                                        <div className="flex items-center gap-2 md:gap-3">
-                                                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs md:text-sm shadow-sm">
-                                                                {summary.name.charAt(0)}
-                                                            </div>
-                                                            <span className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate max-w-[100px] md:max-w-none">{summary.name}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-3 md:px-6 py-3 md:py-5">
-                                                        <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-2 md:px-3 py-1 rounded-full">{summary.total}</span>
-                                                    </td>
-                                                    <td className="px-3 md:px-6 py-3 md:py-5">
-                                                        <span className="text-xs md:text-sm font-bold text-green-600">{summary.resolved}</span>
-                                                    </td>
-                                                    <td className="px-3 md:px-6 py-3 md:py-5">
-                                                        <span className="text-xs md:text-sm font-bold text-blue-600">{summary.open}</span>
-                                                    </td>
-                                                    <td className="px-3 md:px-6 py-3 md:py-5">
-                                                        <span className="text-xs md:text-sm font-bold text-amber-600">{summary.inProgress || 0}</span>
-                                                    </td>
-                                                    <td className="px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                                                        {new Date(summary.lastActivity).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                    </td>
+                                <div className="p-2 md:p-4">
+                                    <div className="md:hidden space-y-3">
+                                        {stats.userSummary.map((summary, idx) => (
+                                            <motion.div 
+                                                key={idx}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+                                            >
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm shadow-sm">
+                                                        {summary.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{summary.name}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {new Date(summary.lastActivity).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-4 gap-2 text-center">
+                                                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-gray-900 dark:text-white">{summary.total}</p>
+                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Total</p>
+                                                    </div>
+                                                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-green-600">{summary.resolved}</p>
+                                                        <p className="text-[10px] text-green-600/70 uppercase">Resolved</p>
+                                                    </div>
+                                                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-blue-600">{summary.open}</p>
+                                                        <p className="text-[10px] text-blue-600/70 uppercase">Open</p>
+                                                    </div>
+                                                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2">
+                                                        <p className="text-lg font-bold text-amber-600">{summary.inProgress || 0}</p>
+                                                        <p className="text-[10px] text-amber-600/70 uppercase">In Progress</p>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                    <div className="hidden md:block overflow-x-auto">
+                                        <table className="w-full text-left min-w-[600px]">
+                                            <thead className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50/50 dark:bg-gray-900/50 rounded-xl">
+                                                <tr>
+                                                    <th className="px-6 py-4 rounded-l-xl">Client</th>
+                                                    <th className="px-6 py-4">Total</th>
+                                                    <th className="px-6 py-4 text-green-600">Resolved</th>
+                                                    <th className="px-6 py-4 text-blue-600">Open</th>
+                                                    <th className="px-6 py-4 text-amber-600">In Progress</th>
+                                                    <th className="px-6 py-4 rounded-r-xl">Last Activity</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                {stats.userSummary.map((summary, idx) => (
+                                                    <tr key={idx} className="group hover:bg-gray-50/50 dark:hover:bg-blue-900/10 transition-colors">
+                                                        <td className="px-6 py-5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm shadow-sm">
+                                                                    {summary.name.charAt(0)}
+                                                                </div>
+                                                                <span className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{summary.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">{summary.total}</span>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="text-sm font-bold text-green-600">{summary.resolved}</span>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="text-sm font-bold text-blue-600">{summary.open}</span>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="text-sm font-bold text-amber-600">{summary.inProgress || 0}</span>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-sm text-gray-500 dark:text-gray-400">
+                                                            {new Date(summary.lastActivity).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </motion.div>
                         </motion.div>

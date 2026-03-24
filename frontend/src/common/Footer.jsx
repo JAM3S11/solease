@@ -39,7 +39,7 @@ const Footer = () => {
             {["Home", "About", "Services", "Contact"].map((link) => (
               <li key={link}>
                 <a 
-                  href={`#${link.toLowerCase()}`} 
+                  href={`${link.toLowerCase()}`} 
                   className="hover:text-blue-500 transition-colors flex items-center group"
                 >
                   <span className="w-0 group-hover:w-2 h-px bg-blue-500 mr-0 group-hover:mr-2 transition-all"></span>

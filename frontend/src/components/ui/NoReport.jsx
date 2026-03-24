@@ -46,7 +46,7 @@ const NoReport = ({ userName, type = "client" }) => {
     } else if (isReviewer) {
       return [
         { to: "/reviewer-dashboard/assigned-tickets", icon: Ticket, title: "Assigned Tickets", desc: "View tickets assigned to you", color: "blue" },
-        { to: "/reviewer-dashboard/all-tickets", icon: BarChart3, title: "All Tickets", desc: "Browse all system tickets", color: "purple" }
+        { to: "/reviewer-dashboard/report", icon: TrendingUp, title: "Reports", desc: "View performance analytics", color: "purple" }
       ];
     } else {
       return [

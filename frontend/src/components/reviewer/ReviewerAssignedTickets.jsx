@@ -114,7 +114,7 @@ const ReviewerAssignedTickets = () => {
           <motion.h1
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight"
+            className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight"
           >
             Assigned Tickets
           </motion.h1>
@@ -151,7 +151,7 @@ const ReviewerAssignedTickets = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                     <NumberTicker value={stat.val} />
                   </p>
                 </div>
@@ -168,7 +168,7 @@ const ReviewerAssignedTickets = () => {
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3">
-            <span className="font-bold">Error:</span> {error}
+            <span className="font-medium">Error:</span> {error}
           </div>
         ) : assignedTickets.length === 0 ? (
           <NoTicketComponent noTicket={user?.name} type="reviewer" />

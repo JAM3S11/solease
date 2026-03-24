@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Tickets, Clock, CheckCircle, MessageCircle, Search, Eye, ArrowRight, Zap, ArrowUp, ArrowDown, BookOpen, HelpCircle, User, List, Grid, Table, MapPin, Calendar, FileText, Paperclip } from 'lucide-react'
+import { Plus, Tickets, Clock, CheckCircle, MessageCircle, Search, Eye, ArrowRight, Zap, ArrowUp, ArrowDown, BookOpen, HelpCircle, User, List, Grid, Table, MapPin, Calendar, FileText, Paperclip, TrendingUp } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import { Link } from 'react-router-dom'
@@ -175,7 +175,7 @@ const ReviewerDashbord = () => {
               {[
                 { label: "Assigned Tickets", description: "View all assigned", icon: Tickets, to: "/reviewer-dashboard/assigned-ticket", color: "blue" },
                 { label: "Create Ticket", description: "Create new ticket", icon: Plus, to: "/reviewer-dashboard/new-ticket", color: "indigo" },
-                { label: "Pending Reviews", description: "Feedback to review", icon: MessageCircle, to: "/reviewer-dashboard/assigned-ticket", color: "orange" },
+                { label: "Reports", description: "View analytics", icon: TrendingUp, to: "/reviewer-dashboard/report", color: "purple" },
                 { label: "Knowledge Base", description: "Browse articles", icon: BookOpen, to: "/help-support", color: "emerald" },
               ].map((link, i) => (
                 <motion.div

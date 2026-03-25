@@ -3,7 +3,11 @@ import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_
 
 ///Verification page in the email
 export const sendVerificationEmail = async (email, verificationToken) => {
-    const recipient = email; // keep a separate variable, but as a string
+    const recipient = email;
+  
+    console.log("📧 Attempting to send verification email...");
+    console.log("  To:", recipient.substring(0, 3) + "***@" + recipient.split('@')[1]);
+    console.log("  Token:", verificationToken);
   
     try {
       const info = await transporter.sendMail({
@@ -16,13 +20,24 @@ export const sendVerificationEmail = async (email, verificationToken) => {
         ),
       });
   
-      console.log("✅ Verification email sent:", info.messageId);
+      console.log("✅ Verification email sent successfully!");
+      console.log("  Message ID:", info.messageId);
+      console.log("  Accepted:", info.accepted);
+      console.log("  Rejected:", info.rejected);
       return info;
     } catch (error) {
-      console.error("❌ Error sending verification", error);
+      console.error("❌ Error sending verification email:");
+      console.error("  Error name:", error.name);
+      console.error("  Error message:", error.message);
+      console.error("  Error code:", error.code);
+      console.error("  Error errno:", error.errno);
+      console.error("  Error syscall:", error.syscall);
+      console.error("  Error address:", error.address);
+      console.error("  Error port:", error.port);
+      console.error("  Full error:", error);
       throw new Error(`Error sending verification: ${error.message}`);
     }
-};
+  };
 
 //Will be created in the templates place the mailtrap.io
 export const sendWelcomeEmail = async (email, name) => {

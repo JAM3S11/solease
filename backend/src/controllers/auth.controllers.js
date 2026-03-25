@@ -8,6 +8,12 @@ import crypto from "crypto";
 export const signup = async (req, res) => {
     const { username, name, email, password } = req.body;
 
+    console.log("\n📝 SIGNUP REQUEST RECEIVED");
+    console.log("  Username:", username);
+    console.log("  Name:", name);
+    console.log("  Email:", email ? email.substring(0, 3) + "***@" + email.split('@')[1] : "NOT PROVIDED");
+    console.log("  Password:", password ? "✅ Provided (length: " + password.length + ")" : "NOT PROVIDED");
+
     try {
         //Check if the fields are empty
         if(!username || !name || !email || !password){
@@ -16,7 +22,7 @@ export const signup = async (req, res) => {
 
         // Check if user exists
         const userAlreadyExists = await User.findOne({ email });
-        console.log("userAlreadyExists", userAlreadyExists);
+        console.log("  User already exists:", userAlreadyExists ? "YES" : "NO");
 
         if(userAlreadyExists){
             return res.status(400).json({ success: false, message: "User already exists" });
@@ -63,10 +69,18 @@ export const signup = async (req, res) => {
         //create a token
         generateTokenAndSetCookie(res, user._id);
 
+        console.log("✅ User created successfully:", user.email);
+        console.log("📧 Attempting to send verification email to:", user.email.substring(0, 3) + "***@" + user.email.split('@')[1]);
+
         //Send verification to email (non-blocking)
-        sendVerificationEmail(user.email, verificationToken).catch(err => 
-            console.error("Failed to send verification email:", err.message)
-        );
+        sendVerificationEmail(user.email, verificationToken)
+            .then(() => {
+                console.log("📧 Verification email sent successfully!");
+            })
+            .catch(err => {
+                console.error("❌ Failed to send verification email:");
+                console.error("  Error:", err.message);
+            });
 
         res.status(201).json({
 			success: true,
@@ -355,7 +369,7 @@ export const checkAuth = async (req, res) => {
 	try {
 		const user = await User.findById(req.userId).select("-password");
 		if (!user) {
-			return res.status(400).json({ 
+			return res.status(401).json({ 
                 success: false, 
                 message: "User not found" 
             });
@@ -364,7 +378,7 @@ export const checkAuth = async (req, res) => {
 		res.status(200).json({ success: true, user });
 	} catch (error) {
 		console.log("Error in checkAuth ", error);
-		res.status(400).json({ success: false, message: error.message });
+		res.status(500).json({ success: false, message: error.message });
 	}
 };
 

@@ -5,6 +5,7 @@ import { useAuthenticationStore } from "../store/authStore";
 import { toast } from "sonner"
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSignupAction, ActionExpiredPage } from "@/hooks/useSensitiveAction.jsx";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -52,6 +53,7 @@ const CanvasLogo = ({ isBlurred }) => {
 const SignUpForm = () => {
   const navigate = useNavigate();
   const { signup, error, isLoading } = useAuthenticationStore();
+  const { isBlocked, error: blockError, refreshCount, trackRefresh, completeAction, setActionError } = useSignupAction();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -185,6 +187,10 @@ const SignUpForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isBlocked) {
+      return;
+    }
+
     setTouched({ username: true, name: true, email: true, password: true });
     validateField('username', formData.username);
     validateField('name', formData.name);
@@ -200,10 +206,12 @@ const SignUpForm = () => {
       return;
     }
 
+    trackRefresh();
+
     try {
       await signup(formData.username, formData.name, formData.email, formData.password);
       
-      // Reset form after successful signup
+      completeAction();
       setFormData({ username: "", name: "", email: "", password: "", confirmPassword: "" });
       setValidationErrors({});
       setValidationSuccess({});
@@ -212,6 +220,7 @@ const SignUpForm = () => {
       navigate("/auth/verify-email", { replace: true });
     } catch (err) {
       const errorMessage = err?.response?.data?.message || error || "Sign up failed!";
+      setActionError(errorMessage);
       toast.error(errorMessage, {
         position,
         description: "Please try again or contact support."
@@ -230,6 +239,10 @@ const SignUpForm = () => {
     medium: 'text-yellow-600',
     strong: 'text-green-600'
   };
+
+  if (isBlocked) {
+    return <ActionExpiredPage message={blockError || "Signup session expired. Please try again."} />;
+  }
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>

@@ -570,7 +570,7 @@ const FeedbackComponent = () => {
                   <Listbox value={ticket.status} onChange={handleStatusChange}>
                     <div className="relative inline-block">
                       <ListboxButton
-                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass__(
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass(
                           ticket.status
                         )}`}
                       >
@@ -596,7 +596,7 @@ const FeedbackComponent = () => {
                   </Listbox>
                 ) : (
                   <span
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass__(
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${getStatusPillClass(
                       ticket.status
                     )}`}
                   >

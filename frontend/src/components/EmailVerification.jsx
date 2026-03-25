@@ -4,6 +4,7 @@ import { useAuthenticationStore } from "../store/authStore";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useVerifyEmailAction, ActionExpiredPage } from "@/hooks/useSensitiveAction.jsx";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -54,6 +55,7 @@ const EmailVerificationPage = () => {
 
   const { error, isLoading, verifyEmail } = useAuthenticationStore();
   const navigate = useNavigate();
+  const { isBlocked, error: blockError, refreshCount, trackRefresh, completeAction, setActionError } = useVerifyEmailAction();
 
   const isUseMobile = useIsMobile();
   const position = isUseMobile ? 'top-center' : 'top-right';
@@ -77,11 +79,23 @@ const EmailVerificationPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    if (isBlocked) {
+      return;
+    }
+
     //Join the arrays
     const verificationCode = code.join("");
+    
+    if (verificationCode.length !== 6) {
+      return;
+    }
+
+    trackRefresh();
     try {
       await verifyEmail(verificationCode);
+      completeAction();
       toast.success("Email verified successfully!", {
         position,
         description: "Email verification process was a success.",
@@ -91,16 +105,21 @@ const EmailVerificationPage = () => {
       });
       navigate("/auth/login");
     } catch (err) {
-      toast.error(error || "Email verification failed")
+      setActionError(err?.response?.data?.message || "Email verification failed");
+      toast.error(error || "Email verification failed");
     }
   };
 
   // To auto submit
   useEffect(() => {
-    if(code.every((digit) => digit !== "")){
-      handleSubmit(new Event("Submit"));
+    if(code.every((digit) => digit !== "") && !isBlocked){
+      handleSubmit();
     }
-  }, [code]);
+  }, [code, isBlocked]);
+
+  if (isBlocked) {
+    return <ActionExpiredPage message={blockError || "Verification session expired. Please try again."} />;
+  }
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>

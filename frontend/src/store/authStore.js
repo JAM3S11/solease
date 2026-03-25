@@ -138,10 +138,10 @@ export const useAuthenticationStore = create((set) => ({
         }
     },
 
-    resetPassword: async (token, password) => {
+    resetPassword: async (token, password, oldPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post(`/auth/reset-password/${token}`, { password });
+            const response = await api.post(`/auth/reset-password/${token}`, { password, oldPassword });
             set({
                 message: response.data.message,
                 isLoading: false,

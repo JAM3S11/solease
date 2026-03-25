@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Mail, Send, CheckCircle2 } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
+import { useForgotPasswordAction, ActionExpiredPage } from "@/hooks/useSensitiveAction.jsx";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -57,6 +58,7 @@ const ForgotPassForm = () => {
   const [isSending, setIsSending] = useState(false);
   const { isLoading, forgotPassword } = useAuthenticationStore();
   const navigate = useNavigate();
+  const { isBlocked, error: blockError, refreshCount, trackRefresh, completeAction, setActionError } = useForgotPasswordAction();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -67,13 +69,24 @@ const ForgotPassForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (isBlocked) {
+      return;
+    }
+
+    trackRefresh();
     try {
       await forgotPassword(formData.email);
+      completeAction();
       setIsSending(true);
     } catch (error) {
-      // Handle error if necessary
+      setActionError(error?.response?.data?.message || "Failed to send reset email. Please try again.");
     }
   };
+
+  if (isBlocked) {
+    return <ActionExpiredPage message={blockError || "Password reset session expired. Please try again."} />;
+  }
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6">

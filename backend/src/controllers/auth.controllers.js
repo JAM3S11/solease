@@ -22,6 +22,11 @@ export const signup = async (req, res) => {
             return res.status(400).json({ success: false, message: "User already exists" });
         }
 
+        const usernameExists = await User.findOne({ username });
+        if(usernameExists){
+            return res.status(400).json({ success: false, message: "Username already taken" });
+        }
+
         //Hashing a password
         const hashedPassword = await bcryptjs.hash(password, 10);
         const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
@@ -42,13 +47,26 @@ export const signup = async (req, res) => {
         });
 
         //Save
-        await user.save();
+        try {
+            await user.save();
+        } catch (saveError) {
+            if (saveError.code === 11000) {
+                const field = Object.keys(saveError.keyPattern)[0];
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists` 
+                });
+            }
+            throw saveError;
+        }
 
         //create a token
         generateTokenAndSetCookie(res, user._id);
 
-        //Send verification to email
-        await sendVerificationEmail(user.email, verificationToken);
+        //Send verification to email (non-blocking)
+        sendVerificationEmail(user.email, verificationToken).catch(err => 
+            console.error("Failed to send verification email:", err.message)
+        );
 
         res.status(201).json({
 			success: true,

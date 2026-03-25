@@ -211,7 +211,8 @@ const SignUpForm = () => {
       
       navigate("/auth/verify-email", { replace: true });
     } catch (err) {
-      toast.error(error || "Sign up failed!", {
+      const errorMessage = err?.response?.data?.message || error || "Sign up failed!";
+      toast.error(errorMessage, {
         position,
         description: "Please try again or contact support."
       });

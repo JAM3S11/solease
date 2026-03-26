@@ -20,9 +20,12 @@ const getProfileAvatar = (user, size = "md") => {
   const initials = user?.name?.charAt(0) || user?.username?.charAt(0) || "?";
 
   if (user?.profilePhoto) {
+    const photoUrl = user.profilePhoto.startsWith("http")
+      ? user.profilePhoto
+      : `${import.meta.env.VITE_API_URL}${user.profilePhoto}`;
     return (
       <img
-        src={`${import.meta.env.VITE_API_URL}${user.profilePhoto}`}
+        src={photoUrl}
         alt={user?.name || user?.username}
         className={`${sizes[size]} rounded-full object-cover`}
       />
@@ -457,9 +460,7 @@ const ReviewerDashbord = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white text-xs font-bold">
-                              {ticket.user?.name?.charAt(0) || ticket.user?.username?.charAt(0) || '?'}
-                            </div>
+                            {getProfileAvatar(ticket.user, "sm")}
                             <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[100px]">
                               {ticket.user?.name || ticket.user?.username || 'N/A'}
                             </span>
@@ -530,9 +531,7 @@ const ReviewerDashbord = () => {
                       className="group flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300"
                     >
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white text-sm font-bold">
-                          {ticket.user?.name?.charAt(0) || ticket.user?.username?.charAt(0) || '?'}
-                        </div>
+                        {getProfileAvatar(ticket.user, "md")}
                       </div>
                       
                       <div className="flex-1 min-w-0">
@@ -584,9 +583,7 @@ const ReviewerDashbord = () => {
                       
                       <div className="hidden md:flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[8px] font-bold">
-                            {ticket.user?.name?.charAt(0) || ticket.user?.username?.charAt(0) || '?'}
-                          </div>
+                          {getProfileAvatar(ticket.user, "sm")}
                           <span className="truncate max-w-[80px]">{ticket.user?.name || ticket.user?.username || 'N/A'}</span>
                         </div>
                         <span className="inline-flex items-center gap-1">
@@ -668,24 +665,10 @@ const ReviewerDashbord = () => {
                         <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ticket.description?.slice(0, 80)}...</p>
                         
                         <div className="flex items-center gap-2 mb-3">
-                          <motion.span
-                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className={`w-2.5 h-2.5 rounded-full ${
-                              ticket.status === "Open"
-                                ? "bg-blue-500"
-                                : ticket.status === "In Progress"
-                                  ? "bg-yellow-500"
-                                  : ticket.status === "Resolved"
-                                    ? "bg-green-500"
-                                    : "bg-gray-400"
-                            }`}
-                          />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{ticket.status}</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
-                            <FileText size={10} />
-                            {ticket.issueType || 'General'}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            {getProfileAvatar(ticket.user, "sm")}
+                            <span className="truncate max-w-[80px]">{ticket.user?.name || ticket.user?.username || 'N/A'}</span>
+                          </div>
                         </div>
                         
                         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">

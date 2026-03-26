@@ -48,9 +48,12 @@ const getProfileAvatar = (user, size = "md") => {
   const initials = user?.name?.charAt(0) || user?.username?.charAt(0) || "?";
 
   if (user?.profilePhoto) {
+    const photoUrl = user.profilePhoto.startsWith("http")
+      ? user.profilePhoto
+      : `${import.meta.env.VITE_API_URL}${user.profilePhoto}`;
     return (
       <img
-        src={`${import.meta.env.VITE_API_URL}${user.profilePhoto}`}
+        src={photoUrl}
         alt={user?.name || user?.username}
         className={`${sizes[size]} rounded-full object-cover`}
       />

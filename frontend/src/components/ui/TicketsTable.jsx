@@ -201,9 +201,17 @@ const TicketsTable = ({
           </span>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-medium text-blue-600 dark:text-blue-400">
-                {ticket.assignedTo ? ticket.assignedTo.username[0].toUpperCase() : "?"}
-            </div>
+            {ticket.assignedTo?.profilePhoto ? (
+              <img 
+                src={ticket.assignedTo.profilePhoto.startsWith("http") ? ticket.assignedTo.profilePhoto : `${import.meta.env.VITE_API_URL}${ticket.assignedTo.profilePhoto}`}
+                alt={ticket.assignedTo.username}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-[10px] font-medium text-blue-600 dark:text-blue-400">
+                  {ticket.assignedTo ? ticket.assignedTo.username[0].toUpperCase() : "?"}
+              </div>
+            )}
             <span className='text-xs font-medium text-gray-700 dark:text-gray-300'>
               {ticket.assignedTo ? ticket.assignedTo.username : "Unassigned"}
             </span>

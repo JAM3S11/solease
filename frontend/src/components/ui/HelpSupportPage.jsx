@@ -351,10 +351,10 @@ const HelpSupportPage = () => {
         icon: UserPlus,
         color: "primary",
         steps: [
-          { title: "Visit the Registration Page", desc: "Navigate to our signup page by clicking the 'Sign Up' button on the login page." },
-          { title: "Enter Your Information", desc: "Fill in your full name, email address, and create a secure password. Use a combination of letters, numbers, and symbols for security." },
-          { title: "Verify Your Email", desc: "Check your inbox for a verification email. Click the verification link to activate your account." },
-          { title: "Complete Your Profile", desc: "Add your company information, upload a profile picture, and set your preferences." }
+          { title: "Visit the Registration Page", desc: "Navigate to our signup page by clicking the 'Sign Up' button on the login page. You'll find this button prominently displayed on the landing page." },
+          { title: "Enter Your Information", desc: "Fill in your full name, a valid email address, and create a secure password. For optimal security, use a combination of uppercase letters, lowercase letters, numbers, and special characters (e.g., MyS3cur3P@ss!)." },
+          { title: "Verify Your Email", desc: "Check your inbox (and spam folder, just in case) for a verification email from SOLEASE. Click the verification link to activate your account. The link expires after 24 hours." },
+          { title: "Complete Your Profile", desc: "Add your company information, upload a profile picture, and set your notification preferences. A complete profile helps our team provide better support." }
         ]
       },
       {
@@ -364,10 +364,11 @@ const HelpSupportPage = () => {
         icon: LayoutDashboard,
         color: "blue",
         steps: [
-          { title: "Access the Dashboard", desc: "After logging in, you'll be automatically redirected to your personalized dashboard." },
-          { title: "View Quick Stats", desc: "The top section displays key metrics like open tickets, resolved cases, and response times." },
-          { title: "Use Quick Actions", desc: "The sidebar provides quick access to common tasks like creating new tickets or viewing reports." },
-          { title: "Customize Your View", desc: "Rearrange widgets and customize which metrics are visible based on your preferences." }
+          { title: "Access the Dashboard", desc: "After logging in, you'll be automatically redirected to your personalized dashboard. The dashboard is your central hub for managing all support activities." },
+          { title: "Understand the Layout", desc: "The dashboard consists of three main areas: the left sidebar for navigation, the main content area for tickets and information, and the right sidebar for quick actions and stats." },
+          { title: "View Quick Stats", desc: "The top section displays key metrics including open tickets, resolved cases, average response times, and customer satisfaction scores. These update in real-time." },
+          { title: "Use Quick Actions", desc: "The sidebar provides instant access to common tasks like creating new tickets, viewing your ticket history, accessing reports, and updating your profile settings." },
+          { title: "Customize Your View", desc: "Click the settings icon on any widget to rearrange, resize, or hide specific metrics. Your preferences are automatically saved for future sessions." }
         ]
       },
       {
@@ -377,10 +378,12 @@ const HelpSupportPage = () => {
         icon: Ticket,
         color: "purple",
         steps: [
-          { title: "Create a New Ticket", desc: "Click the 'New Ticket' button and fill in the subject, description, and priority level." },
-          { title: "Attach Files", desc: "Use the paperclip icon to attach screenshots or documents relevant to your issue." },
-          { title: "Track Ticket Status", desc: "View your submitted tickets in the 'My Tickets' section with real-time status updates." },
-          { title: "Provide Feedback", desc: "Once resolved, rate your experience and provide feedback to help us improve." }
+          { title: "Create a New Ticket", desc: "Click the 'New Ticket' button (found in the sidebar or dashboard quick actions). Fill in the subject (be specific), description (include all relevant details), and select the appropriate priority level (Low, Medium, High, or Urgent)." },
+          { title: "Categorize Your Ticket", desc: "Select a relevant category from the dropdown menu (e.g., Technical Issue, Billing Inquiry, Feature Request, General Question). This helps route your ticket to the right specialist faster." },
+          { title: "Attach Files", desc: "Use the paperclip icon to attach screenshots, documents, or log files that help illustrate your issue. Maximum file size is 10MB. Supported formats: JPG, PNG, PDF, DOCX, TXT." },
+          { title: "Submit and Track", desc: "Click 'Submit Ticket' to send your request. You'll receive a confirmation email with your ticket ID. Use this ID to track progress in the 'My Tickets' section." },
+          { title: "Monitor Status Changes", desc: "Ticket statuses include: Open (submitted, awaiting review), In Progress (being worked on), Resolved (solution provided), and Closed (confirmed resolved). You'll receive email notifications for status changes." },
+          { title: "Provide Feedback", desc: "Once your ticket is marked as resolved, you'll receive a feedback request. Rate your experience and provide comments to help us improve our service." }
         ]
       },
       {
@@ -390,10 +393,11 @@ const HelpSupportPage = () => {
         icon: Lock,
         color: "green",
         steps: [
-          { title: "Enable Two-Factor Authentication", desc: "Go to Settings > Security and enable 2FA for an extra layer of protection." },
-          { title: "Use Strong Passwords", desc: "Update your password regularly and avoid using easily guessable combinations." },
-          { title: "Review Active Sessions", desc: "Check your account activity regularly to ensure no unauthorized access." },
-          { title: "Secure Your Email", desc: "Ensure the email associated with your account has proper security settings." }
+          { title: "Enable Two-Factor Authentication (2FA)", desc: "Go to Settings > Security and enable 2FA. We support authenticator apps (Google Authenticator, Authy) and SMS verification. This adds an essential layer of protection to your account." },
+          { title: "Use Strong, Unique Passwords", desc: "Create a strong password that's at least 12 characters long with a mix of letters, numbers, and symbols. Never reuse passwords across different services. Consider using a password manager." },
+          { title: "Review Active Sessions", desc: "Regularly check Settings > Security > Active Sessions to see all devices currently logged into your account. If you notice any unfamiliar devices, click 'Sign Out' to terminate that session." },
+          { title: "Keep Email Secure", desc: "Ensure the email associated with your SOLEASE account has proper security settings. Enable 2FA on your email provider and regularly monitor for suspicious activity." },
+          { title: "Log Out on Shared Devices", desc: "Always click your profile icon and select 'Sign Out' when using shared or public computers. Never leave your account logged in on unattended devices." }
         ]
       }
     ];
@@ -402,64 +406,81 @@ const HelpSupportPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-4 sm:space-y-6"
       >
         {/* Introduction */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gradient-to-br from-primary/5 to-blue-500/5 dark:from-primary/10 dark:to-blue-500/10">
-          <div className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Rocket className="w-6 h-6 text-primary" />
+        <div className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800 shadow-lg">
+          <div className="p-4 sm:p-5 lg:p-6">
+            <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
+                <Rocket className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
               </div>
-              <div>
-                <h3 className="text-base font-medium text-gray-900 dark:text-white">Welcome to SOLEASE</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Your complete guide to getting started</p>
+              <div className="min-w-0">
+                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 dark:text-white">Welcome to SOLEASE</h3>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Your complete guide to getting started</p>
               </div>
             </div>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-              This guide will walk you through everything you need to know about using SOLEASE effectively. 
-              From creating your account to managing tickets, we've got you covered.
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-3 sm:mb-4">
+              This comprehensive guide will walk you through everything you need to know about using SOLEASE effectively. 
+              From creating your account to managing tickets and securing your profile, we've covered every step to ensure you get the most out of our platform.
             </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2.5 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm font-semibold rounded-full">Account Setup</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold rounded-full">Dashboard</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs sm:text-sm font-semibold rounded-full">Tickets</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-semibold rounded-full">Security</span>
+            </div>
           </div>
         </div>
 
         {/* All Guides Expanded */}
-        <div className="space-y-4">
-          {guides.map((guide) => (
-            <div key={guide.id} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-              <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center ${
-                    guide.color === "primary" ? "bg-primary/10 text-primary" :
-                    guide.color === "blue" ? "bg-blue-500/10 text-blue-500" :
-                    guide.color === "purple" ? "bg-purple-500/10 text-purple-500" :
-                    "bg-green-500/10 text-green-500"
+        <div className="space-y-4 sm:space-y-6">
+          {guides.map((guide, guideIndex) => (
+            <div 
+              key={guide.id} 
+              className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50"
+            >
+              <div className="p-4 sm:p-5 lg:p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/50 to-white dark:from-gray-800 dark:to-gray-800">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className={`w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 ${
+                    guide.color === "primary" ? "bg-gradient-to-br from-primary to-primary/80 text-white shadow-primary/25" :
+                    guide.color === "blue" ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/25" :
+                    guide.color === "purple" ? "bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-purple-500/25" :
+                    "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-green-500/25"
                   }`}>
-                    <guide.icon className="w-5 h-5 sm:w-5 sm:h-5" />
+                    <guide.icon className="w-5 h-5 sm:w-5.5 sm:h-5.5 lg:w-6 lg:h-6" />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">{guide.title}</h4>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{guide.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Section {guideIndex + 1}</span>
+                    </div>
+                    <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">{guide.title}</h4>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-1 sm:line-clamp-2">{guide.description}</p>
                   </div>
                 </div>
               </div>
-              <div className="p-4 sm:p-5">
-                <div className="space-y-4 sm:space-y-5">
+              <div className="p-4 sm:p-5 lg:p-6 bg-white dark:bg-gray-800">
+                <div className="space-y-4 sm:space-y-5 lg:space-y-6">
                   {guide.steps.map((step, index) => (
                     <div key={index} className="flex gap-3 sm:gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
-                          index === 0 ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                      <div className="flex flex-col items-center flex-shrink-0">
+                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
+                          index === 0 
+                            ? guide.color === "primary" ? "bg-primary text-white" :
+                              guide.color === "blue" ? "bg-blue-500 text-white" :
+                              guide.color === "purple" ? "bg-purple-500 text-white" :
+                              "bg-green-500 text-white"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                         }`}>
                           {index + 1}
                         </div>
                         {index < guide.steps.length - 1 && (
-                          <div className="w-0.5 flex-1 bg-gray-200 dark:bg-gray-700 my-1" />
+                          <div className="w-0.5 flex-1 bg-gradient-to-b from-gray-200 to-gray-100 dark:from-gray-700 dark:to-gray-800 mt-1.5 sm:mt-2" style={{ minHeight: '16px' }} />
                         )}
                       </div>
-                      <div className="flex-1 pb-3 sm:pb-4">
-                        <h5 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-0.5 sm:mb-1">{step.title}</h5>
-                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{step.desc}</p>
+                      <div className="flex-1 min-w-0 pb-3 sm:pb-4">
+                        <h5 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1">{step.title}</h5>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{step.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -467,6 +488,59 @@ const HelpSupportPage = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Pro Tips Section */}
+        <div className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 shadow-lg">
+          <div className="p-4 sm:p-5 lg:p-6">
+            <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Pro Tips for Success</h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+              <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Use specific ticket subjects for faster resolution</span>
+              </div>
+              <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Attach screenshots when reporting issues</span>
+              </div>
+              <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Enable 2FA for enhanced account security</span>
+              </div>
+              <div className="flex items-start gap-2 p-2.5 sm:p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Check the FAQ section before submitting tickets</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Need Help CTA */}
+        <div className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900 dark:bg-gray-800 shadow-xl">
+          <div className="p-5 sm:p-6 lg:p-8 text-center">
+            <h4 className="text-lg sm:text-xl font-bold text-white mb-2">Still Need Help?</h4>
+            <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6 max-w-lg mx-auto">
+              If you can't find what you're looking for in this guide, our support team is here to assist you 24/7.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+              <button 
+                onClick={() => navigate("/client-dashboard/new-ticket")}
+                className="px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                <Ticket className="w-4 h-4 sm:w-5 sm:h-5" />
+                Submit a Ticket
+              </button>
+              <button className="px-5 sm:px-6 py-2.5 sm:py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+                <Headphones className="w-4 h-4 sm:w-5 sm:h-5" />
+                Live Chat
+              </button>
+            </div>
+          </div>
         </div>
       </motion.div>
     );
@@ -484,16 +558,16 @@ const HelpSupportPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-3 sm:space-y-4"
+        className="space-y-2.5 sm:space-y-3 lg:space-y-4"
       >
         {filteredTickets.length === 0 ? (
-          <div className="text-center py-8 sm:py-12 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
-            <Ticket size={32} className="mx-auto mb-3 text-gray-400 sm:size-10" />
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-4">
+          <div className="text-center py-6 sm:py-8 lg:py-12 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
+            <Ticket size={28} className="mx-auto mb-2 sm:mb-3 text-gray-400 sm:size-10" />
+            <p className="text-xs sm:text-sm lg:text-base text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
               {tickets.length === 0 ? "You haven't submitted any tickets yet." : "No tickets match your search."}
             </p>
             {tickets.length === 0 && (
-              <a href="/client/tickets/new" className="text-primary hover:underline font-medium text-sm">
+              <a href="/client-dashboard/new-ticket" className="text-primary hover:underline font-medium text-xs sm:text-sm">
                 Submit your first ticket
               </a>
             )}
@@ -504,35 +578,35 @@ const HelpSupportPage = () => {
               key={ticket._id}
               className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800"
             >
-              <div className="p-3 sm:p-4">
-                <div className="flex items-start justify-between gap-3">
+              <div className="p-2.5 sm:p-3 lg:p-4">
+                <div className="flex items-start justify-between gap-2 sm:gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
-                      <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 ${getStatusColor(ticket.status)}`}>
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
+                      <span className={`text-[9px] sm:text-[10px] lg:text-xs px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 ${getStatusColor(ticket.status)}`}>
                         {getStatusIcon(ticket.status)}
                         <span className="hidden xs:inline">{ticket.status}</span>
                       </span>
-                      <span className="text-[10px] sm:text-xs font-semibold text-primary uppercase">
+                      <span className="text-[9px] sm:text-[10px] lg:text-xs font-semibold text-primary uppercase">
                         #{ticket.ticketId || ticket._id?.slice(-6)}
                       </span>
                     </div>
-                    <h3 className="font-medium text-sm sm:text-base text-gray-800 dark:text-gray-200 truncate">
+                    <h3 className="font-medium text-xs sm:text-sm lg:text-base text-gray-800 dark:text-gray-200 truncate">
                       {ticket.subject}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 hidden sm:block">
+                    <p className="text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 hidden sm:block">
                       {ticket.description}
                     </p>
                     {ticket.updatedAt && (
-                      <p className="text-[10px] sm:text-xs text-gray-400 mt-1 sm:mt-2">
+                      <p className="text-[9px] sm:text-[10px] lg:text-xs text-gray-400 mt-1">
                         Updated {new Date(ticket.updatedAt).toLocaleDateString()}
                       </p>
                     )}
                   </div>
                   <button
                     onClick={() => navigate(`/client-dashboard/ticket/${ticket._id}/feedback`)}
-                    className="text-primary hover:underline text-xs sm:text-sm flex items-center gap-1 flex-shrink-0"
+                    className="text-primary hover:underline text-[10px] sm:text-xs lg:text-sm flex items-center gap-1 flex-shrink-0"
                   >
-                    View <ChevronRight size={12} className="sm:size-3.5" />
+                    View <ChevronRight size={10} className="sm:size-3.5" />
                   </button>
                 </div>
               </div>
@@ -547,12 +621,12 @@ const HelpSupportPage = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-3 sm:space-y-4"
+      className="space-y-2.5 sm:space-y-3 lg:space-y-4"
     >
       {filteredFaqs.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
-          <HelpCircle size={32} className="mx-auto mb-3 text-gray-400 sm:size-10" />
-          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No matching FAQs found.</p>
+        <div className="text-center py-6 sm:py-8 lg:py-12 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
+          <HelpCircle size={28} className="mx-auto mb-2 sm:mb-3 text-gray-400 sm:size-10" />
+          <p className="text-xs sm:text-sm lg:text-base text-gray-500 dark:text-gray-400">No matching FAQs found.</p>
         </div>
       ) : (
         filteredFaqs.map((faq, index) => (
@@ -562,24 +636,24 @@ const HelpSupportPage = () => {
           >
             <button
               onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-              className="w-full flex items-center justify-between p-3 sm:p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              className="w-full flex items-center justify-between p-2.5 sm:p-3 lg:p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
-              <span className="font-medium text-sm sm:text-base text-gray-800 dark:text-gray-200 pr-3">
+              <span className="font-medium text-xs sm:text-sm lg:text-base text-gray-800 dark:text-gray-200 pr-2 sm:pr-3">
                 {faq.question}
               </span>
               {expandedFaq === index ? (
-                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
+                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-gray-400 flex-shrink-0" />
               ) : (
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-gray-400 flex-shrink-0" />
               )}
             </button>
             {expandedFaq === index && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
-                className="px-3 sm:px-4 pb-3 sm:pb-4"
+                className="px-2.5 sm:px-3 lg:px-4 pb-2.5 sm:pb-3 lg:pb-4"
               >
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-[10px] sm:text-xs lg:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {faq.answer}
                 </p>
               </motion.div>
@@ -592,32 +666,32 @@ const HelpSupportPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:p-6 xl:p-8">
         {/* Hero Search Section */}
-        <section className="text-center mb-8 md:mb-12 py-6 md:py-10 px-4 md:px-6 rounded-xl bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-800">
-          <h1 className="text-xl sm:text-2xl font-semibold mb-3 md:mb-4 text-gray-900 dark:text-white">
+        <section className="text-center mb-6 sm:mb-8 md:mb-12 py-4 sm:py-6 md:py-10 px-3 sm:px-4 md:px-6 rounded-xl bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-800">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 sm:mb-3 md:mb-4 text-gray-900 dark:text-white">
             {roleContent[userRole]?.title || roleContent.client.title}
           </h1>
-          <div className="max-w-2xl mx-auto relative group mb-4">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
-              <Search size={20} />
+          <div className="max-w-2xl mx-auto relative group mb-3 sm:mb-4">
+            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+              <Search size={18} className="sm:w-5 sm:h-5" />
             </div>
             <input
               type="text"
               placeholder="Search articles, guides..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-12 pr-4 py-3 md:py-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm text-base md:text-lg"
+              className="block w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 md:py-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm text-sm sm:text-base md:text-lg"
             />
           </div>
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:overflow-visible sm:mx-0 sm:px-0">
-            <div className="flex sm:flex-wrap justify-start sm:justify-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 self-center mr-2 hidden xs:inline">Popular:</span>
+          <div className="overflow-x-auto pb-2 -mx-3 px-3 sm:overflow-visible sm:mx-0 sm:px-0">
+            <div className="flex sm:flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 self-center mr-1 sm:mr-2 hidden xs:inline">Popular:</span>
               {popularTopics.map((topic, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSearchQuery(topic.label)}
-                  className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
+                  className={`px-2.5 sm:px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
                     topic.color === "primary"
                       ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
                       : "bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700"
@@ -631,11 +705,11 @@ const HelpSupportPage = () => {
         </section>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 lg:space-y-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
             {/* Category Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {categoryCards.map((category) => (
                 <motion.div
                   key={category.id}
@@ -643,19 +717,24 @@ const HelpSupportPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                   onClick={() => {
-                    setActiveSection(category.id);
-                    if (category.id === "tickets") setSelectedCategory("tickets");
-                    else if (category.id === "getting-started") setSelectedCategory("getting-started");
-                    else if (category.id === "billing" || category.id === "account-security") setSelectedCategory("account");
-                    else setSelectedCategory("general");
+                    if (category.id === "getting-started") {
+                      navigate("/help-support/getting-started");
+                    } else if (category.id === "account-security") {
+                      navigate("/help-support/account-security");
+                    } else {
+                      setActiveSection(category.id);
+                      if (category.id === "tickets") setSelectedCategory("tickets");
+                      else if (category.id === "billing") setSelectedCategory("account");
+                      else setSelectedCategory("general");
+                    }
                   }}
-                  className={`p-4 sm:p-6 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${
+                  className={`p-3 sm:p-4 lg:p-6 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${
                     activeSection === category.id
                       ? "border-primary/50 bg-primary/5 dark:bg-primary/10"
                       : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-primary/30"
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform ${
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg flex items-center justify-center mb-2.5 sm:mb-3 lg:mb-4 group-hover:scale-110 transition-transform ${
                     category.color === "primary" ? "bg-primary/10 text-primary" :
                     category.color === "blue" ? "bg-blue-500/10 text-blue-500" :
                     category.color === "green" ? "bg-green-500/10 text-green-500" :
@@ -663,10 +742,10 @@ const HelpSupportPage = () => {
                     category.color === "amber" ? "bg-amber-500/10 text-amber-500" :
                     "bg-gray-500/10 text-gray-500"
                   }`}>
-                    <category.icon size={20} className="sm:size-6" />
+                    <category.icon size={18} className="sm:size-5 lg:size-6" />
                   </div>
-                  <h3 className="text-sm font-medium mb-1 text-gray-900 dark:text-white">{category.title}</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{category.description}</p>
+                  <h3 className="text-xs sm:text-sm font-medium mb-1 text-gray-900 dark:text-white">{category.title}</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{category.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -677,10 +756,13 @@ const HelpSupportPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <MessageSquare className="w-5 h-5 text-primary" />
-                <h2 className="text-base font-medium text-gray-900 dark:text-white">
-                  {activeSection === "tickets" ? "Your Tickets" : activeSection === "getting-started" ? "Getting Started Guide" : "Frequently Asked Questions"}
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <h2 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
+                  {activeSection === "tickets" ? "Your Tickets" : 
+                   activeSection === "getting-started" ? "Getting Started Guide" : 
+                   activeSection === "account-security" ? "Account & Security" :
+                   "Frequently Asked Questions"}
                 </h2>
               </div>
               {renderCategoryContent()}
@@ -688,28 +770,28 @@ const HelpSupportPage = () => {
           </div>
 
           {/* Sidebar */}
-          <aside className="space-y-4 sm:space-y-6">
+          <aside className="space-y-3 sm:space-y-4 lg:space-y-6">
             {/* Help Actions */}
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="p-4 sm:p-6 rounded-xl bg-gray-900 dark:bg-gray-800 text-white shadow-xl"
+              className="p-4 sm:p-5 lg:p-6 rounded-xl bg-gray-900 dark:bg-gray-800 text-white shadow-xl"
             >
-              <h3 className="text-sm font-medium mb-3 sm:mb-4">Need more help?</h3>
-              <p className="text-gray-300 text-xs sm:text-sm mb-4 sm:mb-6">
+              <h3 className="text-sm font-medium mb-2 sm:mb-3 lg:mb-4">Need more help?</h3>
+              <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 lg:mb-6">
                 Our dedicated support team is available 24/7.
               </p>
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 lg:space-y-3">
                 <button
-                  onClick={() => navigate("/client/tickets/new")}
-                  className="w-full py-2.5 sm:py-3 bg-primary hover:bg-primary/90 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-sm"
+                  onClick={() => navigate("/client-dashboard/new-ticket")}
+                  className="w-full py-2 sm:py-2.5 lg:py-3 bg-primary hover:bg-primary/90 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-xs sm:text-sm"
                 >
-                  <Tickets size={18} />
+                  <Tickets size={16} className="sm:w-[18px] sm:h-[18px]" />
                   Open a Support Ticket
                 </button>
-                <button className="w-full py-2.5 sm:py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-sm">
-                  <Headphones size={18} />
+                <button className="w-full py-2 sm:py-2.5 lg:py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-xs sm:text-sm">
+                  <Headphones size={16} className="sm:w-[18px] sm:h-[18px]" />
                   Start Live Chat
                 </button>
               </div>
@@ -720,22 +802,22 @@ const HelpSupportPage = () => {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
+              className="p-4 sm:p-5 lg:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
             >
               <h3 className="text-sm font-medium mb-3 sm:mb-4 text-gray-900 dark:text-white">My Recent Tickets</h3>
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2.5 sm:space-y-3 lg:space-y-4">
                 {recentTickets.length === 0 ? (
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center py-3 sm:py-4">
                     No tickets submitted yet
                   </p>
                 ) : (
                   recentTickets.map((ticket) => (
-                    <div key={ticket._id} className="pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
+                    <div key={ticket._id} className="pb-2.5 sm:pb-3 lg:pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0">
                       <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-semibold text-primary uppercase">
+                        <span className="text-[10px] sm:text-xs font-semibold text-primary uppercase">
                           #{ticket.ticketId || ticket._id?.slice(-6)}
                         </span>
-                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase ${
+                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase ${
                           ticket.status === "Open" ? "bg-blue-500/10 text-blue-500" :
                           ticket.status === "In Progress" ? "bg-amber-500/10 text-amber-500" :
                           ticket.status === "Resolved" ? "bg-green-500/10 text-green-500" :
@@ -744,11 +826,11 @@ const HelpSupportPage = () => {
                           {ticket.status}
                         </span>
                       </div>
-                      <h4 className="text-sm font-semibold truncate text-gray-800 dark:text-gray-200">
+                      <h4 className="text-xs sm:text-sm font-semibold truncate text-gray-800 dark:text-gray-200">
                         {ticket.subject}
                       </h4>
                       {ticket.updatedAt && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
                           Updated {new Date(ticket.updatedAt).toLocaleDateString()}
                         </p>
                       )}
@@ -757,7 +839,7 @@ const HelpSupportPage = () => {
                 )}
                 <button
                   onClick={() => setSelectedCategory("tickets")}
-                  className="w-full text-center py-2 text-xs sm:text-sm font-bold text-primary hover:underline transition-all"
+                  className="w-full text-center py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-primary hover:underline transition-all"
                 >
                   View all tickets
                 </button>
@@ -769,21 +851,21 @@ const HelpSupportPage = () => {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
-              className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
+              className="p-4 sm:p-5 lg:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
             >
               <h3 className="text-sm font-medium mb-3 sm:mb-4 text-gray-900 dark:text-white">Quick Stats</h3>
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 lg:space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Open Tickets</span>
-                  <span className="font-bold text-blue-500">{tickets.filter(t => t.status === "Open").length}</span>
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400">Open Tickets</span>
+                  <span className="font-bold text-blue-500 text-xs sm:text-sm">{tickets.filter(t => t.status === "Open").length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">In Progress</span>
-                  <span className="font-bold text-amber-500">{tickets.filter(t => t.status === "In Progress").length}</span>
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400">In Progress</span>
+                  <span className="font-bold text-amber-500 text-xs sm:text-sm">{tickets.filter(t => t.status === "In Progress").length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Resolved</span>
-                  <span className="font-bold text-green-500">{tickets.filter(t => t.status === "Resolved").length}</span>
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-gray-500 dark:text-gray-400">Resolved</span>
+                  <span className="font-bold text-green-500 text-xs sm:text-sm">{tickets.filter(t => t.status === "Resolved").length}</span>
                 </div>
               </div>
             </motion.div>

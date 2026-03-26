@@ -61,6 +61,8 @@ import { useAuthenticationStore } from "./store/authStore";
 import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
 import AllNotificationsPage from "./components/ui/AllNotificationsPage";
 import HelpSupportPage from "./components/ui/HelpSupportPage";
+import GettingStartedPage from "./pages/GettingStartedPage";
+import AccountSecurityPage from "./pages/AccountSecurityPage";
 
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
@@ -460,6 +462,22 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
               <HelpSupportPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Getting Started Page */}
+        <Route path="/help-support/getting-started"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <GettingStartedPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Account & Security Page */}
+        <Route path="/help-support/account-security"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <AccountSecurityPage />
             </ProtectedRoute>
           } />
 

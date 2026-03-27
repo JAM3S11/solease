@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { X, Paperclip, Download, Image as ImageIcon, FileText, Ticket, MapPin, AlertCircle, Clock, Calendar, MessageSquare, Send, User, File, CheckCircle, Circle, PlayCircle, XCircle, UserPlus, Zap, ChevronDown, Search, Filter, MessageCircle, Reply, MoreHorizontal, ThumbsUp, Edit2, Trash2, ChevronRight, ChevronLeft } from "lucide-react";
+import toast from "react-hot-toast";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Portal } from "@headlessui/react";
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
 
 const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate }) => {
-  const { fetchTickets, assignTicket } = useTicketStore();
+  const { fetchTickets, assignTicket, addReply, submitFeedback, loading } = useTicketStore();
   const { user } = useAuthenticationStore();
   const [activeTab, setActiveTab] = useState("details");
   const [assignedTo, setAssignedTo] = useState(ticket?.assignedTo?._id || "");
@@ -197,7 +198,16 @@ const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate })
         <div className="flex-1 overflow-y-auto p-3 sm:p-5">
           {/* User profile lookup for comments */}
           {activeTab === "comments" && (
-            <CommentsTab comments={visibleComments} userProfileMap={userProfileMap} currentUserId={user?._id} />
+            <CommentsTab 
+              comments={visibleComments} 
+              userProfileMap={userProfileMap} 
+              currentUserId={user?._id}
+              ticketId={ticket._id}
+              onAddReply={addReply}
+              onSubmitFeedback={submitFeedback}
+              isSubmitting={loading}
+              onRefresh={fetchTickets}
+            />
           )}
           {activeTab === "details" && <DetailsTab ticket={ticket} canAssign={canAssign} itSupportUsers={itSupportUsers} assignedTo={assignedTo} isAssigning={isAssigning} handleAssign={handleAssign} />}
           {activeTab === "attachments" && <AttachmentsTab ticket={ticket} onDownloadAll={downloadAll} />}
@@ -253,28 +263,26 @@ const DetailsTab = ({ ticket, canAssign, itSupportUsers, assignedTo, isAssigning
                   <ChevronDown className="h-4 w-4 text-gray-400" />
                 </span>
               </ListboxButton>
-              <Portal>
-                <ListboxOptions className="absolute z-[9999] mt-1 max-h-48 w-full overflow-auto rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 py-1 shadow-xl focus:outline-none">
-                  {itSupportUsers.map((reviewer) => (
-                    <ListboxOption
-                      key={reviewer._id}
-                      value={reviewer._id}
-                      className={({ active }) =>
-                        `relative cursor-pointer select-none px-3 py-2 text-sm ${active ? "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-300"}`
-                      }
-                    >
-                      {({ selected }) => (
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
-                            {(reviewer.name || reviewer.username)?.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="truncate">{reviewer.name || reviewer.username}</span>
+              <ListboxOptions className="absolute z-[9999] mt-1 max-h-48 w-full min-w-[200px] overflow-auto rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 py-1 shadow-xl focus:outline-none">
+                {itSupportUsers.map((reviewer) => (
+                  <ListboxOption
+                    key={reviewer._id}
+                    value={reviewer._id}
+                    className={({ active }) =>
+                      `relative cursor-pointer select-none px-3 py-2 text-sm ${active ? "bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-300"}`
+                    }
+                  >
+                    {({ selected }) => (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
+                          {(reviewer.name || reviewer.username)?.charAt(0).toUpperCase()}
                         </div>
-                      )}
-                    </ListboxOption>
-                  ))}
-                </ListboxOptions>
-              </Portal>
+                        <span className="truncate">{reviewer.name || reviewer.username}</span>
+                      </div>
+                    )}
+                  </ListboxOption>
+                ))}
+              </ListboxOptions>
             </div>
           </Listbox>
           <button
@@ -460,15 +468,33 @@ const UserAvatar = ({ user, size = "md" }) => {
 };
 
 // Comment Thread Component
-const CommentThread = ({ comment, userProfileMap, currentUserId, onReply, onEdit, onDelete, canModerate }) => {
+const CommentThread = ({ comment, userProfileMap, currentUserId, onReply, onEdit, onDelete, canModerate, ticketId, onAddReply, onRefresh }) => {
   const [showReplies, setShowReplies] = useState(true);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const commentUser = userProfileMap[comment.user?._id] || comment.user;
   const isOwnComment = commentUser?._id === currentUserId;
   const hasReplies = comment.replies && comment.replies.length > 0;
   const isSelf = commentUser?._id === currentUserId;
+
+  const handleSubmitReply = async () => {
+    if (!replyText.trim() || !onAddReply) return;
+    setIsSubmitting(true);
+    try {
+      await onAddReply(ticketId, comment._id, replyText.trim());
+      toast.success("Reply sent");
+      setReplyText("");
+      setShowReplyInput(false);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Error submitting reply:", err);
+      toast.error(err.response?.data?.message || "Failed to send reply");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="group">
@@ -544,8 +570,18 @@ const CommentThread = ({ comment, userProfileMap, currentUserId, onReply, onEdit
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write a reply..."
                 className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitReply();
+                  }
+                }}
               />
-              <button className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+              <button 
+                onClick={handleSubmitReply}
+                disabled={isSubmitting || !replyText.trim()}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <Send size={14} />
               </button>
             </div>
@@ -592,12 +628,32 @@ const CommentThread = ({ comment, userProfileMap, currentUserId, onReply, onEdit
   );
 };
 
-const CommentsTab = ({ comments, userProfileMap = {}, currentUserId }) => {
+const CommentsTab = ({ comments, userProfileMap = {}, currentUserId, ticketId, onAddReply, onSubmitFeedback, isSubmitting, onRefresh }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [newMessage, setNewMessage] = useState("");
   
-  const canModerate = true; // Would come from props in real implementation
+  const canModerate = true;
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return;
+    try {
+      if (!comments?.length) {
+        await onSubmitFeedback(ticketId, newMessage.trim());
+        toast.success("Message sent");
+      } else {
+        const latestComment = comments[comments.length - 1];
+        await onAddReply(ticketId, latestComment._id, newMessage.trim());
+        toast.success("Reply sent");
+      }
+      setNewMessage("");
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Error sending message:", err);
+      toast.error(err.response?.data?.message || "Failed to send message");
+    }
+  };
 
   // Filter and sort comments
   const filteredComments = useMemo(() => {
@@ -791,8 +847,35 @@ const CommentsTab = ({ comments, userProfileMap = {}, currentUserId }) => {
             userProfileMap={userProfileMap}
             currentUserId={currentUserId}
             canModerate={canModerate}
+            ticketId={ticketId}
+            onAddReply={onAddReply}
+            onRefresh={onRefresh}
           />
         ))}
+      </div>
+
+      {/* Message Input */}
+      <div className="mt-4 flex gap-2">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+        />
+        <button
+          onClick={handleSendMessage}
+          disabled={isSubmitting || !newMessage.trim()}
+          className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Send size={14} />
+        </button>
       </div>
       
       {filteredComments.length === 0 && (

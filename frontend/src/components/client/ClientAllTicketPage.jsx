@@ -59,7 +59,7 @@ const ClientAllTicketPage = () => {
     setCurrentPage(1);
   }, [search, issueTypeFilter, statusFilter, dateFilter, itemsPerPage]);
 
-  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const safeTickets = Array.isArray(tickets) ? tickets.filter(t => t && t._id) : [];
 
   const filteredTickets = safeTickets.filter(t =>
     (!search || t.subject?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&

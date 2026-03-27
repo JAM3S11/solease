@@ -89,6 +89,12 @@ const getIssueTypeInitials = (issueType) => {
     .join("");
 };
 
+const getFullProfilePhoto = (photo) => {
+  if (!photo) return null;
+  if (photo.startsWith("http")) return photo;
+  return `${import.meta.env.VITE_API_URL}${photo}`;
+};
+
 const FeedbackComponent = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -141,7 +147,18 @@ const FeedbackComponent = () => {
     uploadProgress,
   } = useTicketStore();
 
-  const ticket = tickets.find((entry) => entry?._id === id);
+  const ticketFromStore = tickets.find((entry) => entry?._id === id);
+  const [localTicket, setLocalTicket] = useState(null);
+  
+  // Use localTicket for rendering (optimistic updates), fallback to store ticket
+  const ticket = localTicket || ticketFromStore;
+  
+  // Sync local ticket with store ticket
+  useEffect(() => {
+    if (ticketFromStore) {
+      setLocalTicket(prev => prev || ticketFromStore);
+    }
+  }, [ticketFromStore]);
   const [newMessage, setNewMessage] = useState("");
   const [moderating, setModerating] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
@@ -224,20 +241,36 @@ const FeedbackComponent = () => {
     return () => clearInterval(interval);
   }, [fetchTickets]);
 
+  // Sync with store ticket - don't override if user just sent a message
+  useEffect(() => {
+    if (ticketFromStore && ticketFromStore._id === id) {
+      setLocalTicket(prev => {
+        // Only update if the ticket has more comments than our optimistic update
+        if (prev && prev.comments && ticketFromStore.comments) {
+          const prevCommentCount = prev.comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
+          const ticketCommentCount = ticketFromStore.comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
+          // If store has more comments, sync with it
+          if (ticketCommentCount > prevCommentCount) {
+            return ticketFromStore;
+          }
+        }
+        return prev || ticketFromStore;
+      });
+    }
+  }, [ticketFromStore, id]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-  }, [ticket?.comments]);
+  }, [localTicket?.comments]);
 
-  const canProvideFeedback = Boolean(
-    ticket && ["Client", "Reviewer", "Manager", "IT Support"].includes(user?.role)
-  );
-  const canModerate = ["Reviewer", "Manager", "IT Support"].includes(user?.role);
+  const canProvideFeedback = Boolean(localTicket && user);
+  const canModerate = user && ["Reviewer", "Manager", "IT Support"].includes(user.role);
   const canCreateInternalNotes = user?.role === "Manager";
   const canChangeStatus =
     ticket &&
-    ["Reviewer", "Manager"].includes(user?.role) &&
+    user && ["Reviewer", "Manager"].includes(user.role) &&
     (ticket.assignedTo?._id === user?._id ||
       ticket.assignedTo?.id === user?._id ||
       ticket.assignedTo === user?._id ||
@@ -249,69 +282,154 @@ const FeedbackComponent = () => {
       logs.push({
         id: "created",
         type: "created",
-        message: "Ticket created",
+        title: "Ticket Created",
+        description: `Ticket #${ticket._id?.slice(-6).toUpperCase()} was created`,
         user: ticket.user,
         timestamp: ticket.createdAt,
+        details: {
+          priority: ticket.urgency,
+          type: ticket.issueType,
+          location: ticket.location,
+          subject: ticket.subject,
+          description: ticket.description,
+        },
       });
+
       if (ticket.assignedTo) {
         logs.push({
           id: "assigned",
           type: "assigned",
-          message: `Ticket assigned to ${ticket.assignedTo.name || ticket.assignedTo.username || "Unknown"}`,
+          title: "Ticket Assigned",
+          description: `Assigned to ${ticket.assignedTo.name || ticket.assignedTo.username || "Unknown"}`,
           user: ticket.assignedTo,
           timestamp: ticket.createdAt,
+          details: {
+            assigneeName: ticket.assignedTo.name,
+            assigneeUsername: ticket.assignedTo.username,
+            assigneeRole: ticket.assignedTo.role,
+          },
         });
       }
+
+      const statusHistory = ticket.statusHistory || [];
+      statusHistory.forEach((statusChange, index) => {
+        logs.push({
+          id: `status-${index}-${statusChange.timestamp}`,
+          type: "status_change",
+          title: "Status Updated",
+          description: `Status changed from ${statusChange.previousStatus} to ${statusChange.newStatus}`,
+          user: statusChange.changedBy,
+          timestamp: statusChange.timestamp,
+          details: {
+            from: statusChange.previousStatus,
+            to: statusChange.newStatus,
+          },
+        });
+      });
+
       ticket.comments?.forEach((comment) => {
         logs.push({
           id: comment._id,
           type: "comment",
-          message: "New comment added",
+          title: "Comment Added",
+          description: "New comment in conversation",
           user: comment.user,
           timestamp: comment.createdAt,
+          details: {
+            preview: comment.content?.slice(0, 100),
+          },
         });
         comment.replies?.forEach((reply) => {
           logs.push({
             id: reply._id,
             type: "reply",
-            message: "Reply added",
+            title: "Reply Added",
+            description: "Replied to conversation",
             user: reply.user,
             timestamp: reply.createdAt,
+            details: {
+              preview: reply.content?.slice(0, 100),
+            },
           });
         });
       });
+
+      if (ticket.files?.length) {
+        logs.push({
+          id: "files-uploaded",
+          type: "files",
+          title: "Files Uploaded",
+          description: `${ticket.files.length} file(s) attached to ticket`,
+          timestamp: ticket.updatedAt,
+          details: {
+            files: ticket.files.map(f => f.filename || f.name),
+          },
+        });
+      }
+
+      if (ticket.internalNotes?.length) {
+        ticket.internalNotes.forEach((note, index) => {
+          logs.push({
+            id: `internal-${index}`,
+            type: "internal_note",
+            title: "Internal Note Added",
+            description: "Internal note for staff communication",
+            user: note.user,
+            timestamp: note.createdAt,
+            details: {
+              preview: note.content?.slice(0, 100),
+            },
+          });
+        });
+      }
     }
     return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [ticket]);
 
-  const allMessages = useMemo(() => {
-    if (!ticket?.comments?.length) return [];
-    const list = [];
+  const groupedAuditLogs = useMemo(() => {
+    const groups = {};
+    auditLogs.forEach((log) => {
+      const dateKey = formatReadableDate(log.timestamp);
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(log);
+    });
+    return groups;
+  }, [auditLogs]);
 
-    ticket.comments.forEach((comment) => {
+  const allMessages = useMemo(() => {
+    if (!localTicket?.comments?.length) return [];
+    const messageMap = new Map();
+
+    localTicket?.comments?.forEach((comment) => {
       const hiddenForThisUser = comment.isHidden && !canModerate;
       if (hiddenForThisUser) return;
 
-      list.push({
-        ...comment,
-        type: "comment",
-        id: comment._id,
-        createdAt: comment.createdAt,
-      });
+      if (!messageMap.has(comment._id)) {
+        messageMap.set(comment._id, {
+          ...comment,
+          type: "comment",
+          id: comment._id,
+          createdAt: comment.createdAt,
+        });
+      }
 
       comment.replies?.forEach((reply) => {
-        list.push({
-          ...reply,
-          type: "reply",
-          commentId: comment._id,
-          id: reply._id,
-          createdAt: reply.createdAt,
-        });
+        if (!messageMap.has(reply._id)) {
+          messageMap.set(reply._id, {
+            ...reply,
+            type: "reply",
+            commentId: comment._id,
+            id: reply._id,
+            createdAt: reply.createdAt,
+          });
+        }
       });
     });
 
-    return list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }, [canModerate, ticket?.comments]);
+    return Array.from(messageMap.values()).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }, [canModerate, localTicket?.comments]);
 
   const filteredMessages = useMemo(() => {
     const query = messageSearch.trim().toLowerCase();
@@ -338,24 +456,74 @@ const FeedbackComponent = () => {
   };
 
   const handleSubmitMessage = async () => {
-    if (!ticket || !newMessage.trim()) return;
+    if (!localTicket || !newMessage.trim()) return;
+
+    const messageContent = newMessage.trim();
+    const isFirstMessage = !localTicket.comments?.length;
+    
+    const tempMessage = {
+      _id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: messageContent,
+      user: {
+        _id: user?._id,
+        name: user?.name,
+        username: user?.username,
+        profilePhoto: getFullProfilePhoto(user?.profilePhoto),
+        role: user?.role
+      },
+      createdAt: new Date().toISOString(),
+      type: isFirstMessage ? "comment" : "reply",
+      ...(isFirstMessage ? {} : { commentId: localTicket?.comments?.[localTicket.comments.length - 1]?._id })
+    };
+
+    // Apply optimistic update
+    setLocalTicket(prev => {
+      if (!prev) return prev;
+      if (isFirstMessage) {
+        return {
+          ...prev,
+          comments: [...(prev.comments || []), tempMessage]
+        };
+      } else {
+        const updatedComments = [...prev.comments];
+        const lastComment = updatedComments[updatedComments.length - 1];
+        if (lastComment) {
+          lastComment.replies = [...(lastComment.replies || []), tempMessage];
+        }
+        return { ...prev, comments: updatedComments };
+      }
+    });
+
+    setNewMessage("");
+    toast.success("Message sent");
 
     try {
-      if (!ticket.comments?.length) {
-        if (user?.role !== "Client") {
-          toast.error("Only clients can submit the first message");
-          return;
-        }
-        await submitFeedback(id, newMessage.trim());
+      if (isFirstMessage) {
+        await submitFeedback(id, messageContent);
       } else {
-        const latestComment = ticket.comments[ticket.comments.length - 1];
-        await addReply(id, latestComment._id, newMessage.trim());
+        const latestComment = localTicket.comments[localTicket.comments.length - 1];
+        await addReply(id, latestComment._id, messageContent);
       }
-
-      setNewMessage("");
-      toast.success("Message sent");
+      // Refresh silently in background
       fetchTickets();
     } catch (error) {
+      // Rollback on error
+      setLocalTicket(prev => {
+        if (!prev) return prev;
+        if (isFirstMessage) {
+          return {
+            ...prev,
+            comments: prev.comments.filter(c => c._id !== tempMessage._id)
+          };
+        } else {
+          const updatedComments = [...prev.comments];
+          const lastComment = updatedComments[updatedComments.length - 1];
+          if (lastComment) {
+            lastComment.replies = lastComment.replies.filter(r => r._id !== tempMessage._id);
+          }
+          return { ...prev, comments: updatedComments };
+        }
+      });
       toast.error(error.response?.data?.message || "Failed to send message");
     }
   };
@@ -433,19 +601,44 @@ const FeedbackComponent = () => {
   };
 
   const handleDeleteMessage = async () => {
-    if (!deleteModal.message) return;
-    setModerating("delete");
-    try {
-      const { message } = deleteModal;
-      if (message.type === "comment") {
-        await deleteComment(id, message.id);
+    if (!deleteModal.message || !localTicket) return;
+    
+    const messageToDelete = deleteModal.message;
+    const isComment = messageToDelete.type === "comment";
+    
+    // Optimistic update - remove immediately
+    setLocalTicket(prev => {
+      if (!prev) return prev;
+      if (isComment) {
+        return {
+          ...prev,
+          comments: prev.comments.filter(c => c._id !== messageToDelete.id)
+        };
       } else {
-        await deleteReply(id, message.commentId, message.id);
+        const updatedComments = [...prev.comments];
+        const targetComment = updatedComments.find(c => c._id === messageToDelete.commentId);
+        if (targetComment) {
+          targetComment.replies = targetComment.replies.filter(r => r._id !== messageToDelete.id);
+        }
+        return { ...prev, comments: updatedComments };
       }
-      toast.success("Message deleted");
-      setDeleteModal({ show: false, message: null });
+    });
+
+    const previousTicket = { ...localTicket };
+    setModerating("delete");
+    setDeleteModal({ show: false, message: null });
+    toast.success("Message deleted");
+
+    try {
+      if (isComment) {
+        await deleteComment(id, messageToDelete.id);
+      } else {
+        await deleteReply(id, messageToDelete.commentId, messageToDelete.id);
+      }
       fetchTickets();
-    } catch {
+    } catch (error) {
+      // Rollback on error
+      setLocalTicket(previousTicket);
       toast.error("Failed to delete message");
     } finally {
       setModerating(null);
@@ -477,7 +670,7 @@ const FeedbackComponent = () => {
     return <File size={20} className="text-primary" />;
   };
 
-  if (loading && !ticket) {
+  if (!ticket && loading) {
     return (
       <DashboardLayout>
         <div className="p-8 text-center text-muted-foreground">Loading ticket details...</div>
@@ -504,7 +697,7 @@ const FeedbackComponent = () => {
           >
             <Menu size={20} />
           </button>
-          <span className="text-sm font-semibold text-foreground">Ticket #{ticket._id.slice(-6).toUpperCase()}</span>
+          <span className="text-sm font-semibold text-foreground">Ticket #{ticket?._id?.slice(-6).toUpperCase()}</span>
           <button
             onClick={() => setMobileView(mobileView === "summary" ? "notes" : "summary")}
             className="p-2 text-muted-foreground hover:text-foreground"
@@ -812,7 +1005,7 @@ const FeedbackComponent = () => {
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <div className="flex justify-center">
                 <span className="text-[10px] uppercase font-medium text-muted-foreground bg-card px-3 py-1 rounded-full border border-border">
-                  Ticket opened {formatReadableDate(ticket.createdAt)} — {formatShortTime(ticket.createdAt)}
+                  Ticket opened {formatReadableDate(ticket?.createdAt)} — {formatShortTime(ticket?.createdAt)}
                 </span>
               </div>
 
@@ -839,7 +1032,7 @@ const FeedbackComponent = () => {
                       <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden`}>
                         {message.user?.profilePhoto ? (
                           <img 
-                            src={message.user.profilePhoto} 
+                            src={getFullProfilePhoto(message.user.profilePhoto)} 
                             alt={messageOwner}
                             className="w-full h-full object-cover"
                           />
@@ -1030,6 +1223,7 @@ const FeedbackComponent = () => {
             {/* Audit Trail Header */}
             <div className="h-14 flex items-center px-6 border-b border-border bg-card/50 shrink-0">
               <h3 className="font-semibold text-foreground text-lg">Audit Trail</h3>
+              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{auditLogs.length} events</span>
             </div>
 
             <div className="p-6">
@@ -1040,27 +1234,72 @@ const FeedbackComponent = () => {
                   <p className="text-sm">Activity will appear here as events occur.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {auditLogs.map((log) => (
-                    <div key={log.id} className="flex gap-4 p-4 rounded-xl border border-border bg-card">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        {log.type === "created" ? (
-                          <PlusCircle size={20} className="text-primary" />
-                        ) : log.type === "assigned" ? (
-                          <UserPlus size={20} className="text-primary" />
-                        ) : log.type === "comment" ? (
-                          <MessageCircle size={20} className="text-primary" />
-                        ) : (
-                          <FileText size={20} className="text-primary" />
-                        )}
+                <div className="space-y-8">
+                  {Object.entries(groupedAuditLogs).map(([date, logs]) => (
+                    <div key={date}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{date}</span>
+                        <div className="h-px flex-1 bg-border" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-foreground">{log.message}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {log.user?.name || log.user?.username || "Unknown"} • {formatReadableDate(log.timestamp)} at {formatShortTime(log.timestamp)}
-                        </p>
+                      <div className="relative">
+                        {logs.map((log, index) => {
+                          const getEventIcon = () => {
+                            switch (log.type) {
+                              case "created": return <PlusCircle size={18} className="text-emerald-500" />;
+                              case "assigned": return <UserPlus size={18} className="text-blue-500" />;
+                              case "status_change": return <CheckCircle2 size={18} className="text-amber-500" />;
+                              case "comment": return <MessageCircle size={18} className="text-primary" />;
+                              case "reply": return <MessageCircle size={18} className="text-violet-500" />;
+                              case "files": return <Paperclip size={18} className="text-orange-500" />;
+                              case "internal_note": return <FileText size={18} className="text-red-500" />;
+                              default: return <Clock3 size={18} className="text-muted-foreground" />;
+                            }
+                          };
+                          
+                          const getEventColor = () => {
+                            switch (log.type) {
+                              case "created": return "bg-emerald-500/10 border-emerald-500/30";
+                              case "assigned": return "bg-blue-500/10 border-blue-500/30";
+                              case "status_change": return "bg-amber-500/10 border-amber-500/30";
+                              case "comment": return "bg-primary/10 border-primary/30";
+                              case "reply": return "bg-violet-500/10 border-violet-500/30";
+                              case "files": return "bg-orange-500/10 border-orange-500/30";
+                              case "internal_note": return "bg-red-500/10 border-red-500/30";
+                              default: return "bg-muted/10 border-muted/30";
+                            }
+                          };
+
+                          return (
+                            <div key={log.id} className="relative flex gap-4 pb-6 last:pb-0">
+                              <div className="absolute left-5 top-10 bottom-0 w-0.5 bg-border -translate-x-1/2 last:hidden" />
+                              <div className={`relative z-10 w-10 h-10 rounded-full border-2 ${getEventColor()} flex items-center justify-center shrink-0`}>
+                                {getEventIcon()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="p-4 rounded-xl border border-border bg-card">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-semibold text-foreground">{log.title}</span>
+                                    <span className="text-[10px] text-muted-foreground">{formatShortTime(log.timestamp)}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-3">{log.description}</p>
+                                  <div className="flex items-center gap-2">
+                                    {log.user && (
+                                      <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                                          <span className="text-[8px] font-medium text-primary">
+                                            {(log.user.name || log.user.username || "U")?.slice(0, 2).toUpperCase()}
+                                          </span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{log.user.name || log.user.username || "Unknown"}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

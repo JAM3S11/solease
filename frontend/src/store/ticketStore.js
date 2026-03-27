@@ -14,7 +14,13 @@ const useTicketStore = create((set) => ({
         set({ loading: true, error: null });
         try {
             const res = await api.get("/ticket/get-ticket");
-            set({ tickets: res.data.tickets, loading: false });
+            const newTickets = (res.data.tickets || []).filter(t => t && t._id);
+            set((state) => {
+                // Merge new tickets with existing ones to prevent losing data during updates
+                const existingIds = new Set(newTickets.map(t => t._id));
+                const preservedTickets = state.tickets.filter(t => t && t._id && !existingIds.has(t._id));
+                return { tickets: [...newTickets, ...preservedTickets], loading: false };
+            });
         } catch (error) {
             console.error("Error fetching tickets:", error);
             set({ error: error.message || "Error fetching tickets", loading: false });
@@ -34,6 +40,19 @@ const useTicketStore = create((set) => ({
                 }));
                 return ticket;
             } else {
+                // If not found in the list, try fetching directly by ID
+                try {
+                    const singleRes = await api.get(`/ticket/${id}`);
+                    if (singleRes.data.ticket) {
+                        set((state) => ({
+                            tickets: [...state.tickets.filter(t => t._id !== id), singleRes.data.ticket],
+                            loading: false
+                        }));
+                        return singleRes.data.ticket;
+                    }
+                } catch (e) {
+                    // Ignore and continue to error
+                }
                 set({ error: "Ticket not found", loading: false });
                 return null;
             }

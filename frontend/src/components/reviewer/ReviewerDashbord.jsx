@@ -228,7 +228,7 @@ const ReviewerDashbord = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { label: 'Total Assigned', val: stats.total, icon: Tickets, color: 'blue' },
+                { label: 'Total Tickets', val: stats.total, icon: Tickets, color: 'blue' },
                 { label: 'Open Tickets', val: stats.open, icon: Clock, color: 'orange' },
                 { label: 'In Progress', val: stats.inProgress, icon: Clock, color: 'indigo' },
                 { label: 'Resolved', val: stats.resolved, icon: CheckCircle, color: 'green' },

@@ -43,11 +43,11 @@ export function AppSidebar({ userRole }) {
     if (!tickets || !user?._id) return 0;
     const safeTickets = Array.isArray(tickets) ? tickets : [];
     return safeTickets.filter(t => {
-      const isAssignedToMe = t.assignedTo && (
+      if (!t || !t.assignedTo) return false;
+      const isAssignedToMe = 
         t.assignedTo._id === user._id || 
         t.assignedTo.id === user._id ||
-        t.assignedTo === user._id
-      );
+        t.assignedTo === user._id;
       return isAssignedToMe && t.status !== 'Closed';
     }).length;
   }, [tickets, user?._id]);

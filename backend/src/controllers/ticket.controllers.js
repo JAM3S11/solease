@@ -387,7 +387,12 @@ export const submitFeedback = async (req, res) => {
             });
         }
 
-        if (req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()) {
+        // Allow Client (ticket creator), Manager, or Reviewer to submit feedback
+        const isClient = req.user.role === "Client" && ticket.user.toString() === req.user._id.toString();
+        const isManager = req.user.role === "Manager" || req.user.role === "Admin" || req.user.role === "AdminManager";
+        const isReviewer = req.user.role === "Reviewer" || req.user.role === "IT Support";
+
+        if (!isClient && !isManager && !isReviewer) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to submit feedback on this ticket"
@@ -450,7 +455,8 @@ export const addReply = async (req, res) => {
             });
         }
 
-        if (comment.isHidden && req.user.role !== "Reviewer" && req.user.role !== "Manager") {
+        const canViewHidden = ["Reviewer", "Manager", "Admin", "AdminManager", "IT Support"].includes(req.user.role);
+        if (comment.isHidden && !canViewHidden) {
             return res.status(403).json({
                 success: false,
                 message: "Cannot reply to hidden comments"

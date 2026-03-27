@@ -668,38 +668,114 @@ const HelpSupportPage = () => {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:p-6 xl:p-8">
         {/* Hero Search Section */}
-        <section className="text-center mb-6 sm:mb-8 md:mb-12 py-4 sm:py-6 md:py-10 px-3 sm:px-4 md:px-6 rounded-xl bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-800">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 sm:mb-3 md:mb-4 text-gray-900 dark:text-white">
-            {roleContent[userRole]?.title || roleContent.client.title}
-          </h1>
-          <div className="max-w-2xl mx-auto relative group mb-3 sm:mb-4">
-            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+        <section className="mb-6 sm:mb-8 md:mb-10">
+          {/* Header Banner */}
+          <div className="text-center mb-4 sm:mb-6">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-gray-900 dark:text-white">
+              {roleContent[userRole]?.title || roleContent.client.title}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+              {roleContent[userRole]?.subtitle || roleContent.client.subtitle}
+            </p>
+          </div>
+
+          {/* Search Box */}
+          <div className="max-w-2xl mx-auto relative group mb-4 sm:mb-6">
+            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors z-10">
               <Search size={18} className="sm:w-5 sm:h-5" />
             </div>
             <input
               type="text"
-              placeholder="Search articles, guides..."
+              placeholder="Search articles, guides, FAQs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="block w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 md:py-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm text-sm sm:text-base md:text-lg"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <XCircle size={18} className="sm:w-5 sm:h-5" />
+              </button>
+            )}
           </div>
-          <div className="overflow-x-auto pb-2 -mx-3 px-3 sm:overflow-visible sm:mx-0 sm:px-0">
-            <div className="flex sm:flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 self-center mr-1 sm:mr-2 hidden xs:inline">Popular:</span>
-              {popularTopics.map((topic, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSearchQuery(topic.label)}
-                  className={`px-2.5 sm:px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] sm:text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
-                    topic.color === "primary"
-                      ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
-                      : "bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700"
-                  }`}
+
+          {/* Quick Categories & Popular Topics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* Quick Categories */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Quick Categories</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {categoryCards.slice(0, 6).map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      if (category.id === "getting-started") {
+                        navigate("/help-support/getting-started");
+                      } else if (category.id === "account-security") {
+                        navigate("/help-support/account-security");
+                      } else if (category.id === "billing") {
+                        navigate("/help-support/billing");
+                      } else if (category.id === "tickets") {
+                        navigate("/help-support/ticket-management");
+                      } else if (category.id === "workflow") {
+                        navigate("/help-support/workflow-tools");
+                      } else if (category.id === "integrations") {
+                        navigate("/help-support/integrations");
+                      }
+                    }}
+                    className={`flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-lg border transition-all ${
+                      category.color === "primary" ? "border-primary/20 hover:border-primary/50 hover:bg-primary/5" :
+                      category.color === "blue" ? "border-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5" :
+                      category.color === "green" ? "border-green-500/20 hover:border-green-500/50 hover:bg-green-500/5" :
+                      category.color === "purple" ? "border-purple-500/20 hover:border-purple-500/50 hover:bg-purple-500/5" :
+                      category.color === "amber" ? "border-amber-500/20 hover:border-amber-500/50 hover:bg-amber-500/5" :
+                      "border-gray-500/20 hover:border-gray-500/50 hover:bg-gray-500/5"
+                    }`}
+                  >
+                    <category.icon size={16} className={`${
+                      category.color === "primary" ? "text-primary" :
+                      category.color === "blue" ? "text-blue-500" :
+                      category.color === "green" ? "text-green-500" :
+                      category.color === "purple" ? "text-purple-500" :
+                      category.color === "amber" ? "text-amber-500" :
+                      "text-gray-500"
+                    }`} />
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-700 dark:text-gray-300 text-center truncate w-full">{category.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Popular Topics */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Popular Searches</h3>
+              <div className="flex flex-wrap gap-2">
+                {popularTopics.map((topic, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSearchQuery(topic.label)}
+                    className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${
+                      topic.color === "primary"
+                        ? "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    }`}
+                  >
+                    {topic.label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 sm:mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2">Can't find what you need?</p>
+                <button 
+                  onClick={() => navigate("/client-dashboard/new-ticket")}
+                  className="w-full py-2 px-3 bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {topic.label}
+                  <Ticket size={14} className="sm:size-4" />
+                  Contact Support
                 </button>
-              ))}
+              </div>
             </div>
           </div>
         </section>
@@ -708,6 +784,14 @@ const HelpSupportPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
+            {/* Section Header */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                Browse by Topic
+              </h2>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{categoryCards.length} categories</span>
+            </div>
+
             {/* Category Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {categoryCards.map((category) => (
@@ -721,11 +805,17 @@ const HelpSupportPage = () => {
                       navigate("/help-support/getting-started");
                     } else if (category.id === "account-security") {
                       navigate("/help-support/account-security");
+                    } else if (category.id === "billing") {
+                      navigate("/help-support/billing");
+                    } else if (category.id === "tickets") {
+                      navigate("/help-support/ticket-management");
+                    } else if (category.id === "workflow") {
+                      navigate("/help-support/workflow-tools");
+                    } else if (category.id === "integrations") {
+                      navigate("/help-support/integrations");
                     } else {
                       setActiveSection(category.id);
-                      if (category.id === "tickets") setSelectedCategory("tickets");
-                      else if (category.id === "billing") setSelectedCategory("account");
-                      else setSelectedCategory("general");
+                      setSelectedCategory("general");
                     }
                   }}
                   className={`p-3 sm:p-4 lg:p-6 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${
@@ -762,6 +852,10 @@ const HelpSupportPage = () => {
                   {activeSection === "tickets" ? "Your Tickets" : 
                    activeSection === "getting-started" ? "Getting Started Guide" : 
                    activeSection === "account-security" ? "Account & Security" :
+                   activeSection === "billing" ? "Billing & Payments" :
+                   activeSection === "ticket-management" ? "Ticket Management" :
+                   activeSection === "workflow" ? "Workflow Tools" :
+                   activeSection === "integrations" ? "Integrations" :
                    "Frequently Asked Questions"}
                 </h2>
               </div>

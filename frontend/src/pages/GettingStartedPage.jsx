@@ -13,12 +13,54 @@ import {
   Headphones,
   ArrowLeft,
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  Play,
+  Clock,
+  Users,
+  FileText,
+  Bell,
+  Settings,
+  Star,
+  ArrowDown,
+  TrendingUp,
+  Shield,
+  BarChart3,
+  Calendar,
+  Mail,
+  Building,
+  ExternalLink,
+  Video,
+  BookOpen,
+  Compass
 } from "lucide-react";
 
 const GettingStartedPage = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("signup");
+  const [activeSection, setActiveSection] = useState("overview");
+
+  const sections = [
+    { id: "overview", title: "Overview" },
+    { id: "signup", title: "Account" },
+    { id: "dashboard", title: "Dashboard" },
+    { id: "tickets", title: "Tickets" },
+    { id: "security", title: "Security" },
+  ];
+
+  const features = [
+    { icon: Ticket, title: "Ticket Management", description: "Create, track, and manage support tickets with ease", color: "purple" },
+    { icon: BarChart3, title: "Analytics", description: "View real-time metrics and performance insights", color: "blue" },
+    { icon: Users, title: "Team Collaboration", description: "Work together with your team on support cases", color: "amber" },
+    { icon: Shield, title: "Secure Access", description: "Enterprise-grade security for your data", color: "green" },
+    { icon: Bell, title: "Notifications", description: "Stay updated with real-time alerts", color: "red" },
+    { icon: Clock, title: "SLA Tracking", description: "Never miss a deadline with SLA management", color: "primary" }
+  ];
+
+  const quickStartSteps = [
+    { step: 1, title: "Create Account", description: "Sign up with your email", duration: "2 min" },
+    { step: 2, title: "Verify Email", description: "Click the verification link", duration: "1 min" },
+    { step: 3, title: "Complete Profile", description: "Add your details", duration: "3 min" },
+    { step: 4, title: "Submit First Ticket", description: "Get help from our team", duration: "5 min" }
+  ];
 
   const guides = [
     {
@@ -79,6 +121,13 @@ const GettingStartedPage = () => {
     }
   ];
 
+  const whatNext = [
+    { icon: BookOpen, title: "Explore Help Center", description: "Browse more guides and tutorials", link: "/help-support" },
+    { icon: Video, title: "Watch Tutorials", description: "Video guides for common tasks", link: "#" },
+    { icon: Star, title: "Rate Your Experience", description: "Help us improve our service", link: "#" },
+    { icon: Users, title: "Invite Your Team", description: "Collaborate with colleagues", link: "#" }
+  ];
+
   const currentGuide = guides.find(g => g.id === activeSection) || guides[0];
   const currentIndex = guides.findIndex(g => g.id === activeSection);
 
@@ -105,8 +154,8 @@ const GettingStartedPage = () => {
           </button>
         </div>
 
-        {/* Introduction */}
-        <div className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800 shadow-lg mb-6 sm:mb-8">
+        {/* Introduction / Overview */}
+        <div id="overview" className="border-0 rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800 shadow-lg mb-6 sm:mb-8">
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
@@ -130,23 +179,73 @@ const GettingStartedPage = () => {
           </div>
         </div>
 
+        {/* Quick Start Timeline */}
+        <div className="mb-6 sm:mb-8">
+          <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Compass className="w-5 h-5 text-primary" />
+            Get Started in Minutes
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {quickStartSteps.map((item, index) => (
+              <div key={item.step} className="border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg text-center p-3 sm:p-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2 text-xs sm:text-sm font-bold">
+                  {item.step}
+                </div>
+                <h5 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-1">{item.title}</h5>
+                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1">{item.description}</p>
+                <span className="text-[10px] text-primary font-medium">{item.duration}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Key Features */}
+        <div className="mb-6 sm:mb-8">
+          <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-500" />
+            What You Can Do with SOLEASE
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {features.map((feature) => (
+              <div key={feature.title} className="border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg p-3 sm:p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    feature.color === "purple" ? "bg-purple-500/10 text-purple-500" :
+                    feature.color === "blue" ? "bg-blue-500/10 text-blue-500" :
+                    feature.color === "amber" ? "bg-amber-500/10 text-amber-500" :
+                    feature.color === "green" ? "bg-green-500/10 text-green-500" :
+                    feature.color === "red" ? "bg-red-500/10 text-red-500" :
+                    "bg-primary/10 text-primary"
+                  }`}>
+                    <feature.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white">{feature.title}</h5>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{feature.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Section Navigation */}
         <div className="flex flex-nowrap sm:flex-wrap gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-          {guides.map((guide, index) => (
+          {sections.map((section, index) => (
             <button
-              key={guide.id}
-              onClick={() => scrollToSection(guide.id)}
+              key={section.id}
+              onClick={() => scrollToSection(section.id)}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                activeSection === guide.id
-                  ? guide.color === "primary" ? "bg-primary text-white shadow-lg shadow-primary/25" :
-                    guide.color === "blue" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" :
-                    guide.color === "purple" ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25" :
+                activeSection === section.id
+                  ? section.id === "overview" ? "bg-primary text-white shadow-lg shadow-primary/25" :
+                    section.id === "signup" ? "bg-primary text-white shadow-lg shadow-primary/25" :
+                    section.id === "dashboard" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" :
+                    section.id === "tickets" ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25" :
                     "bg-green-500 text-white shadow-lg shadow-green-500/25"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
-              <guide.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden md:inline">{guide.title}</span>
+              <span className="hidden md:inline">{section.title}</span>
               <span className="md:hidden">{index + 1}</span>
             </button>
           ))}
@@ -208,6 +307,39 @@ const GettingStartedPage = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* What's Next Section */}
+        <div className="mt-6 sm:mt-8">
+          <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <ArrowRight className="w-5 h-5 text-primary" />
+            What's Next?
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {whatNext.map((item) => (
+              <button
+                key={item.title}
+                onClick={() => item.link && navigate(item.link)}
+                className="border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg p-4 text-left hover:shadow-xl transition-shadow group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    item.title.includes("Help") ? "bg-primary/10 text-primary" :
+                    item.title.includes("Video") ? "bg-red-500/10 text-red-500" :
+                    item.title.includes("Rate") ? "bg-amber-500/10 text-amber-500" :
+                    "bg-blue-500/10 text-blue-500"
+                  }`}>
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">{item.title}</h5>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Pro Tips Section */}

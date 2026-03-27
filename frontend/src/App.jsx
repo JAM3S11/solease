@@ -63,6 +63,10 @@ import AllNotificationsPage from "./components/ui/AllNotificationsPage";
 import HelpSupportPage from "./components/ui/HelpSupportPage";
 import GettingStartedPage from "./pages/GettingStartedPage";
 import AccountSecurityPage from "./pages/AccountSecurityPage";
+import BillingPaymentsPage from "./pages/BillingPaymentsPage";
+import TicketManagementPage from "./pages/TicketManagementPage";
+import WorkflowToolsPage from "./pages/WorkflowToolsPage";
+import IntegrationsPage from "./pages/IntegrationsPage";
 
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
@@ -478,6 +482,38 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
               <AccountSecurityPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Billing & Payments Page */}
+        <Route path="/help-support/billing"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <BillingPaymentsPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Ticket Management Page */}
+        <Route path="/help-support/ticket-management"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <TicketManagementPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Workflow Tools Page */}
+        <Route path="/help-support/workflow-tools"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <WorkflowToolsPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Integrations Page */}
+        <Route path="/help-support/integrations"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <IntegrationsPage />
             </ProtectedRoute>
           } />
 

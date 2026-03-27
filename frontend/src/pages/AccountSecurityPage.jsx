@@ -17,12 +17,163 @@ import {
   Headphones,
   Ticket,
   ArrowLeft,
-  Fingerprint
+  Fingerprint,
+  Building,
+  Database,
+  Server,
+  UserCheck,
+  Activity,
+  ArrowRight,
+  ArrowDown,
+  Wifi,
+  Bell,
+  RefreshCw,
+  StopCircle,
+  Play,
+  ShieldCheck,
+  AlertOctagon,
+  MessageSquare,
+  ExternalLink,
+  Bug,
+  TrendingUp,
+  LogIn
 } from "lucide-react";
 
 const AccountSecurityPage = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("two-factor");
+  const [activeSection, setActiveSection] = useState("architecture");
+
+  const sections = [
+    { id: "architecture", title: "Architecture" },
+    { id: "two-factor", title: "2FA" },
+    { id: "password", title: "Password" },
+    { id: "sessions", title: "Sessions" },
+    { id: "team", title: "Team" },
+    { id: "breach", title: "Breach Response" },
+  ];
+
+  const securityLayers = [
+    {
+      layer: "Layer 1",
+      name: "Perimeter Security",
+      components: ["Firewall", "DDoS Protection", "SSL/TLS Encryption"],
+      icon: Shield,
+      color: "blue",
+      description: "The outermost protection layer blocking external threats"
+    },
+    {
+      layer: "Layer 2",
+      name: "Authentication",
+      components: ["Password Hashing", "2FA/MFA", "Session Tokens"],
+      icon: Lock,
+      color: "green",
+      description: "Verifies user identity before granting access"
+    },
+    {
+      layer: "Layer 3",
+      name: "Authorization",
+      components: ["Role-Based Access", "Permission Matrix", "API Keys"],
+      icon: UserCheck,
+      color: "purple",
+      description: "Controls what users can do after authentication"
+    },
+    {
+      layer: "Layer 4",
+      name: "Data Protection",
+      components: ["Encryption at Rest", "Backup Systems", "Audit Logs"],
+      icon: Database,
+      color: "amber",
+      description: "Secures stored data and maintains integrity"
+    },
+    {
+      layer: "Layer 5",
+      name: "Monitoring",
+      components: ["Real-time Alerts", "Anomaly Detection", "Activity Logs"],
+      icon: Activity,
+      color: "red",
+      description: "Continuous surveillance for suspicious activities"
+    }
+  ];
+
+  const securityBenefits = [
+    { icon: Shield, title: "Data Protection", description: "Your sensitive information is encrypted and protected from unauthorized access", color: "blue" },
+    { icon: UserCheck, title: "Identity Verification", description: "2FA ensures only you can access your account, even if passwords are compromised", color: "green" },
+    { icon: Clock, title: "Session Control", description: "Monitor and manage all active sessions from anywhere in the world", color: "purple" },
+    { icon: TrendingUp, title: "Compliance", description: "Meet industry security standards and regulatory requirements", color: "amber" },
+    { icon: Activity, title: "Real-time Monitoring", description: "Get instant alerts on suspicious activities and login attempts", color: "red" },
+    { icon: Lock, title: "Access Control", description: "Granular permissions ensure users only access what they need", color: "primary" }
+  ];
+
+  const breachResponseSteps = [
+    {
+      step: 1,
+      title: "Stay Calm & Act Quickly",
+      icon: AlertOctagon,
+      color: "red",
+      actions: [
+        "Don't panic - having a plan helps minimize damage",
+        "Document everything you notice - times, unusual activities, messages",
+        "Don't delete any evidence or change passwords yet (may destroy evidence)",
+        "Take screenshots of any suspicious activities"
+      ],
+      timeframe: "Immediately"
+    },
+    {
+      step: 2,
+      title: "Secure Your Account",
+      icon: Lock,
+      color: "amber",
+      actions: [
+        "Go to Settings > Security > Sign Out Everywhere",
+        "Change your SOLEASE password immediately",
+        "If 2FA was disabled, re-enable it with new codes",
+        "Check and revoke any unauthorized API keys or integrations",
+        "Update passwords on other sites if you reused passwords"
+      ],
+      timeframe: "Within 15 minutes"
+    },
+    {
+      step: 3,
+      title: "Report to SOLEASE",
+      icon: MessageSquare,
+      color: "blue",
+      actions: [
+        "Submit a high-priority security ticket",
+        "Include all documented evidence and timestamps",
+        "Mention if you suspect data was accessed or stolen",
+        "Request account temporarily disabled if severe"
+      ],
+      timeframe: "Immediately"
+    },
+    {
+      step: 4,
+      title: "External Account Audit",
+      icon: UserCheck,
+      color: "green",
+      actions: [
+        "Check your connected email for unauthorized changes",
+        "Review other services using the same password",
+        "Enable 2FA on all critical accounts",
+        "Monitor bank accounts and credit reports if relevant",
+        "Run antivirus/malware scans on your devices"
+      ],
+      timeframe: "Within 24 hours"
+    },
+    {
+      step: 5,
+      title: "Recovery & Prevention",
+      icon: Shield,
+      color: "purple",
+      actions: [
+        "Work with SOLEASE support to restore account access",
+        "Review and update all security settings",
+        "Set up new backup codes and recovery options",
+        "Consider using a password manager going forward",
+        "Enable login notifications for future alerts"
+      ],
+      timeframe: "Within 72 hours"
+    }
+  ];
 
   const guides = [
     {
@@ -143,36 +294,175 @@ const AccountSecurityPage = () => {
               Follow these best practices to keep your SOLEASE account and data secure.
             </p>
             <div className="flex flex-wrap gap-2">
-              <span className="px-2.5 sm:px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold rounded-full">2FA</span>
-              <span className="px-2.5 sm:px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-semibold rounded-full">Passwords</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs sm:text-sm font-semibold rounded-full">Architecture</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-semibold rounded-full">2FA</span>
               <span className="px-2.5 sm:px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs sm:text-sm font-semibold rounded-full">Sessions</span>
               <span className="px-2.5 sm:px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs sm:text-sm font-semibold rounded-full">Team Access</span>
-              <span className="px-2.5 sm:px-3 py-1 bg-primary/10 text-primary text-xs sm:text-sm font-semibold rounded-full">Email Security</span>
+              <span className="px-2.5 sm:px-3 py-1 bg-red-500/10 text-red-600 dark:text-red-400 text-xs sm:text-sm font-semibold rounded-full">Breach Response</span>
             </div>
           </div>
         </div>
 
         {/* Section Navigation */}
         <div className="flex flex-nowrap sm:flex-wrap gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-          {guides.map((guide, index) => (
+          {sections.map((section, index) => (
             <button
-              key={guide.id}
-              onClick={() => scrollToSection(guide.id)}
+              key={section.id}
+              onClick={() => scrollToSection(section.id)}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                activeSection === guide.id
-                  ? guide.color === "blue" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" :
-                    guide.color === "green" ? "bg-green-500 text-white shadow-lg shadow-green-500/25" :
-                    guide.color === "purple" ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25" :
-                    guide.color === "amber" ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25" :
-                    "bg-primary text-white shadow-lg shadow-primary/25"
+                activeSection === section.id
+                  ? section.id === "architecture" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" :
+                    section.id === "two-factor" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" :
+                    section.id === "password" ? "bg-green-500 text-white shadow-lg shadow-green-500/25" :
+                    section.id === "sessions" ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25" :
+                    section.id === "team" ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25" :
+                    "bg-red-500 text-white shadow-lg shadow-red-500/25"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
-              <guide.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden md:inline">{guide.title.split('(')[0].trim()}</span>
+              <span className="hidden md:inline">{section.title}</span>
               <span className="md:hidden">{index + 1}</span>
             </button>
           ))}
+        </div>
+
+        {/* Security Architecture Section */}
+        <div id="architecture" className="mb-8 sm:mb-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Building className="w-5 h-5 text-blue-500" />
+            <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Security Architecture</h4>
+          </div>
+
+          {/* Desktop Architecture View */}
+          <div className="hidden lg:block border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg mb-4">
+            <div className="p-6">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 text-center">SOLEASE implements a multi-layered security approach to protect your data</p>
+              <div className="flex items-center justify-center gap-0">
+                {/* User */}
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex flex-col items-center justify-center shadow-lg">
+                    <UserCheck className="w-6 h-6 text-white mb-1" />
+                    <span className="text-white text-[10px] font-semibold">USER</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-2">Authentication</span>
+                </div>
+                
+                <div className="flex flex-col items-center mx-1">
+                  <ArrowRight className="w-6 h-6 text-gray-400" />
+                </div>
+                
+                {/* Layer 1: Perimeter */}
+                <div className="flex flex-col items-center">
+                  <div className="w-28 h-16 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 flex flex-col items-center justify-center">
+                    <Shield className="w-5 h-5 text-blue-500 mb-1" />
+                    <span className="text-blue-600 dark:text-blue-400 text-[10px] font-semibold">PERIMETER</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-2">Firewall, SSL</span>
+                </div>
+                
+                <div className="flex flex-col items-center mx-1">
+                  <ArrowRight className="w-6 h-6 text-gray-400" />
+                </div>
+                
+                {/* Layer 2: Auth */}
+                <div className="flex flex-col items-center">
+                  <div className="w-28 h-16 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-900/20 flex flex-col items-center justify-center">
+                    <Lock className="w-5 h-5 text-green-500 mb-1" />
+                    <span className="text-green-600 dark:text-green-400 text-[10px] font-semibold">AUTHENTICATION</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-2">2FA, Password</span>
+                </div>
+                
+                <div className="flex flex-col items-center mx-1">
+                  <ArrowRight className="w-6 h-6 text-gray-400" />
+                </div>
+                
+                {/* Layer 3: Authorization */}
+                <div className="flex flex-col items-center">
+                  <div className="w-28 h-16 rounded-lg border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/20 flex flex-col items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-purple-500 mb-1" />
+                    <span className="text-purple-600 dark:text-purple-400 text-[10px] font-semibold">AUTHORIZATION</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-2">Roles, Permissions</span>
+                </div>
+                
+                <div className="flex flex-col items-center mx-1">
+                  <ArrowRight className="w-6 h-6 text-gray-400" />
+                </div>
+                
+                {/* Layer 4: Data */}
+                <div className="flex flex-col items-center">
+                  <div className="w-28 h-16 rounded-lg border-2 border-amber-500 bg-amber-50 dark:bg-amber-900/20 flex flex-col items-center justify-center">
+                    <Database className="w-5 h-5 text-amber-500 mb-1" />
+                    <span className="text-amber-600 dark:text-amber-400 text-[10px] font-semibold">DATA</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-2">Encryption, Backup</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Architecture View */}
+          <div className="lg:hidden border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg mb-4">
+            <div className="p-4 sm:p-5">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Multi-Layer Security Protection</p>
+              <div className="space-y-3">
+                {securityLayers.map((layer, index) => (
+                  <div key={layer.layer} className="flex items-center gap-3">
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                      layer.color === "blue" ? "bg-blue-500/10 text-blue-500" :
+                      layer.color === "green" ? "bg-green-500/10 text-green-500" :
+                      layer.color === "purple" ? "bg-purple-500/10 text-purple-500" :
+                      layer.color === "amber" ? "bg-amber-500/10 text-amber-500" :
+                      "bg-red-500/10 text-red-500"
+                    }`}>
+                      <layer.icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          layer.color === "blue" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" :
+                          layer.color === "green" ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" :
+                          layer.color === "purple" ? "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" :
+                          layer.color === "amber" ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" :
+                          "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                        }`}>{layer.layer}</span>
+                        <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{layer.name}</span>
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{layer.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Security Benefits */}
+          <div className="border-0 rounded-xl overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-lg">
+            <div className="p-4 sm:p-5 lg:p-6">
+              <h5 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-4">Why Security Matters</h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {securityBenefits.map((benefit) => (
+                  <div key={benefit.title} className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      benefit.color === "blue" ? "bg-blue-500/10 text-blue-500" :
+                      benefit.color === "green" ? "bg-green-500/10 text-green-500" :
+                      benefit.color === "purple" ? "bg-purple-500/10 text-purple-500" :
+                      benefit.color === "amber" ? "bg-amber-500/10 text-amber-500" :
+                      benefit.color === "red" ? "bg-red-500/10 text-red-500" :
+                      "bg-primary/10 text-primary"
+                    }`}>
+                      <benefit.icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h6 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{benefit.title}</h6>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">{benefit.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Guide Sections */}
@@ -233,6 +523,95 @@ const AccountSecurityPage = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Breach Response Section */}
+        <div id="breach" className="mb-8 sm:mb-12">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertOctagon className="w-5 h-5 text-red-500" />
+            <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">What To Do If Your Account Is Compromised</h4>
+          </div>
+
+          <div className="border-0 rounded-xl overflow-hidden bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 shadow-lg mb-4 sm:mb-6">
+            <div className="p-4 sm:p-5 lg:p-6">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-6 h-6 text-red-500" />
+                </div>
+                <div className="flex-1">
+                  <h5 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2">Account Compromised? Act Fast.</h5>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    If you suspect your SOLEASE account has been hacked or compromised, follow this step-by-step response guide to minimize damage and recover your account.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Response Steps */}
+          <div className="space-y-4">
+            {breachResponseSteps.map((response) => (
+              <div key={response.step} className="border-0 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg">
+                <div className="p-4 sm:p-5 lg:p-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${
+                      response.color === "red" ? "bg-red-500 text-white" :
+                      response.color === "amber" ? "bg-amber-500 text-white" :
+                      response.color === "blue" ? "bg-blue-500 text-white" :
+                      response.color === "green" ? "bg-green-500 text-white" :
+                      "bg-purple-500 text-white"
+                    }`}>
+                      <response.icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                        <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">Step {response.step}:</span>
+                        <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">{response.title}</span>
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs rounded-full self-start">
+                          {response.timeframe}
+                        </span>
+                      </div>
+                      <ul className="space-y-2">
+                        {response.actions.map((action, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            {action}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Emergency Contacts */}
+          <div className="border-0 rounded-xl overflow-hidden bg-gray-900 dark:bg-gray-800 shadow-lg mt-4 sm:mt-6">
+            <div className="p-4 sm:p-5 lg:p-6">
+              <h5 className="text-sm sm:text-base font-bold text-white mb-4">Emergency Contacts</h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="flex items-center gap-3 p-3 bg-gray-800 dark:bg-gray-700 rounded-lg">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                    <Ticket className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Submit Emergency Ticket</p>
+                    <p className="text-sm font-semibold text-white">Use High Priority</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-800 dark:bg-gray-700 rounded-lg">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Security Team Email</p>
+                    <p className="text-sm font-semibold text-white">security@solease.com</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Security Checklist */}

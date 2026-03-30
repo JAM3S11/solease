@@ -125,13 +125,13 @@ const ReviewerAssignedTickets = () => {
 
         {/* Stats Grid */}
         {!loading && !error && assignedTickets.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             {[
-              { label: 'Total Assigned', val: stats.total, icon: Tickets, color: 'blue' },
-              { label: 'Open Tickets', val: stats.open, icon: Clock, color: 'orange' },
+              { label: 'Total', val: stats.total, icon: Tickets, color: 'blue' },
+              { label: 'Open', val: stats.open, icon: Clock, color: 'orange' },
               { label: 'In Progress', val: stats.inProgress, icon: Clock, color: 'indigo' },
               { label: 'Resolved', val: stats.resolved, icon: CheckCircle, color: 'green' },
-              { label: 'Pending Reviews', val: stats.pendingFeedback, icon: MessageCircle, color: 'purple' },
+              { label: 'Pending', val: stats.pendingFeedback, icon: MessageCircle, color: 'purple' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}

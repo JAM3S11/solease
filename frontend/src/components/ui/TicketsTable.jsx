@@ -363,21 +363,21 @@ const TicketsTable = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative w-full md:w-96">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative w-full sm:w-64 lg:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by subject..."
+            placeholder="Search..."
             className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {showIssueTypeFilter && (
-            <div className="w-full sm:w-44">
+            <div className="w-32 sm:w-40 lg:w-44">
               <Listbox value={issueTypeFilter} onChange={onIssueTypeChange}>
                 <div className="relative">
                   <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -407,7 +407,7 @@ const TicketsTable = ({
           )}
 
           {showStatusFilter && (
-            <div className="w-full sm:w-40">
+            <div className="w-28 sm:w-36 lg:w-40">
               <Listbox value={statusFilter} onChange={onStatusChange}>
                 <div className="relative">
                   <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -437,7 +437,7 @@ const TicketsTable = ({
           )}
 
           {showDateFilter && (
-            <div className="relative w-full sm:w-40">
+            <div className="relative w-32 sm:w-36 lg:w-40">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="date"

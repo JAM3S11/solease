@@ -3,6 +3,7 @@ import DashboardLayout from '../ui/DashboardLayout';
 import useTicketStore from "../../store/ticketStore";
 import useAdminStore from "../../store/adminStore";
 import { useDarkMode } from "../../hooks/use-dark-mode";
+import { useNavigate } from 'react-router-dom';
 import { PieChart, BarChart } from "@mui/x-charts";
 import html2pdf from 'html2pdf.js';
 import { 
@@ -31,7 +32,8 @@ const DATE_RANGES = [
 ];
 
 const AdminReportPage = () => {
-  const { tickets, fetchTickets } = useTicketStore();
+  const navigate = useNavigate();
+  const { tickets, fetchTickets, loading } = useTicketStore();
   const { users, fetchUsers, activeUsers, fetchActiveUsers, activeUsersLoading, updateUserRoleAndStatus } = useAdminStore();
   const isDark = useDarkMode();
   const [selectedDept, setSelectedDept] = useState(departments[0]);
@@ -859,6 +861,204 @@ const AdminReportPage = () => {
                   totalTickets={tickets.length}
                   onChangeDateRange={(val) => { setDateRange(val); setSelectedDateRange(DATE_RANGES.find(r => r.value === val) || DATE_RANGES[3]); }}
                 />
+              )}
+
+              {/* Completely Empty State - No Records at All */}
+              {tickets.length === 0 && !loading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-8"
+                >
+                  <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-transparent to-purple-50 dark:from-indigo-900/10 dark:via-transparent dark:to-purple-900/10" />
+                      <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-100 dark:bg-indigo-900/20 rounded-full -mr-40 -mt-40 opacity-40" />
+                      <div className="absolute bottom-0 left-0 w-60 h-60 bg-purple-100 dark:bg-purple-900/20 rounded-full -ml-24 -mb-24 opacity-40" />
+                      
+                      <div className="relative p-8 sm:p-12 flex flex-col items-center text-center">
+                        <div className="relative mb-6">
+                          <div className="w-28 h-28 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-500/30 -rotate-6">
+                            <BarChart3 className="text-white" size={56} />
+                          </div>
+                          <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <Sparkles className="text-white" size={24} />
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+                          No Report Data Available
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mb-2 leading-relaxed">
+                          Welcome to the System Manager Dashboard! This is your central hub for generating comprehensive reports, analyzing system performance, and gaining insights into your organization's IT support operations.
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mb-8 leading-relaxed">
+                          Once users start submitting support tickets and your team begins resolving issues, this dashboard will populate with rich analytics, trends, and actionable insights to help you make data-driven decisions about your IT infrastructure and support services.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/25 transition-all"
+                          >
+                            <Ticket size={20} />
+                            Create a Sample Ticket
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-3xl p-6 sm:p-8 border border-indigo-100 dark:border-indigo-800/30">
+                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+                      Understanding Your Analytics Dashboard
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center">
+                          <BarChart3 className="text-indigo-600 dark:text-indigo-400" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Overview Tab</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Get a comprehensive view of all ticket metrics including total count, resolution rates, pending reviews, and critical issues. Visualize trends over time with interactive charts showing ticket creation and resolution patterns.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/40 rounded-xl flex items-center justify-center">
+                          <Users className="text-purple-600 dark:text-purple-400" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">User Operations</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Monitor user activity, role distribution, account verification status, and engagement metrics. Track active users, manage user roles, and ensure proper access control across your organization.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center">
+                          <Cpu className="text-blue-600 dark:text-blue-400" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Infrastructure</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            View system health metrics including database status, storage usage, and API performance. Monitor your IT infrastructure's reliability and identify potential bottlenecks before they impact operations.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
+                          <Sparkles className="text-emerald-600 dark:text-emerald-400" size={20} />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">AI & MCP Features</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Explore AI-powered automation capabilities including intelligent ticket categorization, automated response suggestions, and predictive analytics to optimize your support team's efficiency.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { label: "Total Tickets", val: 0, icon: Ticket, color: "indigo" },
+                      { label: "Resolution Rate", val: "0%", icon: Target, color: "emerald" },
+                      { label: "Pending Review", val: 0, icon: Clock, color: "amber" },
+                      { label: "Critical Issues", val: 0, icon: AlertTriangle, color: "red" },
+                    ].map((stat, i) => (
+                      <motion.div
+                        key={stat.label}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 opacity-60"
+                      >
+                        <div className={`p-3 rounded-xl ${
+                          stat.color === 'indigo' ? 'bg-indigo-500' :
+                          stat.color === 'emerald' ? 'bg-emerald-500' :
+                          stat.color === 'amber' ? 'bg-amber-500' : 'bg-red-500'
+                        }`}>
+                          <stat.icon size={22} className="text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">{stat.val}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                          <BarChart3 className="text-indigo-600 dark:text-indigo-400" size={18} />
+                        </div>
+                        <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Status Distribution</h4>
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">0 total</span>
+                    </div>
+                    <div className="p-8 sm:p-12 text-center">
+                      <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <BarChart3 className="text-gray-300 dark:text-gray-500" size={40} />
+                      </div>
+                      <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">No data to display</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                        Chart visualizations will appear here once ticket data is available. Use the date range filter to analyze different time periods.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                          onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors"
+                        >
+                          <Ticket size={18} />
+                          Create Sample Ticket
+                        </button>
+                        <button
+                          onClick={() => navigate("/admin-dashboard/users")}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors"
+                        >
+                          <Users size={18} />
+                          Manage Users
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-8 text-center">
+                    <h4 className="text-xl font-bold text-white mb-2">Unlock Powerful Insights</h4>
+                    <p className="text-indigo-100 mb-6 max-w-lg mx-auto">
+                      Start generating meaningful reports by creating sample tickets or inviting users to submit support requests. As data accumulates, you'll gain valuable insights into your IT support operations.
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                      <button 
+                        onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                        className="px-5 py-2.5 bg-white text-indigo-600 font-medium rounded-xl flex items-center gap-2 hover:bg-indigo-50 transition-colors"
+                      >
+                        <Ticket size={18} />
+                        Create Ticket
+                      </button>
+                      <button 
+                        onClick={() => navigate("/admin-dashboard/users")}
+                        className="px-5 py-2.5 bg-indigo-500 text-white font-medium rounded-xl flex items-center gap-2 hover:bg-indigo-400 transition-colors"
+                      >
+                        <Users size={18} />
+                        Manage Users
+                      </button>
+                      <button 
+                        onClick={() => navigate("/admin-dashboard/admin-dashboard")}
+                        className="px-5 py-2.5 bg-purple-500 text-white font-medium rounded-xl flex items-center gap-2 hover:bg-purple-400 transition-colors"
+                      >
+                        <BarChart3 size={18} />
+                        View Dashboard
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
               )}
 
               {/* Dynamic Metric Cards */}

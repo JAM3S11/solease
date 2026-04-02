@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Fragment } from 'react'
 import DashboardLayout from '../ui/DashboardLayout'
 import useTicketStore from '../../store/ticketStore';
-import { Inbox, ChevronDown, Check, AlertTriangle, Clock, Calendar, Tickets, Table, List, Grid } from 'lucide-react';
+import { Inbox, ChevronDown, Check, AlertTriangle, Clock, Calendar, Tickets, Table, List, Grid, Users, Plus, ArrowRight, CheckCircle, MessageSquare } from 'lucide-react';
 import api from '../../lib/axios';
 import { useNavigate } from 'react-router';
 import TicketDetailModal from '../ui/TicketDetailModal';
@@ -139,6 +139,7 @@ useEffect(() => {
         </motion.div>
 
 {/* Stats Cards with Motion */}
+        {totalPendingTickets > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -180,8 +181,10 @@ useEffect(() => {
             ))}
           </div>
         </motion.div>
+        )}
 
         {/* Search and Listbox Filters */}
+        {totalPendingTickets > 0 && (
         <div className='mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div className='w-full md:w-2/5'>
             <input
@@ -233,6 +236,7 @@ useEffect(() => {
             />
           </div>
         </div>
+        )}
 
 <div className="mb-4 flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl text-sm text-blue-700 dark:text-blue-300">
           <span className="relative flex h-3 w-3">
@@ -248,11 +252,210 @@ useEffect(() => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='flex justify-center items-center py-16'>
               <p className='text-gray-600 dark:text-gray-400 animate-pulse'>Loading tickets...</p>
             </motion.div>
-          ) : filterPendingTickets.length === 0 ? (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className='flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800'>
-              <Inbox size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
-              <p className='text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2'>There are no pending tickets</p>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>Check back later</p>
+          ) : totalPendingTickets === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-8"
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-transparent to-amber-50 dark:from-orange-900/10 dark:via-transparent dark:to-amber-900/10" />
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-orange-100 dark:bg-orange-900/20 rounded-full -mr-40 -mt-40 opacity-40" />
+                  <div className="absolute bottom-0 left-0 w-60 h-60 bg-amber-100 dark:bg-amber-900/20 rounded-full -ml-24 -mb-24 opacity-40" />
+                  
+                  <div className="relative p-8 sm:p-12 flex flex-col items-center text-center">
+                    <div className="relative mb-6">
+                      <div className="w-28 h-28 bg-gradient-to-br from-orange-500 to-amber-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-500/30 -rotate-6">
+                        <Inbox className="text-white" size={56} />
+                      </div>
+                      <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <Plus className="text-white" size={24} />
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+                      No Pending Tickets
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mb-2 leading-relaxed">
+                      Great news! There are no tickets waiting to be assigned right now. All incoming support requests have been assigned to your IT support team members for resolution.
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-2xl mb-8 leading-relaxed">
+                      Pending tickets appear here when users submit new support requests that haven't yet been assigned to a specific support agent. Once assigned, tickets move out of this view and into the active ticket management system where progress can be tracked.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                        className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-orange-600/25 transition-all"
+                      >
+                        <Plus size={20} />
+                        Create a Sample Ticket
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-3xl p-6 sm:p-8 border border-orange-100 dark:border-orange-800/30">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+                  Understanding Pending Tickets
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-xl flex items-center justify-center">
+                      <Inbox className="text-orange-600 dark:text-orange-400" size={20} />
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">What Are Pending Tickets?</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Pending tickets are support requests that have been submitted by users but haven't yet been assigned to a specific IT support team member for resolution. These tickets require your attention to be routed to the appropriate handler.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-900/40 rounded-xl flex items-center justify-center">
+                      <AlertTriangle className="text-amber-600 dark:text-amber-400" size={20} />
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">SLA Breach Warnings</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        If a pending ticket exceeds 7 days without being assigned, it's flagged as an SLA breach. These are highlighted in red to ensure critical issues don't fall through the cracks and get addressed promptly.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center">
+                      <Clock className="text-blue-600 dark:text-blue-400" size={20} />
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Quick Assignment</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        You can quickly assign pending tickets to your IT support team members directly from this view. Click on any ticket to open its details and select an assignee from your team list.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={20} />
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Ticket Lifecycle</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Once assigned, tickets move through stages: Open, In Progress, and Resolved. You can track overall progress from your main dashboard where statistics show ticket resolution rates.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { label: "Total Pending", val: 0, icon: Tickets, color: "blue" },
+                  { label: "Oldest Ticket", val: "N/A", icon: Calendar, color: "orange" },
+                  { label: "SLA Breach", val: 0, icon: AlertTriangle, color: "red" },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)} opacity-60`}
+                  >
+                    <div className="relative">
+                      <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                        <stat.icon size={22} className="text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{stat.val}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                      <List className="text-orange-600 dark:text-orange-400" size={18} />
+                    </div>
+                    <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Pending Tickets List</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewMode("table")}
+                      className={`p-2 rounded-lg transition-colors ${viewMode === "table" ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600" : "text-gray-400 hover:text-gray-600"}`}
+                    >
+                      <Table size={18} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-2 rounded-lg transition-colors ${viewMode === "grid" ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600" : "text-gray-400 hover:text-gray-600"}`}
+                    >
+                      <Grid size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-8 sm:p-12 text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <Inbox className="text-gray-300 dark:text-gray-500" size={40} />
+                  </div>
+                  <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">No pending tickets to display</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    When users submit new support tickets that haven't been assigned yet, they will appear in this list. Use the filters above to search and sort through tickets.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
+                    >
+                      <Plus size={18} />
+                      Create Sample Ticket
+                    </button>
+                    <button
+                      onClick={() => navigate("/admin-dashboard/users")}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:border-orange-300 dark:hover:border-orange-500 transition-colors"
+                    >
+                      <Users size={18} />
+                      Manage Team
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-8 text-center">
+                <h4 className="text-xl font-bold text-white mb-2">Keep Things Running Smoothly</h4>
+                <p className="text-orange-100 mb-6 max-w-lg mx-auto">
+                  Regularly check this page to ensure new tickets are being assigned promptly. You can also create test tickets to train your team or verify the system is working correctly.
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <button 
+                    onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                    className="px-5 py-2.5 bg-white text-orange-600 font-medium rounded-xl flex items-center gap-2 hover:bg-orange-50 transition-colors"
+                  >
+                    <Plus size={18} />
+                    Create Ticket
+                  </button>
+                  <button 
+                    onClick={() => navigate("/admin-dashboard/users")}
+                    className="px-5 py-2.5 bg-orange-500 text-white font-medium rounded-xl flex items-center gap-2 hover:bg-orange-400 transition-colors"
+                  >
+                    <Users size={18} />
+                    Manage Team
+                  </button>
+                  <button 
+                    onClick={() => navigate("/admin-dashboard/admin-tickets")}
+                    className="px-5 py-2.5 bg-amber-500 text-white font-medium rounded-xl flex items-center gap-2 hover:bg-amber-400 transition-colors"
+                  >
+                    <Tickets size={18} />
+                    View All Tickets
+                  </button>
+                </div>
+              </div>
             </motion.div>
           ) : (
             <TicketsTable

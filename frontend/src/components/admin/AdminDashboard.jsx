@@ -139,12 +139,293 @@ const AdminDashboard = () => {
     return maps[color] || maps.blue;
   };
 
+  const renderEmptyState = () => (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8"
+    >
+      <motion.div 
+        className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden"
+      >
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 dark:bg-blue-900/20 rounded-full -mr-32 -mt-32 opacity-50" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-100 dark:bg-purple-900/20 rounded-full -ml-20 -mb-20 opacity-50" />
+          
+          <div className="relative p-12 flex flex-col items-center text-center">
+            <div className="relative mb-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/30 rotate-3">
+                <Tickets className="text-white" size={48} />
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Plus className="text-white" size={20} />
+              </div>
+            </div>
+            
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+              Welcome to Your Support Dashboard
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-lg mb-8">
+              Track, manage, and resolve support tickets efficiently. Get started by creating your first ticket or inviting team members to collaborate.
+            </p>
+            
+            <div className="flex flex-wrap gap-4 justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all"
+              >
+                <Plus size={20} />
+                Create First Ticket
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/admin-dashboard/users")}
+                className="px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-200 font-semibold rounded-xl flex items-center gap-2 shadow-sm transition-all"
+              >
+                <Users size={20} />
+                Invite Team Members
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div variants={itemVars} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {statsCards.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-4 bg-gradient-to-br ${getBgGradient(stat.color)} opacity-60`}
+          >
+            <div className="relative">
+              <div className={`p-3 rounded-xl ${getIconBg(stat.color)}`}>
+                <stat.icon size={22} className="text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">0</p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div variants={itemVars}>
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="size-5 text-amber-500" />
+          <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Quick actions available</h4>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {quickActions.map((link, i) => (
+            <motion.div
+              key={link.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              whileHover={{ y: -4, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="group"
+            >
+              <div
+                onClick={() => navigate(link.path)}
+                className="flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 h-full relative overflow-hidden cursor-pointer"
+              >
+                <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'purple' ? 'bg-purple-500' : 'bg-orange-500'}`} />
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'purple' ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/30' : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'}`}>
+                  <link.icon size={22} className="text-white" />
+                </div>
+                <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  {link.label}
+                </h3>
+                <div className="mt-auto pt-3 flex items-center text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                  <span>Click to open</span>
+                  <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                <Tickets className="text-blue-600 dark:text-blue-400" size={18} />
+              </div>
+              <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Recent Tickets</h4>
+            </div>
+            <button onClick={() => navigate("/admin-dashboard/admin-tickets")} className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium">
+              View All <ArrowRight size={14} />
+            </button>
+          </div>
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <Tickets className="text-gray-300 dark:text-gray-500" size={32} />
+            </div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No tickets yet</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Create your first ticket to get started</p>
+            <button 
+              onClick={() => navigate("/admin-dashboard/admin-new-ticket")}
+              className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center justify-center gap-1 mx-auto"
+            >
+              <Plus size={14} />
+              Create Ticket
+            </button>
+          </div>
+        </motion.div>
+
+        <div className="space-y-6">
+          <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-violet-100 dark:bg-violet-900/40 rounded-lg">
+                  <BarChart3 className="text-violet-600 dark:text-violet-400" size={18} />
+                </div>
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Weekly Activity</h4>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  <span className="text-gray-500 dark:text-gray-400">Open</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span className="text-gray-500 dark:text-gray-400">Resolved</span>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 flex items-center justify-center h-[200px]">
+              <div className="text-center">
+                <BarChart3 className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
+                <p className="text-xs text-gray-500 dark:text-gray-400">No activity data yet</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={itemVars} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
+                  <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={18} />
+                </div>
+                <h4 className="text-xs font-medium text-gray-700 dark:text-gray-200">Status Distribution</h4>
+              </div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">0 total</span>
+            </div>
+            <div className="p-4 flex items-center justify-center h-[180px]">
+              <div className="text-center">
+                <CheckCircle className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
+                <p className="text-xs text-gray-500 dark:text-gray-400">No tickets to display</p>
+              </div>
+            </div>
+            <div className="px-5 pb-4 grid grid-cols-2 gap-3">
+              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Open</span>
+                </div>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">0</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">In Progress</span>
+                </div>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">0</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Resolved</span>
+                </div>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">0</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700/50 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Closed</span>
+                </div>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">0</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-center"
+      >
+        <h4 className="text-xl font-bold text-white mb-2">Need Help Getting Started?</h4>
+        <p className="text-blue-100 mb-6 max-w-lg mx-auto">
+          Explore our documentation or contact support to learn how to make the most of your ticket management system.
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <button 
+            onClick={() => navigate("/admin-dashboard/users")}
+            className="px-5 py-2.5 bg-white text-blue-600 font-medium rounded-xl flex items-center gap-2 hover:bg-blue-50 transition-colors"
+          >
+            <Users size={18} />
+            Manage Team
+          </button>
+          <button 
+            onClick={() => navigate("/admin-dashboard/admin-tickets")}
+            className="px-5 py-2.5 bg-blue-500 text-white font-medium rounded-xl flex items-center gap-2 hover:bg-blue-400 transition-colors"
+          >
+            <List size={18} />
+            View All Tickets
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
   if (loading && tickets.length === 0) {
       return (
           <DashboardLayout>
               <div className="p-8 text-center text-gray-500">Loading dashboard data...</div>
           </DashboardLayout>
       );
+  }
+
+  if (totalTickets === 0 && !loading) {
+    return (
+      <DashboardLayout>
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={containerVars}
+          className="p-4 sm:p-6 lg:p-8 space-y-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 -mt-2">
+            <motion.div variants={itemVars} className="flex flex-col">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{getGreeting()},</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
+                {user?.name || user?.username}!
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">Here's what's happening with your tickets today.</p>
+            </motion.div>
+
+            <motion.div variants={itemVars} className="flex items-center gap-3">
+              <button onClick={() => navigate("/admin-dashboard/admin-new-ticket")} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20 h-11">
+                <Plus size={18} />
+                <span className="hidden sm:inline">New Ticket</span>
+              </button>
+            </motion.div>
+          </div>
+          {renderEmptyState()}
+        </motion.div>
+      </DashboardLayout>
+    );
   }
 
   return (

@@ -39,9 +39,12 @@ export function AppSidebar({ userRole }) {
     fetchTickets();
   }, [fetchTickets]);
 
+  const safeTickets = useMemo(() => {
+    return Array.isArray(tickets) ? tickets : [];
+  }, [tickets]);
+
   const assignedTicketsCount = useMemo(() => {
-    if (!tickets || !user?._id) return 0;
-    const safeTickets = Array.isArray(tickets) ? tickets : [];
+    if (!user?._id) return 0;
     return safeTickets.filter(t => {
       if (!t || !t.assignedTo) return false;
       const isAssignedToMe = 
@@ -50,7 +53,11 @@ export function AppSidebar({ userRole }) {
         t.assignedTo === user._id;
       return isAssignedToMe && t.status !== 'Closed';
     }).length;
-  }, [tickets, user?._id]);
+  }, [safeTickets, user?._id]);
+
+  const pendingTicketsCount = useMemo(() => {
+    return safeTickets.filter(t => !t.assignedTo).length;
+  }, [safeTickets]);
 
   const currentMenu = useMemo(() => {
     const baseMenu = MENU_CONFIG[userRole] ?? { top: [] };
@@ -78,9 +85,39 @@ export function AppSidebar({ userRole }) {
         })
       };
     }
+
+    if (userRole === 'Manager') {
+      return {
+        ...baseMenu,
+        top: baseMenu.top.map(item => {
+          if (item.name === 'Tickets') {
+            return {
+              ...item,
+              badge: pendingTicketsCount > 0 ? pendingTicketsCount : null,
+              submenu: item.submenu?.map(sub => {
+                if (sub.name === 'All Tickets') {
+                  return {
+                    ...sub,
+                    badge: pendingTicketsCount > 0 ? pendingTicketsCount : null
+                  };
+                }
+                if (sub.name === 'Pending') {
+                  return {
+                    ...sub,
+                    badge: pendingTicketsCount > 0 ? pendingTicketsCount : null
+                  };
+                }
+                return sub;
+              })
+            };
+          }
+          return item;
+        })
+      };
+    }
     
     return baseMenu;
-  }, [userRole, assignedTicketsCount]);
+  }, [userRole, assignedTicketsCount, pendingTicketsCount]);
 
   const isCollapsed = state === "collapsed";
 

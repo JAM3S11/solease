@@ -2,7 +2,7 @@
 
 ![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-01-13%20183119.png) <!-- Placeholder image -->
 
-**SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with AI-powered automation capabilities being developed to enhance ticket processing efficiency.
+**SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with Google Gemini AI-powered workflow automation fully integrated for enhanced ticket processing efficiency, intelligent categorization, and AI-assisted resolution workflows.
 
 ---
 
@@ -35,7 +35,7 @@
 -   **Universal Applicability**: Designed for any organization—from private enterprises to public services, educational institutions, healthcare facilities, and non-profits. SolEase adapts to your organization's unique support needs with flexible configuration options.
 -   **Production-Ready**: Fully functional and ready for deployment with complete user management, authentication, ticket lifecycle management, and analytics.
 -   **Role-Based Dashboards**: Tailored interfaces for Clients, Reviewers and Managers with role-specific features and permissions.
--   **AI-Ready Architecture**: Foundation for AI-powered ticket automation with `triggerAIResponse` functionality, automated ticket resolution tracking, and comprehensive audit trails.
+-   **AI-Ready Architecture**: Full AI-powered workflow automation with Google Gemini AI integration including intelligent ticket categorization, automated response suggestions, AI-assisted resolution workflows, and comprehensive audit trails.
 
 ### Ticket Management
 -   **Full Ticket Lifecycle**: Complete ticket management from creation to resolution, including status tracking (Open, In Progress, Resolved, Closed), priority assignment (Low, Medium, High, Critical), and detailed history logging.
@@ -69,6 +69,16 @@
 -   **Email Notifications**: Automated emails for critical events including signup confirmations, email verification, password resets, and ticket updates.
 -   **Notification Preferences**: Configurable notification settings to match user preferences and organizational policies.
 
+### AI Workflow Automation
+-   **Intelligent Ticket Processing**: Google Gemini AI automatically analyzes incoming tickets upon creation, detecting issue type, assessing urgency, and suggesting appropriate categorization.
+-   **Automated Categorization**: AI-powered auto-detection for Hardware, Software, Network, Account Access, and Other categories with confidence scores and learned accuracy improvements.
+-   **Smart Response Suggestions**: Gemini AI generates contextual response suggestions for reviewers based on ticket content, historical resolutions, and knowledge base patterns.
+-   **Intelligent Ticket Routing**: AI analyzes ticket characteristics and reviewer expertise to recommend optimal ticket assignments while preserving manager override capabilities.
+-   **Resolution Assistance**: During ticket resolution, AI suggests troubleshooting steps, references similar past tickets, and generates resolution summaries for documentation.
+-   **Sentiment Analysis**: Real-time client sentiment detection on replies, alerting reviewers to frustration or escalating urgency indicators.
+-   **Workflow Automation**: Automated triggers for ticket status changes, priority adjustments, and assignment notifications based on AI-processed content.
+-   **Knowledge Base Building**: AI automatically extracts solutions from resolved tickets to build an expanding knowledge base for future ticket assistance.
+
 ### Additional Features
 -   **Modern Responsive Design**: Fully responsive interface built with React 19 and Tailwind CSS that works seamlessly across desktop, tablet, and mobile devices.
 -   **Dark/Light Theme Support**: User preference-based theming with smooth transitions and persistent settings.
@@ -83,7 +93,7 @@
 ## 🛠️ Technology Stack
 
 -   **Frontend**: React 19, Vite, TailwindCSS, DaisyUI, Zustand, React Router 7, Framer Motion, MUI X Charts, Radix UI, Axios, Recharts.
--   **Backend**: Node.js, Express 5, MongoDB, Mongoose, JWT, Nodemailer, bcryptjs, Mailtrap, Multer, Redis (for AI processing), Rate limiting with Upstash.
+-   **Backend**: Node.js, Express 5, PostgreSQL, Prisma, JWT, Nodemailer, bcryptjs, Mailtrap, Multer, Redis (for AI processing), Gemini AI (for workflow automation), Rate limiting with Upstash.
 
 ---
 
@@ -96,7 +106,7 @@ SOLEASE follows a modern full-stack architecture designed for scalability, maint
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend API   │    │   Database      │
-│   (React SPA)   │◄──►│   (Node.js)     │◄──►│   (MongoDB)     │
+│   (React SPA)   │◄──►│   (Node.js)     │◄──►│   (PostgreSQL)   │
 │                 │    │                 │    │                 │
 │ • React 19      │    │ • Express 5     │    │ • Users         │
 │ • Vite          │    │ • JWT Auth      │    │ • Tickets       │
@@ -110,24 +120,32 @@ SOLEASE follows a modern full-stack architecture designed for scalability, maint
 │ • Manager       │    │   (Gmail SMTP)  │    │   (Charts)      │
 │ • Client        │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│   AI Service    │    │   Redis Cache   │
+│  (Gemini AI)    │    │  (AI Processing)│
+└─────────────────┘    └─────────────────┘
 ```
 
 ### Key Components
 
 - **Frontend**: Single Page Application built with React, providing role-based dashboards and real-time interactions
 - **Backend**: RESTful API server handling business logic, authentication, and data processing
-- **Database**: NoSQL MongoDB database for flexible data storage and querying
+- **Database**: Relational PostgreSQL database with Prisma ORM for structured data storage and querying
 - **Authentication**: JWT-based session management with email verification
 - **Email Service**: Automated notifications for user actions and ticket updates
 - **State Management**: Client-side state handled via Zustand stores
+- **AI Engine**: Google Gemini AI integration for intelligent workflow automation, ticket categorization, response suggestions, and resolution assistance
 
 ### Data Flow
 
 1. User interacts with React frontend
 2. API requests are sent to Express backend
-3. Backend validates requests and interacts with MongoDB
-4. Responses are processed and displayed in the UI
-5. Real-time updates via polling or WebSocket (future enhancement)
+3. Backend validates requests and interacts with PostgreSQL database
+4. AI workflows triggered via Gemini AI for ticket processing, categorization, and response suggestions
+5. Responses are processed and displayed in the UI
+6. Real-time updates via polling or WebSocket (future enhancement)
 
 ### Security Measures
 
@@ -142,7 +160,8 @@ SOLEASE follows a modern full-stack architecture designed for scalability, maint
 ## 📋 System Requirements
 
 -   Node.js 18+ and npm
--   MongoDB Atlas cluster or a local MongoDB server
+-   PostgreSQL 14+ (local installation or cloud-hosted like Supabase, Neon, or Railway)
+-   Google Gemini API key for AI-powered workflow automation
 -   A Gmail account with an "App Password" for sending transactional emails.
 -   A modern web browser (e.g., Chrome, Firefox, Edge).
 
@@ -159,7 +178,8 @@ Before starting, ensure you have the following installed:
 - **Node.js 18+**: Download from [nodejs.org](https://nodejs.org/)
 - **npm**: Comes bundled with Node.js
 - **Git**: For cloning the repository
-- **MongoDB**: Either MongoDB Atlas (cloud) or local MongoDB server
+- **PostgreSQL**: Either local PostgreSQL 14+ or a cloud-hosted PostgreSQL instance (Supabase, Neon, Railway, etc.)
+- **Google Gemini API Key**: Obtain from Google AI Studio for AI-powered workflow automation
 - **Gmail Account**: For email notifications with App Password configured
 
 Verify installations:
@@ -196,11 +216,13 @@ Create a `.env` file in the `backend` directory and add the following variables:
 
 ```env
 PORT=5001
-MONGO_URI=your_mongodb_connection_string
+DATABASE_URL=postgresql://username:password@localhost:5432/solease
 JWT_SECRET=your_jwt_secret_key
 CLIENT_URL=http://localhost:5173
 EMAIL_USER=your_gmail_address@gmail.com
 EMAIL_PASSWORD_APP=your_gmail_app_password
+GEMINI_API_KEY=your_google_gemini_api_key
+REDIS_URL=your_upstash_redis_url
 NODE_ENV=development
 ```
 
@@ -230,8 +252,8 @@ npm run dev
 ## 👤 Default Administrator
 
 On the first run, a default **Manager** account is created with the following credentials:
--   **Username**: `adminManager`
--   **Password**: `Admin@123`
+-   **Username**: `************`
+-   **Password**: `*********`
 
 It is strongly recommended to change the password and email for this account immediately after your first login.
 
@@ -255,11 +277,13 @@ It is strongly recommended to change the password and email for this account imm
 The backend follows a standard MVC-like pattern:
 
 -   `src/server.js`: Main application entry point.
--   `src/config/`: Database connection and data seeding.
--   `src/models/`: Mongoose schemas for Users, Tickets, and Contacts.
+-   `src/config/`: Database connection and Prisma configuration.
+-   `src/prisma/`: Prisma schema and migrations for PostgreSQL database models.
+-   `src/models/`: (Legacy - replaced by Prisma) Mongoose schemas removed in favor of Prisma ORM.
 -   `src/controllers/`: Business logic for handling requests.
 -   `src/routes/`: API endpoint definitions.
 -   `src/middleware/`: Authentication and authorization guards.
+-   `src/services/`: AI service layer for Gemini AI integration.
 -   `src/mailtrap/`: Email templates and sending logic.
 
 ### Frontend
@@ -277,18 +301,87 @@ The frontend is structured by feature and role:
 
 ## 🎭 Roles & Features
 
-The platform supports a comprehensive role-based system with clear responsibilities and permissions:
+The platform supports a comprehensive role-based system with clear responsibilities and permissions. The role system has been streamlined from previous versions to provide a cleaner, more intuitive structure focused on three primary roles:
 
--   **Manager**: Full administrative access. Can manage all users, view system analytics, configure settings, oversee all tickets, perform user approvals, and have complete system oversight. Managers can also override AI decisions and manage automation settings.
--   **Reviewer**: Handles assigned tickets, manages ticket resolution workflow, provides technical solutions, and communicates with clients. Reviewers can update ticket status, add comments, and manage attachments.
--   **Client**: End-users who create tickets, view their own tickets, track status, submit feedback, and communicate with support staff. Clients can update their profiles and manage their support requests.
--   **Pending**: Initial status for new users awaiting Manager approval before gaining full system access.
+-   **Manager**: Full administrative access. Can manage all users, view system analytics, configure settings, oversee all tickets, perform user approvals, and have complete system oversight. Managers can also override AI decisions and manage automation settings. This role remains unchanged and serves as the highest level of authority within the platform.
+-   **Reviewer**: Handles assigned tickets, manages ticket resolution workflow, provides technical solutions, and communicates with clients. Reviewers can update ticket status, add comments, and manage attachments. This role was previously referred to as "Agent" or "IT Support" in earlier versions of the platform but has been consolidated under the "Reviewer" designation to better reflect the responsibilities of reviewing, assessing, and resolving support tickets. The term "Reviewer" emphasizes the role's function in evaluating, prioritizing, and managing ticket lifecycles rather than simply responding to inquiries.
+-   **Client**: End-users who create tickets, view their own tickets, track status, submit feedback, and communicate with support staff. Clients can update their profiles and manage their support requests. This role remains the primary interface for individuals seeking assistance from the support team.
+-   **Pending**: Initial status for new users awaiting Manager approval before gaining full system access. This is not a role per se but rather an account state that users transition through before being assigned to one of the three primary roles.
+
+---
+
+## ⚠️ Deprecated Features
+
+As part of the continuous evolution of SOLEASE, certain features and terminology from earlier versions have been deprecated in favor of more accurate and streamlined alternatives. The following elements have been identified for removal or have already been transitioned to their updated equivalents:
+
+### Deprecated Roles
+
+#### IT Support Role (Deprecated)
+The "IT Support" role that existed in earlier versions of SOLEASE has been fully deprecated and replaced by the "Reviewer" role. Organizations that previously used the IT Support role should migrate their users to the Reviewer role, which provides identical functionality with enhanced capabilities including AI-assisted ticket processing and intelligent routing suggestions. The Reviewer role encompasses all responsibilities previously held by IT Support, including handling assigned tickets, managing ticket resolution workflows, providing technical solutions, updating ticket status, adding comments, and managing attachments. Any existing IT Support users should be reclassified as Reviewers during the migration to ensure continued access to all necessary features and permissions.
+
+#### Service Desk Role (Deprecated)
+The "Service Desk" role has also been deprecated and consolidated into the "Reviewer" role. In previous iterations of SOLEASE, Service Desk was intended to serve as an intermediary role between Clients and Managers, but this structure created unnecessary complexity in the ticket resolution workflow. The consolidation into the Reviewer role simplifies the role hierarchy while maintaining all previously available functionality. Users previously assigned the Service Desk role should be transitioned to the Reviewer role, which provides a superset of capabilities including the AI-powered workflow automation features that were not available when Service Desk was originally implemented.
+
+#### Agent Role (Renamed to Reviewer)
+The terminology "Agent" has been formally deprecated in favor of "Reviewer" throughout all documentation, user interfaces, and API endpoints. This change was implemented to provide more accurate terminology that better describes the role's function within the modern IT service management workflow. The term "Reviewer" was chosen because it accurately reflects the role's responsibilities in evaluating incoming tickets, assessing their priority and category through AI-assisted analysis, managing the resolution process, and ensuring quality outcomes for clients. All references to "Agent" in the codebase, documentation, and user-facing text have been updated to "Reviewer." API endpoints that previously referenced "agent" in parameter names or response fields have been updated to use "reviewer" instead. This change affects both the backend API responses and frontend UI labels. Existing users who were previously classified as Agents will automatically display as Reviewers in the updated interface, and no manual migration of user data is required.
+
+### Deprecated Functionality
+
+#### MongoDB Integration (Replaced by PostgreSQL)
+The MongoDB database integration that served as the original data layer for SOLEASE has been deprecated in favor of PostgreSQL with Prisma ORM. This migration provides enhanced data integrity, improved query performance, and stronger support for the complex relationships between users, tickets, comments, and system logs.
+
+##### The MongoDB Atlas Experience That Led to This Change
+
+The decision to migrate from MongoDB to PostgreSQL was not made lightly—it was driven by significant issues experienced with MongoDB Atlas's free tier clusters that ultimately resulted in complete data loss. The following details the specific events that affected this project:
+
+**Automatic Cluster Pausing**: MongoDB Atlas automatically pauses inactive free-tier clusters (formerly known as M0) after 30 days of inactivity. While this may seem reasonable, the definition of "inactivity" is problematic for development projects that may have periods of low usage but are still actively maintained. The system sends email notifications warning of the impending pause, but these notifications can be easily overlooked or end up in spam folders, especially for projects that are not checked daily.
+
+**Data Loss Incident**: In our specific case, despite the cluster appearing to be in use during development, certain periods of reduced activity triggered the automatic pause mechanism. When a free-tier cluster is paused, all connections are disallowed—you cannot read or write data to it. The critical issue arose when attempting to resume the cluster: if the cluster was running an older MongoDB version at the time of pause, the system may not allow resumption, effectively resulting in permanent data loss. This is not a theoretical concern—it is exactly what happened to this project. All ticket data, user accounts, and system configurations that had been built up over time were suddenly and irreversibly gone.
+
+**Scaling Restrictions and Tier Changes**: Beyond the pausing issue, MongoDB Atlas has undergone significant changes to their cluster offerings. Serverless instances and the M2/M5 tier clusters were deprecated as of February 2025, forcing users toward either the free tier (with its problematic pausing behavior) or significantly more expensive dedicated clusters. The introduction of "Flex clusters" as a replacement has its own limitations and pricing considerations that may not suit all use cases. The ability to scale from a free tier to a paid tier is also constrained, with limited upgrade paths and potential downtime during migration.
+
+**Community Impact**: This is not an isolated incident. The MongoDB community forums are filled with posts from developers who have experienced similar data loss on their free tier clusters. Threads titled "Free cluster data got deleted suddenly" and "Your MongoDB Atlas M0 cluster will be automatically paused in 7 days" are common, with many users expressing frustration that a service marketed as "free forever" has such aggressive termination policies that can destroy weeks, months, or even years of accumulated data without meaningful recourse.
+
+**Why PostgreSQL with Supabase/Neon/Railway**: In contrast, PostgreSQL cloud providers like Supabase, Neon, and Railway offer much more developer-friendly free tiers. These services provide more generous usage limits without the aggressive automatic pausing that can destroy data. While no service is perfect, the PostgreSQL ecosystem offers better reliability for projects that may have variable usage patterns during development and prototyping phases.
+
+All new deployments should use PostgreSQL. Existing MongoDB deployments will continue to function but will not receive updates or new feature support. The migration guide in the Installation section provides detailed instructions for transitioning from MongoDB to PostgreSQL.
+
+#### Mongoose Schemas (Replaced by Prisma)
+The Mongoose schema definitions that previously defined data models for Users, Tickets, and Contacts have been deprecated and replaced by Prisma schema definitions. The Prisma-based approach provides type-safe database operations, automatic migrations, and improved developer experience through better IDE integration and autocomplete support. The `src/models/` directory is now marked as legacy, and all new database operations should use the Prisma client from `src/prisma/`.
+
+#### triggerAIResponse Function (Enhanced by Gemini AI)
+The original `triggerAIResponse` function that provided basic AI response triggering capabilities has been deprecated in favor of the full Google Gemini AI integration. While the original function provided simple automated responses, the new Gemini AI integration offers intelligent ticket categorization with confidence scores, contextual response suggestions based on historical resolutions, sentiment analysis on client communications, and comprehensive workflow automation throughout the entire ticket lifecycle. The new AI capabilities far exceed what was possible with the original `triggerAIResponse` function, making it obsolete for all but the most basic use cases.
+
+### Migration Path for Deprecated Features
+
+Organizations currently using deprecated roles (IT Support, Service Desk, or Agent) should follow these steps to update their configurations:
+
+1.  Review all existing user accounts and identify any users currently assigned to deprecated roles.
+2.  Update each affected user's role to the appropriate replacement (Reviewer in all cases).
+3.  Update any internal documentation or training materials to reflect the new terminology.
+4.  Inform all affected users of the role change and provide guidance on any differences in the interface or functionality.
+
+Organizations using MongoDB should plan for migration to PostgreSQL following the detailed instructions in the Installation & Setup section. The migration should be performed before the MongoDB support is fully discontinued to ensure continuous operation and access to new features.
+
+### Timeline for Deprecated Features
+
+The deprecated features listed above will be maintained for a transition period to allow organizations to adapt their configurations. However, these features will be removed in future releases. The specific timeline for removal will be announced in subsequent changelog entries and release notes. Organizations are encouraged to migrate to the current implementations as soon as possible to take advantage of the enhanced capabilities and ensure compatibility with future updates.
 
 ---
 
 ## 🎫 Ticket Lifecycle
 
-1.  **Creation**: Clients or Managers create tickets with title
+The ticket lifecycle in SOLEASE integrates Google Gemini AI for intelligent workflow automation at every stage:
+
+1.  **Creation**: Clients or Managers create tickets with title, description, priority, and category. Upon submission, Gemini AI automatically analyzes the ticket content, performs intelligent categorization, assesses urgency indicators, assigns initial priority confidence scores, and checks historical tickets for similar issues to suggest potential solutions.
+
+2.  **AI Processing & Routing**: After initial creation, the AI engine analyzes the ticket characteristics against reviewer expertise and current workload to recommend optimal assignment. Managers receive these AI suggestions and can accept or override them.
+
+3.  **In Progress (AI-Assisted Resolution)**: When a reviewer begins working on a ticket, Gemini AI provides contextual response suggestions, references similar resolved tickets, suggests troubleshooting steps based on the issue category, and monitors client replies for sentiment and urgency changes.
+
+4.  **Resolution**: As the ticket approaches resolution, AI assists by generating comprehensive resolution summaries, verifying all necessary steps have been completed, and extracting solution information to expand the knowledge base.
+
+5.  **Closed**: Final resolution is documented with AI-generated summaries for audit trails and future reference. Client feedback is collected and analyzed for satisfaction tracking.
 
 ---
 
@@ -624,7 +717,8 @@ All endpoints return standardized error responses:
 
 #### Prerequisites
 - Node.js 18+ installed on production server
-- MongoDB Atlas cluster or dedicated MongoDB server
+- PostgreSQL 14+ (local or cloud-hosted like Supabase, Neon, or Railway)
+- Google Gemini API key for AI workflow automation
 - Domain name with SSL certificate
 - Reverse proxy (nginx recommended)
 - Process manager (PM2 recommended)
@@ -661,11 +755,13 @@ Create production `.env` files:
 ```env
 PORT=5001
 NODE_ENV=production
-MONGO_URI=your_production_mongodb_uri
+DATABASE_URL=postgresql://username:password@host:5432/solease
 JWT_SECRET=your_secure_jwt_secret_key
 CLIENT_URL=https://yourdomain.com
 EMAIL_USER=your_production_email@gmail.com
 EMAIL_PASSWORD_APP=your_app_password
+GEMINI_API_KEY=your_google_gemini_api_key
+REDIS_URL=your_upstash_redis_url
 ```
 
 **frontend/.env:**
@@ -751,8 +847,9 @@ sudo certbot --nginx -d yourdomain.com
 ```
 
 #### 7. Database Setup
-- Create MongoDB Atlas cluster or set up local MongoDB
-- Ensure network access is configured for your server IP
+- Create PostgreSQL database locally or set up a cloud-hosted instance (Supabase, Neon, Railway, etc.)
+- Run Prisma migrations: `npx prisma migrate deploy`
+- Ensure network access is configured for your server IP (if using cloud PostgreSQL)
 - Create database user with appropriate permissions
 
 #### 8. Email Configuration
@@ -777,7 +874,7 @@ pm2 restart solease-backend
 ```
 
 #### 10. Backup Strategy
-- Set up automated MongoDB backups
+- Set up automated PostgreSQL backups (pg_dump or cloud provider backups)
 - Backup application code and configuration
 - Consider off-site backup storage
 
@@ -787,11 +884,13 @@ pm2 restart solease-backend
 |----------|-------------|---------|
 | `PORT` | Backend server port | `5001` |
 | `NODE_ENV` | Environment mode | `production` |
-| `MONGO_URI` | MongoDB connection string | `your-mongo-uri` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/solease` |
 | `JWT_SECRET` | JWT signing secret | `your-256-bit-secret` |
 | `CLIENT_URL` | Frontend URL | `https://yourdomain.com` |
 | `EMAIL_USER` | Gmail address for notifications | `noreply@yourdomain.com` |
 | `EMAIL_PASSWORD_APP` | Gmail App Password | `abcd-efgh-ijkl-mnop` |
+| `GEMINI_API_KEY` | Google Gemini API key for AI automation | `AIzaSy...` |
+| `REDIS_URL` | Upstash Redis URL for AI processing | `redis://...` |
 
 ### Security Considerations
 - Use strong, unique JWT secrets
@@ -935,9 +1034,9 @@ Thank you for contributing to SOLEASE! 🚀
 -   **Session Expires Unexpectedly**: Check JWT token expiration settings. Clear browser cookies and try logging in again.
 
 #### Database Issues
--   **MongoDB Connection Issues**: Verify your `MONGO_URI` is correct and accessible. Ensure your IP address is whitelisted in MongoDB Atlas network access settings.
--   **Database Seeding Fails**: Check MongoDB user permissions. Ensure the database exists and is accessible.
--   **Data Not Persisting**: Verify MongoDB connection is stable. Check for connection timeouts in logs.
+-   **PostgreSQL Connection Issues**: Verify your `DATABASE_URL` is correct and accessible. Ensure your IP address is whitelisted in your cloud provider's network settings (if using cloud PostgreSQL). Check that PostgreSQL server is running locally.
+-   **Database Migration Fails**: Check database user permissions. Ensure the database exists and is accessible. Run `npx prisma migrate` for detailed error messages.
+-   **Data Not Persisting**: Verify PostgreSQL connection is stable. Check for connection timeouts in logs.
 
 #### Email Issues
 -   **Email Verification Not Received**: Check spam/junk folders. Verify Gmail App Password is correctly configured. Check email service logs.
@@ -948,6 +1047,13 @@ Thank you for contributing to SOLEASE! 🚀
 -   **Port Already in Use**: Kill processes using the required ports (5001 for backend, 5173 for frontend) or change port configurations.
 -   **Dependencies Installation Fails**: Clear npm cache (`npm cache clean --force`) and delete `node_modules`. Reinstall with `npm install`.
 -   **Build Fails**: Ensure all required environment variables are set. Check for TypeScript/JavaScript syntax errors.
+-   **Prisma Errors**: Run `npx prisma generate` to regenerate the Prisma client after installing dependencies or updating the schema.
+
+#### AI Integration Issues
+-   **Gemini API Errors**: Verify your `GEMINI_API_KEY` is correct and active. Check API quota limits in Google AI Studio.
+-   **AI Response Delays**: Check Redis connectivity for caching. High traffic may cause queue delays for AI processing.
+-   **AI Categorization Not Working**: Ensure ticket title and description contain sufficient information for categorization. Very short or vague tickets may not trigger AI processing.
+-   **AI Suggestions Not Appearing**: Verify the ticket has been assigned to a reviewer. AI suggestions are generated during the resolution phase, not at ticket creation.
 
 #### Frontend Issues
 -   **Page Not Loading**: Check if backend server is running. Verify API endpoints are accessible. Check browser network tab for failed requests.
@@ -978,14 +1084,14 @@ If you encounter issues not covered here:
 ### Logs and Debugging
 - **Backend Logs**: Check console output when running `npm run dev`
 - **Frontend Logs**: Use browser developer tools (F12) to view console logs
-- **Database Logs**: Check MongoDB logs for connection/query issues
+- **Database Logs**: Check PostgreSQL logs for connection/query issues
 - **Network Logs**: Use browser network tab to inspect API calls
 
 ### Preventive Measures
 - Keep dependencies updated regularly
 - Test configuration changes in staging environment first
 - Monitor application logs for early issue detection
-- Maintain regular backups of database and configuration
+- Maintain regular backups of PostgreSQL database and configuration
 
 ---
 
@@ -1000,12 +1106,12 @@ A: SOLEASE is a comprehensive IT service management platform designed for organi
 A: Any organization requiring structured support operations, including private enterprises, public institutions, educational facilities, healthcare organizations, and non-profits.
 
 **Q: What are the main user roles?**  
-A: Currently, there are two main roles: Managers (full administrative access) and Clients (end-users who create and track tickets). IT Support and Service Desk roles are planned for removal in future updates.
+A: SOLEASE currently supports three primary user roles: Managers (full administrative access), Reviewers (previously called "Agent," "IT Support," or "Service Desk" in older versions - handles ticket resolution workflow), and Clients (end-users who create and track tickets). All deprecated role terminology has been consolidated into the Reviewer role for simplicity and consistency.
 
 ### Technical Questions
 
 **Q: What technologies does SOLEASE use?**  
-A: Frontend: React 19, Vite, TailwindCSS, DaisyUI, Zustand, Axios. Backend: Node.js, Express 5, MongoDB, JWT, Nodemailer.
+A: Frontend: React 19, Vite, TailwindCSS, DaisyUI, Zustand, Axios. Backend: Node.js, Express 5, PostgreSQL, Prisma, JWT, Nodemailer, Gemini AI for workflow automation.
 
 **Q: Is SOLEASE open source?**  
 A: Yes, SOLEASE is open source and licensed under the MIT License.
@@ -1052,7 +1158,7 @@ A: Managers have full access to user management through the Admin panel, where y
 A: Ensure the `CLIENT_URL` in your backend `.env` file matches your frontend URL exactly, including protocol and port.
 
 **Q: The application won't start. What could be wrong?**  
-A: Check that all dependencies are installed, environment variables are set correctly, and MongoDB is running and accessible.
+A: Check that all dependencies are installed, environment variables are set correctly, PostgreSQL is running and accessible, and Prisma client has been generated (run `npx prisma generate` if needed).
 
 **Q: Email notifications aren't working. How can I fix this?**  
 A: Verify your Gmail credentials, ensure "Less secure app access" is configured, and check that your email account allows SMTP access.
@@ -1094,14 +1200,13 @@ If you have questions not covered here, please check our GitHub issues or create
 
 This project is actively under development. Stay tuned for more features and enhancements, including:
 
--   **Advanced AI Integration**: Full implementation of natural language processing for automated ticket categorization, intelligent routing, and solution suggestions.
+-   **Enhanced AI Capabilities**: Continued improvement of Gemini AI integration with advanced reasoning, multi-language support, and enhanced knowledge base capabilities.
 -   **Real-time Notifications**: SMS and push notifications for ticket assignments and status changes.
 -   **Enhanced Analytics**: Advanced reporting dashboards with predictive analytics and trend analysis.
 -   **AI Chatbot**: Intelligent support bot for automated ticket triaging and initial assistance.
 -   **Mobile Applications**: Native iOS and Android apps for on-the-go ticket management.
 -   **Integration Platform**: APIs and webhooks for integration with third-party tools like Slack, Microsoft Teams, and JIRA.
--   **Advanced Automation**: Workflow automation with custom rules and triggers.
--   **Knowledge Base**: Integrated help center and self-service portal.
+-   **Knowledge Base**: Integrated help center and self-service portal with AI-powered article suggestions.
 
 ---
 
@@ -1114,6 +1219,17 @@ The MIT License allows for free use, modification, and distribution of the softw
 ---
 
 ## 📝 Changelog
+
+### [v1.3.0] - 2026-04-03 (Upcoming)
+- Database migration from MongoDB to PostgreSQL for enhanced data integrity and performance
+- Full Gemini AI integration for intelligent workflow automation in ticket resolution
+- AI-powered ticket categorization with confidence scoring and auto-detection improvements
+- Smart response suggestions for reviewers based on historical resolutions
+- Intelligent ticket routing based on reviewer expertise and workload
+- Sentiment analysis for real-time client feedback monitoring during ticket resolution
+- Resolution assistance with AI-generated troubleshooting suggestions and summary documentation
+- Prisma ORM integration for type-safe database operations
+- Updated environment variables for PostgreSQL and Gemini API configuration
 
 ### [v1.2.0] - 2025-02-02 (Current)
 - Enhanced UI with Radix UI components and shadcn integration

@@ -144,10 +144,11 @@ const PasswordChangePage = () => {
       setPasswordUpdateRequired(false, null);
 
       // Navigate to appropriate dashboard
-      switch (user?.role) {
-        case "Client": navigate("/client-dashboard"); break;
-        case "Reviewer": navigate("/reviewer-dashboard"); break;
-        case "Manager": navigate("/admin-dashboard"); break;
+      const userRole = user?.role?.toLowerCase();
+      switch (userRole) {
+        case "client": navigate("/client-dashboard"); break;
+        case "reviewer": navigate("/reviewer-dashboard"); break;
+        case "manager": navigate("/admin-dashboard"); break;
         default: navigate("/");
       }
     } catch (error) {

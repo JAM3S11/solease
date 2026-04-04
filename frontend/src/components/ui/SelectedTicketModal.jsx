@@ -12,7 +12,8 @@ const SelectedTicketModal = ({ ticket, onClose, itSupportUsers = [], onUpdate })
   const [assignedTo, setAssignedTo] = useState(ticket?.assignedTo?._id || "");
   const [isAssigning, setIsAssigning] = useState(false);
 
-  const canAssign = user?.role === "Manager";
+  const userRole = user?.role?.toUpperCase();
+  const canAssign = userRole === "MANAGER";
 
   const tabs = [
     { id: "details", label: "Details", icon: Ticket },

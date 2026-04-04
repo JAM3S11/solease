@@ -1,24 +1,35 @@
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const checkPasswordStatus = async (req, res, next) => {
     try {
-        // Skip if no user (will be handled by auth middleware)
         if (!req.userId) {
             return next();
         }
 
-        const user = await User.findById(req.userId).select("passwordStrength passwordUpdateDeadline hasUpdatedWeakPassword");
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: {
+                passwordStrength: true,
+                passwordUpdateDeadline: true,
+                hasUpdatedWeakPassword: true
+            }
+        });
         
         if (!user) {
             return next();
         }
 
-        // Skip if password is already strong or has been updated
         if (user.passwordStrength === 'strong' || user.hasUpdatedWeakPassword) {
             return next();
         }
 
-        // Check if deadline has expired
         if (user.passwordUpdateDeadline && new Date() > user.passwordUpdateDeadline) {
             return res.status(403).json({
                 success: false,
@@ -28,7 +39,6 @@ export const checkPasswordStatus = async (req, res, next) => {
             });
         }
 
-        // Add flag to request for frontend to show warning
         req.passwordUpdateRequired = true;
         req.passwordUpdateDeadline = user.passwordUpdateDeadline;
 

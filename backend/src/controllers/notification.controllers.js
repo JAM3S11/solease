@@ -1,16 +1,23 @@
-import { Notification } from "../models/notification.model.js";
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const getNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ user: req.user._id })
-            .populate("ticket", "subject status")
-            .sort({ createdAt: -1 })
-            .limit(50);
+        const notifications = await prisma.notification.findMany({
+            where: { userId: req.user.id },
+            include: { ticket: { select: { subject: true, status: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
 
-        const unreadCount = await Notification.countDocuments({
-            user: req.user._id,
-            read: false
+        const unreadCount = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
         });
 
         res.status(200).json({
@@ -31,14 +38,13 @@ export const markNotificationAsRead = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const notification = await Notification.findOneAndUpdate(
-            { _id: id, user: req.user._id },
-            {
+        const notification = await prisma.notification.update({
+            where: { id, userId: req.user.id },
+            data: {
                 read: true,
                 readAt: new Date()
-            },
-            { new: true }
-        );
+            }
+        });
 
         if (!notification) {
             return res.status(404).json({
@@ -47,9 +53,8 @@ export const markNotificationAsRead = async (req, res) => {
             });
         }
 
-        const unreadCount = await Notification.countDocuments({
-            user: req.user._id,
-            read: false
+        const unreadCount = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
         });
 
         res.status(200).json({
@@ -68,13 +73,13 @@ export const markNotificationAsRead = async (req, res) => {
 
 export const markAllNotificationsAsRead = async (req, res) => {
     try {
-        await Notification.updateMany(
-            { user: req.user._id, read: false },
-            {
+        await prisma.notification.updateMany({
+            where: { userId: req.user.id, read: false },
+            data: {
                 read: true,
                 readAt: new Date()
             }
-        );
+        });
 
         res.status(200).json({
             success: true,
@@ -92,17 +97,16 @@ export const markAllNotificationsAsRead = async (req, res) => {
 
 export const unmarkAllNotificationsAsRead = async (req, res) => {
     try {
-        await Notification.updateMany(
-            { user: req.user._id, read: true },
-            {
+        await prisma.notification.updateMany({
+            where: { userId: req.user.id, read: true },
+            data: {
                 read: false,
                 readAt: null
             }
-        );
+        });
 
-        const unreadCount = await Notification.countDocuments({
-            user: req.user._id,
-            read: false
+        const unreadCount = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
         });
 
         res.status(200).json({
@@ -121,9 +125,8 @@ export const unmarkAllNotificationsAsRead = async (req, res) => {
 
 export const getUnreadCount = async (req, res) => {
     try {
-        const unreadCount = await Notification.countDocuments({
-            user: req.user._id,
-            read: false
+        const unreadCount = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
         });
 
         res.status(200).json({
@@ -141,14 +144,16 @@ export const getUnreadCount = async (req, res) => {
 
 export const createNotification = async (userId, ticketId, type, title, message, previousStatus = null, newStatus = null) => {
     try {
-        const notification = await Notification.create({
-            user: userId,
-            ticket: ticketId,
-            type,
-            title,
-            message,
-            previousStatus,
-            newStatus
+        const notification = await prisma.notification.create({
+            data: {
+                userId,
+                ticketId,
+                type,
+                title,
+                message,
+                previousStatus,
+                newStatus
+            }
         });
 
         return notification;
@@ -178,8 +183,10 @@ export const toggleNotificationPreference = async (req, res) => {
             return res.status(400).json({ success: false, message: "enabled must be a boolean" });
         }
 
-        req.user.notificationsEnabled = enabled;
-        await req.user.save();
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { notificationsEnabled: enabled }
+        });
 
         res.status(200).json({
             success: true,

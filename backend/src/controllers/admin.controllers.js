@@ -1,39 +1,76 @@
-// controllers/admin.controller.js
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const getBaseUrl = (req) => {
   return `${req.protocol}://${req.get("host")}`;
 };
 
-// Get all users in the system
 export const getAllUsers = async (req, res) => {
   try {
-    const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    const INACTIVE_TIMEOUT = 5 * 60 * 1000;
     const now = new Date();
     const baseUrl = getBaseUrl(req);
 
-    // First, find all users and update their isOnline status based on lastActivity
-    const users = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        lastLogin: true,
+        isOnline: true,
+        lastActivity: true,
+        onlineAt: true,
+        profilePhoto: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
 
-    // Update users who haven't been active in the last 5 minutes
     const updatePromises = users
       .filter(user => user.isOnline && user.lastActivity && (now - new Date(user.lastActivity) > INACTIVE_TIMEOUT))
       .map(user => 
-        User.findByIdAndUpdate(user._id, { isOnline: false }, { new: true })
+        prisma.user.update({
+          where: { id: user.id },
+          data: { isOnline: false }
+        })
       );
 
     await Promise.all(updatePromises);
 
-    // Fetch updated users
-    const updatedUsers = await User.find().select("-password -resetPasswordToken -resetPasswordExpiresAt");
+    const updatedUsers = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        lastLogin: true,
+        isOnline: true,
+        lastActivity: true,
+        onlineAt: true,
+        profilePhoto: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
 
-    // Add full URL for profilePhoto
     const usersWithFullPhotoUrl = updatedUsers.map(user => ({
-      ...user.toObject(),
+      ...user,
       profilePhoto: user.profilePhoto ? `${baseUrl}${user.profilePhoto}` : null
     }));
 
-    // Return a response
     return res.status(200).json({
       success: true,
       count: updatedUsers.length,
@@ -48,29 +85,42 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// Admin updates user role and status
 export const updateUserRoleAndStatus = async (req, res) => {
   try {
-    const { username } = req.params; // approve by username
+    const { username } = req.params;
     const { role, status } = req.body;
 
-    // Ensure the caller is authenticated
     if (!req.userId) {
       return res.status(401).json({ success: false, message: "Unauthorized - no token" });
     }
 
-    // Check if caller is an admin/manager
-    const adminUser = await User.findById(req.userId);
-    if (!adminUser || adminUser.role !== "Manager") {
+    const adminUser = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!adminUser || adminUser.role !== "MANAGER") {
       return res.status(403).json({ success: false, message: "Forbidden - you are not an admin." });
     }
 
-    // Find the target user by username (they don’t need a token)
-    const updatedUser = await User.findOneAndUpdate(
-      { username },
-      { role, status, approvedBy: req.userId },
-      { new: true }
-    ).select("-password");
+    const normalizedRole = role?.toUpperCase();
+    const normalizedStatus = status?.toUpperCase();
+
+    const updatedUser = await prisma.user.update({
+      where: { username },
+      data: { 
+        role: normalizedRole,
+        status: normalizedStatus,
+        approvedBy: req.userId
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -89,21 +139,29 @@ export const updateUserRoleAndStatus = async (req, res) => {
 
 export const deleteUserById = async (req, res) => {
   try {
-    const deleteUser = await User.findByIdAndDelete(req.params.id);
-    //If user not found
+    const { id } = req.params;
+    console.log("🗑️ Attempting to delete user with ID:", id);
+    
+    const deleteUser = await prisma.user.delete({
+      where: { id }
+    });
+
+    console.log("✅ User deleted successfully:", deleteUser.username);
+
     if(!deleteUser){
       return res.status(404).json({
         success: false,
         message: "User not found. Try again"
       })
     }
-    // return the response
+
     return res.status(200).json({
       success: true,
       message: "User deleted successfully!"
     })
   } catch (error) {
-    console.error("Error deleting in adminController", error);
+    console.error("🗑️ Error deleting in adminController:", error.message);
+    console.error("   Error code:", error.code);
     res.status(500).json({
       success: false,
       message: "Server error in deleting user"
@@ -111,14 +169,22 @@ export const deleteUserById = async (req, res) => {
   }
 };
 
-// Get active users (users active in the last 5 minutes)
 export const getActiveUsers = async (req, res) => {
   try {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     
-    const activeUsers = await User.find({
-      lastActivity: { $gte: fiveMinutesAgo }
-    }).select("name email role lastActivity onlineAt");
+    const activeUsers = await prisma.user.findMany({
+      where: {
+        lastActivity: { gte: fiveMinutesAgo }
+      },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+        lastActivity: true,
+        onlineAt: true
+      }
+    });
 
     return res.status(200).json({
       success: true,
@@ -134,18 +200,24 @@ export const getActiveUsers = async (req, res) => {
   }
 };
 
-// Update user's last activity (called periodically from frontend)
 export const updateUserActivity = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      { 
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { 
         lastActivity: new Date(),
         isOnline: true,
         onlineAt: new Date()
       },
-      { new: true }
-    ).select("name email role lastActivity isOnline onlineAt");
+      select: {
+        name: true,
+        email: true,
+        role: true,
+        lastActivity: true,
+        isOnline: true,
+        onlineAt: true
+      }
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -164,14 +236,18 @@ export const updateUserActivity = async (req, res) => {
   }
 };
 
-// Mark user as offline (called when user logs out or closes browser)
 export const markUserOffline = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      { isOnline: false },
-      { new: true }
-    ).select("name email role isOnline");
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { isOnline: false },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+        isOnline: true
+      }
+    });
 
     return res.status(200).json({
       success: true,

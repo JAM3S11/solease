@@ -42,7 +42,7 @@ const useAdminStore = create((set) => ({
     try {
       await api.delete(`/admin/users/${id}`);
       set((state) => ({
-        users: state.users.filter((user) => user._id !== id),
+        users: state.users.filter((user) => user._id !== id && user.id !== id),
         loading: false
       }));
     } catch (error) {

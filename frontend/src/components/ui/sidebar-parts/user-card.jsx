@@ -53,12 +53,12 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
         : undefined;
 
     const getSettingsPath = (role) => {
-        switch(role){
-            case "Manager":
+        switch(role.toLowerCase()){
+            case "manager":
                 return "/admin-dashboard/admin-settings";
-            case "Reviewer":
+            case "reviewer":
                 return "/reviewer-dashboard/settings";
-            case "Client":
+            case "client":
             default: 
                 return "/client-dashboard/profile";
         }

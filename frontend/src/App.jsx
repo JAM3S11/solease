@@ -83,9 +83,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/auth/verify-email" replace />;
   }
 
-  // check if user has one of the allowed roles
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />; // or a 403 page
+  // Normalize user role to lowercase for comparison
+  const userRole = user.role?.toLowerCase();
+  if (allowedRoles && !allowedRoles.some(role => role.toLowerCase() === userRole)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -96,17 +97,17 @@ const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuthenticationStore();
 
   if (isAuthenticated && user?.isVerified) {
-    if (user.role === "Pending" || user.status === "Pending") {
-      // Don’t redirect yet, let them see login or show info
+    const userRole = user.role?.toLowerCase();
+    if (userRole === "manager" || userRole === "reviewer" || userRole === "client") {
       return children;
     }
 
-    switch (user.role) {
-      case "Manager":
+    switch (userRole) {
+      case "manager":
         return <Navigate to="/admin-dashboard" replace />;
-      case "Reviewer":
+      case "reviewer":
         return <Navigate to="/reviewer-dashboard" replace />;
-      case "Client":
+      case "client":
         return <Navigate to="/client-dashboard" replace />;
       default:
         return <Navigate to="/" replace />;

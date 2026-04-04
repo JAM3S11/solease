@@ -1,11 +1,16 @@
-// controllers/ticket.controller.js
-import { Ticket } from "../models/tickets.model.js";
-import { User } from "../models/user.model.js";
-import { createNotification } from "../controllers/notification.controllers.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import { createNotification } from "./notification.controllers.js";
 import { sendTicketStatusUpdateEmail } from "../mailtrap/emails.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -47,12 +52,32 @@ const upload = multer({
 
 export const uploadMiddleware = upload.single("attachment");
 
-// Create a ticket
+const ISSUE_TYPE_MAP = {
+    "Hardware issue": "HARDWARE_ISSUE",
+    "Software issue": "SOFTWARE_ISSUE",
+    "Network Connectivity": "NETWORK_CONNECTIVITY",
+    "Account Access": "ACCOUNT_ACCESS",
+    "Other": "OTHER"
+};
+
+const URGENCY_MAP = {
+    "Low": "LOW",
+    "Medium": "MEDIUM",
+    "High": "HIGH",
+    "Critical": "CRITICAL"
+};
+
+const STATUS_MAP = {
+    "Open": "OPEN",
+    "In Progress": "IN_PROGRESS",
+    "Resolved": "RESOLVED",
+    "Closed": "CLOSED"
+};
+
 export const createTicket = async (req, res) => {
     const { location, issueType, subject, description, urgency } = req.body;
 
     try {
-        // Check if fields are empty
         if (!location || !issueType || !subject || !description || !urgency) {
             return res.status(400).json({
                 success: false,
@@ -60,38 +85,53 @@ export const createTicket = async (req, res) => {
             });
         };
 
-        // Object of the ticket
-        const ticket = await Ticket({
-            user: req.user._id,
+        const ticketData = {
+            userId: req.user.id,
             location,
-            issueType,
+            issueType: ISSUE_TYPE_MAP[issueType] || "OTHER",
             subject,
             description,
-            urgency,
-            visibility: "Role-Based"
+            urgency: URGENCY_MAP[urgency] || "LOW",
+            visibility: "ROLE_BASED"
+        };
+
+        const ticket = await prisma.ticket.create({
+            data: ticketData,
+            include: {
+                user: {
+                    select: { id: true, username: true, name: true, role: true, profilePhoto: true }
+                }
+            }
         });
 
-        // Handle file attachment if present
         if (req.file) {
-            ticket.attachments.push({
-                filename: req.file.filename,
-                originalName: req.file.originalname,
-                mimetype: req.file.mimetype,
-                size: req.file.size,
-                url: `/uploads/${req.file.filename}`,
-                uploadedBy: req.user._id,
-                uploadedAt: new Date()
+            await prisma.attachment.create({
+                data: {
+                    ticketId: ticket.id,
+                    filename: req.file.filename,
+                    originalName: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    size: req.file.size,
+                    url: `/uploads/${req.file.filename}`,
+                    uploadedById: req.user.id
+                }
             });
         }
 
-        // Save the ticket
-        await ticket.save();
+        const updatedTicket = await prisma.ticket.findUnique({
+            where: { id: ticket.id },
+            include: {
+                user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } },
+                assignedTo: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } },
+                comments: { include: { user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } }, replies: { include: { user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } } } } } },
+                attachments: true
+            }
+        });
 
-        // return a response
         res.status(201).json({
             success: true,
             message: "Ticket created successfully",
-            ticket,
+            ticket: updatedTicket,
         })
     } catch (error) {
         console.log("Error creating the ticket", error);
@@ -102,55 +142,45 @@ export const createTicket = async (req, res) => {
     }
 };
 
-// Get tickets
 export const getTickets = async (req, res) => {
     try {
-        let query = {};
-        let sort = { createdAt: -1 };
+        let where = {};
+        const orderBy = { createdAt: 'desc' };
         const baseUrl = `${req.protocol}://${req.get("host")}`;
 
-        if (req.user.role === "Client") {
-            query.user = req.user._id;
-            sort = { createdAt: -1 };
-        } else if (req.user.role === "Reviewer" || req.user.role === "Manager") {
-            query = {}
-            sort = {
-                createdAt: -1
-            };
-        };
+        if (req.user.role === "CLIENT") {
+            where.userId = req.user.id;
+        }
 
-        const tickets = await Ticket.find(query)
-            .populate("user", "username name role profilePhoto")
-            .populate("assignedTo", "username name role profilePhoto")
-            .populate("comments.user", "username name role profilePhoto")
-            .populate("comments.replies.user", "username name role profilePhoto")
-            .select("location issueType subject description urgency status createdAt updatedAt feedbackSubmitted chatEnabled comments attachments assignedTo")
-            .sort(sort);
-
-        // Add full URL for profilePhoto in all user references
-        const ticketsWithFullPhotoUrl = tickets.map(ticket => {
-            const addFullUrl = (user) => {
-                if (!user) return null;
-                return {
-                    ...user.toObject(),
-                    profilePhoto: user.profilePhoto ? `${baseUrl}${user.profilePhoto}` : null
-                };
-            };
-
-            return {
-                ...ticket.toObject(),
-                user: addFullUrl(ticket.user),
-                assignedTo: addFullUrl(ticket.assignedTo),
-                comments: ticket.comments?.map(comment => ({
-                    ...comment.toObject(),
-                    user: addFullUrl(comment.user),
-                    replies: comment.replies?.map(reply => ({
-                        ...reply.toObject(),
-                        user: addFullUrl(reply.user)
-                    }))
-                }))
-            };
+        const tickets = await prisma.ticket.findMany({
+            where,
+            orderBy,
+            include: {
+                user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } },
+                assignedTo: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } },
+                comments: { 
+                    include: { 
+                        user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } }, 
+                        replies: { include: { user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } } } } 
+                    } 
+                },
+                attachments: true
+            }
         });
+
+        const ticketsWithFullPhotoUrl = tickets.map(ticket => ({
+            ...ticket,
+            user: ticket.user ? { ...ticket.user, profilePhoto: ticket.user.profilePhoto ? `${baseUrl}${ticket.user.profilePhoto}` : null } : null,
+            assignedTo: ticket.assignedTo ? { ...ticket.assignedTo, profilePhoto: ticket.assignedTo.profilePhoto ? `${baseUrl}${ticket.assignedTo.profilePhoto}` : null } : null,
+            comments: ticket.comments?.map(comment => ({
+                ...comment,
+                user: comment.user ? { ...comment.user, profilePhoto: comment.user.profilePhoto ? `${baseUrl}${comment.user.profilePhoto}` : null } : null,
+                replies: comment.replies?.map(reply => ({
+                    ...reply,
+                    user: reply.user ? { ...reply.user, profilePhoto: reply.user.profilePhoto ? `${baseUrl}${reply.user.profilePhoto}` : null } : null
+                }))
+            }))
+        }));
 
         res.status(200).json({
             success: true,
@@ -165,13 +195,12 @@ export const getTickets = async (req, res) => {
     }
 };
 
-// Update ticket status (for automation or admin purposes)
 export const updateTicketStatus = async (req, res) => {
     const { id } = req.params;
     const { status, isAutomated, chatEnabled } = req.body;
 
     try {
-        const ticket = await Ticket.findById(id);
+        const ticket = await prisma.ticket.findUnique({ where: { id } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -180,8 +209,7 @@ export const updateTicketStatus = async (req, res) => {
             });
         }
 
-        // Authorization check: Only Manager and Reviewer can update status
-        if (!["Manager", "Reviewer"].includes(req.user.role)) {
+        if (!["MANAGER", "REVIEWER"].includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized: You don't have permission to update ticket status",
@@ -190,48 +218,53 @@ export const updateTicketStatus = async (req, res) => {
 
         const previousStatus = ticket.status;
 
+        const updateData = {};
         if (status) {
-            ticket.status = status;
+            updateData.status = STATUS_MAP[status] || status;
         }
-
-        if (isAutomated) {
-            ticket.isAutomated = isAutomated;
-            ticket.autoResolvedAt = new Date();
-            ticket.resolutionMethod = "Auto";
+        if (isAutomated !== undefined) {
+            updateData.isAutomated = isAutomated;
+            if (isAutomated) {
+                updateData.autoResolvedAt = new Date();
+                updateData.resolutionMethod = "AUTO";
+            }
         }
-
         if (typeof chatEnabled === 'boolean') {
-            ticket.chatEnabled = chatEnabled;
+            updateData.chatEnabled = chatEnabled;
         }
 
-        await ticket.save();
+        const updatedTicket = await prisma.ticket.update({
+            where: { id },
+            data: updateData,
+            include: {
+                user: { select: { id: true, username: true, name: true, email: true, profilePhoto: true, notificationsEnabled: true } }
+            }
+        });
 
-        if (status && status !== previousStatus) {
+        if (status && previousStatus !== updatedTicket.status) {
             try {
-                const ticketOwner = await User.findById(ticket.user);
-
-                if (ticketOwner && ticketOwner.notificationsEnabled !== false) {
-                    if (ticketOwner.email) {
-                        await sendTicketStatusUpdateEmail(
-                            ticketOwner.email,
-                            ticketOwner.name,
-                            ticket._id.toString(),
-                            ticket.subject,
-                            previousStatus,
-                            status
-                        );
-                    }
-
-                    await createNotification(
-                        ticket.user,
-                        ticket._id,
-                        "status_update",
-                        `Ticket Status Updated: ${status}`,
-                        `Your ticket "${ticket.subject}" has been updated from ${previousStatus} to ${status}`,
+                const ticketOwner = updatedTicket.user;
+                if (ticketOwner && ticketOwner.notificationsEnabled !== false && ticketOwner.email) {
+                    await sendTicketStatusUpdateEmail(
+                        ticketOwner.email,
+                        ticketOwner.name,
+                        ticket.id,
+                        ticket.subject,
                         previousStatus,
-                        status
+                        status,
+                        new Date().toLocaleString()
                     );
                 }
+
+                await createNotification(
+                    ticket.userId,
+                    ticket.id,
+                    "STATUS_UPDATE",
+                    `Ticket Status Updated: ${status}`,
+                    `Your ticket "${ticket.subject}" has been updated from ${previousStatus} to ${status}`,
+                    previousStatus,
+                    status
+                );
             } catch (notificationError) {
                 console.error("Error sending notification/email:", notificationError);
             }
@@ -240,7 +273,7 @@ export const updateTicketStatus = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Ticket status updated successfully",
-            ticket,
+            ticket: updatedTicket,
         });
     } catch (error) {
         console.log("Error updating ticket status", error);
@@ -251,13 +284,12 @@ export const updateTicketStatus = async (req, res) => {
     }
 };
 
-// Assign ticket to a reviewer (Manager can assign, auto-assign also supported)
 export const assignTicket = async (req, res) => {
     const { id } = req.params;
-    const { assignedTo, mode } = req.body; // mode: 'manual' or 'auto'
+    const { assignedTo, mode } = req.body;
 
     try {
-        const ticket = await Ticket.findById(id);
+        const ticket = await prisma.ticket.findUnique({ where: { id } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -266,8 +298,7 @@ export const assignTicket = async (req, res) => {
             });
         }
 
-        // Authorization: Only Manager can manually assign, auto-assign can be triggered by system
-        if (mode !== 'auto' && req.user.role !== 'Manager') {
+        if (mode !== 'auto' && req.user.role !== 'MANAGER') {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized: Only Managers can manually assign tickets",
@@ -277,8 +308,7 @@ export const assignTicket = async (req, res) => {
         let assignedUser = null;
 
         if (mode === 'auto') {
-            // Auto-assign: Find reviewer with least active tickets
-            const reviewers = await User.find({ role: 'Reviewer' });
+            const reviewers = await prisma.user.findMany({ where: { role: 'REVIEWER' } });
             
             if (reviewers.length === 0) {
                 return res.status(400).json({
@@ -287,24 +317,22 @@ export const assignTicket = async (req, res) => {
                 });
             }
 
-            // Get ticket counts for each reviewer
             const reviewerStats = await Promise.all(
                 reviewers.map(async (reviewer) => {
-                    const activeTickets = await Ticket.countDocuments({
-                        assignedTo: reviewer._id,
-                        status: { $in: ['Open', 'In Progress'] }
+                    const activeTickets = await prisma.ticket.count({
+                        where: {
+                            assignedToId: reviewer.id,
+                            status: { in: ['OPEN', 'IN_PROGRESS'] }
+                        }
                     });
                     return { reviewer, activeTickets };
                 })
             );
 
-            // Sort by least active tickets, then alphabetically by name
             reviewerStats.sort((a, b) => {
-                // First by active ticket count (ascending)
                 if (a.activeTickets !== b.activeTickets) {
                     return a.activeTickets - b.activeTickets;
                 }
-                // If tie, sort alphabetically by name (or username)
                 const nameA = (a.reviewer.name || a.reviewer.username || '').toLowerCase();
                 const nameB = (b.reviewer.name || b.reviewer.username || '').toLowerCase();
                 return nameA.localeCompare(nameB);
@@ -312,8 +340,7 @@ export const assignTicket = async (req, res) => {
             
             assignedUser = reviewerStats[0].reviewer;
         } else {
-            // Manual assignment
-            assignedUser = await User.findById(assignedTo);
+            assignedUser = await prisma.user.findUnique({ where: { id: assignedTo } });
             
             if (!assignedUser) {
                 return res.status(404).json({
@@ -322,7 +349,7 @@ export const assignTicket = async (req, res) => {
                 });
             }
 
-            if (!['Reviewer', 'Manager'].includes(assignedUser.role)) {
+            if (!['REVIEWER', 'MANAGER'].includes(assignedUser.role)) {
                 return res.status(400).json({
                     success: false,
                     message: "Can only assign to Reviewer or Manager",
@@ -330,38 +357,39 @@ export const assignTicket = async (req, res) => {
             }
         }
 
-        const previousAssignee = ticket.assignedTo;
-        ticket.assignedTo = assignedUser._id;
+        const previousAssigneeId = ticket.assignedToId;
         
-        // Auto-update status to In Progress when assigned
-        if (ticket.status === 'Open') {
-            ticket.status = 'In Progress';
+        const updateData = { assignedToId: assignedUser.id };
+        if (ticket.status === 'OPEN') {
+            updateData.status = 'IN_PROGRESS';
         }
 
-        await ticket.save();
+        const updatedTicket = await prisma.ticket.update({
+            where: { id },
+            data: updateData,
+            include: {
+                assignedTo: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } }
+            }
+        });
 
-        // Notify the assigned user
         try {
             await createNotification(
-                assignedUser._id,
-                ticket._id,
-                "ticket_assigned",
+                assignedUser.id,
+                ticket.id,
+                "TICKET_ASSIGNED",
                 `New Ticket Assigned: ${ticket.subject}`,
                 `You have been assigned to ticket "${ticket.subject}" by ${mode === 'auto' ? 'system (auto-assigned)' : req.user.name}`,
-                previousAssignee?.toString(),
-                assignedUser._id.toString()
+                previousAssigneeId,
+                assignedUser.id
             );
         } catch (notificationError) {
             console.error("Error creating notification:", notificationError);
         }
 
-        // Refresh ticket to get populated assignedTo
-        await ticket.populate('assignedTo');
-
         res.status(200).json({
             success: true,
             message: mode === 'auto' ? "Ticket auto-assigned successfully" : "Ticket assigned successfully",
-            ticket,
+            ticket: updatedTicket,
         });
     } catch (error) {
         console.log("Error assigning ticket", error);
@@ -372,13 +400,12 @@ export const assignTicket = async (req, res) => {
     }
 };
 
-// Submit feedback/comment on resolved or in progress ticket
 export const submitFeedback = async (req, res) => {
     const { id } = req.params;
     const { content } = req.body;
 
     try {
-        const ticket = await Ticket.findById(id);
+        const ticket = await prisma.ticket.findUnique({ where: { id } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -387,10 +414,9 @@ export const submitFeedback = async (req, res) => {
             });
         }
 
-        // Allow Client (ticket creator), Manager, or Reviewer to submit feedback
-        const isClient = req.user.role === "Client" && ticket.user.toString() === req.user._id.toString();
-        const isManager = req.user.role === "Manager" || req.user.role === "Admin" || req.user.role === "AdminManager";
-        const isReviewer = req.user.role === "Reviewer" || req.user.role === "IT Support";
+        const isClient = req.user.role === "CLIENT" && ticket.userId === req.user.id;
+        const isManager = req.user.role === "MANAGER";
+        const isReviewer = req.user.role === "REVIEWER";
 
         if (!isClient && !isManager && !isReviewer) {
             return res.status(403).json({
@@ -399,29 +425,43 @@ export const submitFeedback = async (req, res) => {
             });
         }
 
-        if (ticket.status !== "Resolved" && ticket.status !== "In Progress" && ticket.status !== "Closed") {
+        if (ticket.status !== "RESOLVED" && ticket.status !== "IN_PROGRESS" && ticket.status !== "CLOSED") {
             return res.status(400).json({
                 success: false,
                 message: "Can only submit feedback on resolved, in progress, or closed tickets"
             });
         }
 
-        ticket.comments.push({
-            user: req.user._id,
-            content: content,
-            isHidden: false,
-            isOffensive: false,
-            replies: [],
-            commentCount: 0
+        const comment = await prisma.comment.create({
+            data: {
+                ticketId: ticket.id,
+                userId: req.user.id,
+                content: content,
+                isHidden: false,
+                isOffensive: false,
+                commentCount: 0
+            }
         });
 
-        ticket.feedbackSubmitted = true;
-        await ticket.save();
+        await prisma.ticket.update({
+            where: { id },
+            data: { feedbackSubmitted: true }
+        });
+
+        const updatedTicket = await prisma.ticket.findUnique({
+            where: { id },
+            include: {
+                comments: { 
+                    where: { id: comment.id },
+                    include: { user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } } }
+                }
+            }
+        });
 
         res.status(201).json({
             success: true,
             message: "Feedback submitted successfully",
-            ticket,
+            ticket: updatedTicket,
         });
     } catch (error) {
         console.log("Error submitting feedback", error);
@@ -432,13 +472,12 @@ export const submitFeedback = async (req, res) => {
     }
 };
 
-// Add reply to feedback/comment
 export const addReply = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { content } = req.body;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -447,7 +486,7 @@ export const addReply = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -455,7 +494,7 @@ export const addReply = async (req, res) => {
             });
         }
 
-        const canViewHidden = ["Reviewer", "Manager", "Admin", "AdminManager", "IT Support"].includes(req.user.role);
+        const canViewHidden = ["REVIEWER", "MANAGER"].includes(req.user.role);
         if (comment.isHidden && !canViewHidden) {
             return res.status(403).json({
                 success: false,
@@ -463,33 +502,38 @@ export const addReply = async (req, res) => {
             });
         }
 
-        comment.replies.push({
-            user: req.user._id,
-            content: content,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            aiGenerated: false
+        const reply = await prisma.reply.create({
+            data: {
+                commentId: comment.id,
+                userId: req.user.id,
+                content: content,
+                aiGenerated: false
+            }
         });
 
-        comment.commentCount += 1;
+        await prisma.comment.update({
+            where: { id: commentId },
+            data: { commentCount: { increment: 1 } }
+        });
 
-        const totalReplies = ticket.comments.reduce(
-            (sum, c) => sum + c.commentCount, 0
-        );
-        const hoursSinceCreation = (
-            Date.now() - new Date(ticket.createdAt)
-        ) / (1000 * 60 * 60);
+        const allComments = await prisma.comment.findMany({
+            where: { ticketId }
+        });
+
+        const totalReplies = allComments.reduce((sum, c) => sum + c.commentCount, 0);
+        const hoursSinceCreation = (Date.now() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60);
 
         if (totalReplies >= 4 && hoursSinceCreation >= 48) {
-            ticket.chatEnabled = true;
+            await prisma.ticket.update({
+                where: { id: ticketId },
+                data: { chatEnabled: true }
+            });
         }
-
-        await ticket.save();
 
         res.status(201).json({
             success: true,
             message: "Reply added successfully",
-            comment,
+            comment: reply,
         });
     } catch (error) {
         console.log("Error adding reply", error);
@@ -500,13 +544,12 @@ export const addReply = async (req, res) => {
     }
 };
 
-// Edit comment
 export const editComment = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { content } = req.body;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -515,7 +558,7 @@ export const editComment = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -523,23 +566,25 @@ export const editComment = async (req, res) => {
             });
         }
 
-        if (comment.user.toString() !== req.user._id.toString()) {
+        if (comment.userId !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to edit this comment"
             });
         }
 
-        comment.content = content;
-        comment.updatedAt = new Date();
-        comment.editedBy = req.user._id;
-
-        await ticket.save();
+        const updatedComment = await prisma.comment.update({
+            where: { id: commentId },
+            data: { 
+                content: content,
+                updatedAt: new Date()
+            }
+        });
 
         res.status(200).json({
             success: true,
             message: "Comment updated successfully",
-            comment,
+            comment: updatedComment,
         });
     } catch (error) {
         console.log("Error editing comment", error);
@@ -550,12 +595,11 @@ export const editComment = async (req, res) => {
     }
 };
 
-// Delete comment
 export const deleteComment = async (req, res) => {
     const { ticketId, commentId } = req.params;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -564,7 +608,7 @@ export const deleteComment = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -572,21 +616,18 @@ export const deleteComment = async (req, res) => {
             });
         }
 
-        if (comment.user.toString() !== req.user._id.toString()) {
+        if (comment.userId !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to delete this comment"
             });
         }
 
-        ticket.comments.pull({ _id: commentId });
-
-        await ticket.save();
+        await prisma.comment.delete({ where: { id: commentId } });
 
         res.status(200).json({
             success: true,
             message: "Comment deleted successfully",
-            ticket,
         });
     } catch (error) {
         console.log("Error deleting comment", error);
@@ -597,13 +638,12 @@ export const deleteComment = async (req, res) => {
     }
 };
 
-// Edit reply
 export const editReply = async (req, res) => {
     const { ticketId, commentId, replyId } = req.params;
     const { content } = req.body;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -612,15 +652,7 @@ export const editReply = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({
-                success: false,
-                message: "Comment not found",
-            });
-        }
-
-        const reply = comment.replies.id(replyId);
+        const reply = await prisma.reply.findUnique({ where: { id: replyId } });
         if (!reply) {
             return res.status(404).json({
                 success: false,
@@ -628,24 +660,26 @@ export const editReply = async (req, res) => {
             });
         }
 
-        if (reply.user.toString() !== req.user._id.toString()) {
+        if (reply.userId !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to edit this reply"
             });
         }
 
-        reply.content = content;
-        reply.updatedAt = new Date();
-        reply.editedBy = req.user._id;
-        reply.editedAt = new Date();
-
-        await ticket.save();
+        const updatedReply = await prisma.reply.update({
+            where: { id: replyId },
+            data: {
+                content: content,
+                updatedAt: new Date(),
+                editedAt: new Date()
+            }
+        });
 
         res.status(200).json({
             success: true,
             message: "Reply updated successfully",
-            reply,
+            reply: updatedReply,
         });
     } catch (error) {
         console.log("Error editing reply", error);
@@ -656,12 +690,11 @@ export const editReply = async (req, res) => {
     }
 };
 
-// Delete reply
 export const deleteReply = async (req, res) => {
     const { ticketId, commentId, replyId } = req.params;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -670,15 +703,7 @@ export const deleteReply = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({
-                success: false,
-                message: "Comment not found",
-            });
-        }
-
-        const reply = comment.replies.id(replyId);
+        const reply = await prisma.reply.findUnique({ where: { id: replyId } });
         if (!reply) {
             return res.status(404).json({
                 success: false,
@@ -686,19 +711,19 @@ export const deleteReply = async (req, res) => {
             });
         }
 
-        const replyUserId = reply.user.toString();
-
-        if (replyUserId !== req.user._id.toString() && req.user.role !== "Manager") {
+        if (reply.userId !== req.user.id && req.user.role !== "MANAGER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to delete this reply"
             });
         }
 
-        comment.replies.pull(replyId);
-        comment.commentCount = Math.max(0, comment.commentCount - 1);
+        await prisma.reply.delete({ where: { id: replyId } });
 
-        await ticket.save();
+        await prisma.comment.update({
+            where: { id: commentId },
+            data: { commentCount: { decrement: 1 } }
+        });
 
         res.status(200).json({
             success: true,
@@ -713,13 +738,12 @@ export const deleteReply = async (req, res) => {
     }
 };
 
-// Hide feedback (Reviewer only)
 export const hideFeedback = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { unhideCode } = req.body;
 
     try {
-        if (req.user.role !== "Reviewer") {
+        if (req.user.role !== "REVIEWER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to hide feedback"
@@ -733,7 +757,7 @@ export const hideFeedback = async (req, res) => {
             });
         }
 
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -742,7 +766,7 @@ export const hideFeedback = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -757,16 +781,19 @@ export const hideFeedback = async (req, res) => {
             });
         }
 
-        comment.isHidden = true;
-        comment.unhideCode = "SOLEASEHIDE";
-        comment.approvedForManager = false;
-
-        await ticket.save();
+        const updatedComment = await prisma.comment.update({
+            where: { id: commentId },
+            data: {
+                isHidden: true,
+                unhideCode: "SOLEASEHIDE",
+                approvedForManager: false
+            }
+        });
 
         res.status(200).json({
             success: true,
             message: "Feedback hidden successfully",
-            comment,
+            comment: updatedComment,
         });
     } catch (error) {
         console.log("Error hiding feedback", error);
@@ -777,13 +804,12 @@ export const hideFeedback = async (req, res) => {
     }
 };
 
-// Unhide feedback (Reviewer only)
 export const unhideFeedback = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { unhideCode } = req.body;
 
     try {
-        if (req.user.role !== "Reviewer") {
+        if (req.user.role !== "REVIEWER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to unhide feedback"
@@ -797,7 +823,7 @@ export const unhideFeedback = async (req, res) => {
             });
         }
 
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -806,7 +832,7 @@ export const unhideFeedback = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -821,15 +847,18 @@ export const unhideFeedback = async (req, res) => {
             });
         }
 
-        comment.isHidden = false;
-        comment.approvedForManager = false;
-
-        await ticket.save();
+        const updatedComment = await prisma.comment.update({
+            where: { id: commentId },
+            data: {
+                isHidden: false,
+                approvedForManager: false
+            }
+        });
 
         res.status(200).json({
             success: true,
             message: "Feedback unhidden successfully",
-            comment,
+            comment: updatedComment,
         });
     } catch (error) {
         console.log("Error unhiding feedback", error);
@@ -840,20 +869,19 @@ export const unhideFeedback = async (req, res) => {
     }
 };
 
-// View hidden feedback with code (Manager only)
 export const viewHiddenFeedback = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { code } = req.body;
 
     try {
-        if (req.user.role !== "Manager") {
+        if (req.user.role !== "MANAGER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to view hidden feedback"
             });
         }
 
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -862,7 +890,7 @@ export const viewHiddenFeedback = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) {
             return res.status(404).json({
                 success: false,
@@ -897,19 +925,18 @@ export const viewHiddenFeedback = async (req, res) => {
     }
 };
 
-// Approve hidden feedback for Manager view (Reviewer only)
 export const approveHiddenForManager = async (req, res) => {
     const { ticketId, commentId } = req.params;
 
     try {
-        if (req.user.role !== "Reviewer") {
+        if (req.user.role !== "REVIEWER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to approve hidden feedback"
             });
         }
 
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -918,22 +945,15 @@ export const approveHiddenForManager = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({
-                success: false,
-                message: "Comment not found",
-            });
-        }
-
-        comment.approvedForManager = true;
-
-        await ticket.save();
+        const updatedComment = await prisma.comment.update({
+            where: { id: commentId },
+            data: { approvedForManager: true }
+        });
 
         res.status(200).json({
             success: true,
             message: "Hidden feedback approved for Manager view",
-            comment,
+            comment: updatedComment,
         });
     } catch (error) {
         console.log("Error approving hidden feedback", error);
@@ -944,20 +964,19 @@ export const approveHiddenForManager = async (req, res) => {
     }
 };
 
-// Manager intervention - add reply to conversation
 export const managerIntervention = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { content } = req.body;
 
     try {
-        if (req.user.role !== "Manager") {
+        if (req.user.role !== "MANAGER") {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized"
             });
         }
 
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -966,30 +985,24 @@ export const managerIntervention = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({
-                success: false,
-                message: "Comment not found",
-            });
-        }
-
-        comment.replies.push({
-            user: req.user._id,
-            content: content,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            aiGenerated: false
+        const reply = await prisma.reply.create({
+            data: {
+                commentId: commentId,
+                userId: req.user.id,
+                content: content,
+                aiGenerated: false
+            }
         });
 
-        comment.commentCount += 1;
-
-        await ticket.save();
+        await prisma.comment.update({
+            where: { id: commentId },
+            data: { commentCount: { increment: 1 } }
+        });
 
         res.status(201).json({
             success: true,
             message: "Manager intervention added successfully",
-            reply: comment.replies[comment.replies.length - 1],
+            reply: reply,
         });
     } catch (error) {
         console.log("Error adding manager intervention", error);
@@ -1000,13 +1013,12 @@ export const managerIntervention = async (req, res) => {
     }
 };
 
-// AI-triggered reply (for automation)
 export const triggerAIResponse = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { aiContent } = req.body;
 
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -1015,35 +1027,39 @@ export const triggerAIResponse = async (req, res) => {
             });
         }
 
-        const comment = ticket.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({
-                success: false,
-                message: "Comment not found",
-            });
-        }
-
-        comment.replies.push({
-            user: req.user._id,
-            content: aiContent,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            aiGenerated: true
+        const reply = await prisma.reply.create({
+            data: {
+                commentId: commentId,
+                userId: req.user.id,
+                content: aiContent,
+                aiGenerated: true
+            }
         });
 
-        comment.commentCount += 1;
-        ticket.automationHistory.push({
-            action: "AI response generated",
-            timestamp: new Date(),
-            details: `AI reply for comment ${commentId} on ticket ${ticketId}`
+        await prisma.comment.update({
+            where: { id: commentId },
+            data: { commentCount: { increment: 1 } }
         });
 
-        await ticket.save();
+        const existingHistory = ticket.automationHistory || [];
+        const newHistory = [
+            ...existingHistory,
+            {
+                action: "AI response generated",
+                timestamp: new Date(),
+                details: `AI reply for comment ${commentId} on ticket ${ticketId}`
+            }
+        ];
+
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { automationHistory: newHistory }
+        });
 
         res.status(201).json({
             success: true,
             message: "AI response triggered successfully",
-            reply: comment.replies[comment.replies.length - 1],
+            reply: reply,
         });
     } catch (error) {
         console.log("Error triggering AI response", error);
@@ -1054,12 +1070,11 @@ export const triggerAIResponse = async (req, res) => {
     }
 };
 
-// Upload attachment to existing ticket
 export const uploadAttachment = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const ticket = await Ticket.findById(id);
+        const ticket = await prisma.ticket.findUnique({ where: { id } });
 
         if (!ticket) {
             return res.status(404).json({
@@ -1068,7 +1083,7 @@ export const uploadAttachment = async (req, res) => {
             });
         }
 
-        if (req.user.role !== "Client" || ticket.user.toString() !== req.user._id.toString()) {
+        if (req.user.role !== "CLIENT" || ticket.userId !== req.user.id) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized to upload to this ticket"
@@ -1082,22 +1097,22 @@ export const uploadAttachment = async (req, res) => {
             });
         }
 
-        ticket.attachments.push({
-            filename: req.file.filename,
-            originalName: req.file.originalname,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            url: `/uploads/${req.file.filename}`,
-            uploadedBy: req.user._id,
-            uploadedAt: new Date()
+        const attachment = await prisma.attachment.create({
+            data: {
+                ticketId: ticket.id,
+                filename: req.file.filename,
+                originalName: req.file.originalname,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+                url: `/uploads/${req.file.filename}`,
+                uploadedById: req.user.id
+            }
         });
-
-        await ticket.save();
 
         res.status(201).json({
             success: true,
             message: "Attachment uploaded successfully",
-            attachment: ticket.attachments[ticket.attachments.length - 1],
+            attachment: attachment,
         });
     } catch (error) {
         console.log("Error uploading attachment", error);
@@ -1108,12 +1123,11 @@ export const uploadAttachment = async (req, res) => {
     }
 };
 
-// Delete a ticket
 export const deleteTicket = async (req, res) => {
     try {
         const ticketId = req.params.id;
         
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
         
         if (!ticket) {
             return res.status(404).json({
@@ -1122,20 +1136,18 @@ export const deleteTicket = async (req, res) => {
             });
         }
 
-        // Check if the user is the owner of the ticket or an admin/reviewer
-        const userId = req.user._id.toString();
-        const ticketOwnerId = ticket.user.toString();
+        const userId = req.user.id;
+        const ticketOwnerId = ticket.userId;
         const userRole = req.user.role;
         
-        // Only allow ticket owner, reviewer, or manager to delete
-        if (userId !== ticketOwnerId && userRole !== "Reviewer" && userRole !== "Manager") {
+        if (userId !== ticketOwnerId && userRole !== "REVIEWER" && userRole !== "MANAGER") {
             return res.status(403).json({
                 success: false,
                 message: "You don't have permission to delete this ticket"
             });
         }
 
-        await Ticket.findByIdAndDelete(ticketId);
+        await prisma.ticket.delete({ where: { id: ticketId } });
 
         res.status(200).json({
             success: true,

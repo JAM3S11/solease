@@ -1,0 +1,8 @@
+$kind: http-request
+name: http://localhost:5001/sol/auth/logout
+url: http://localhost:5001/sol/auth/logout
+method: POST
+body:
+  type: json
+  content: ""
+order: 3410642917871337

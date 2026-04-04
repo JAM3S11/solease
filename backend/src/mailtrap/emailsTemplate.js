@@ -1,391 +1,534 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  SolEase · Email Templates
+//  Design: dark-mode, certificates.dev–inspired aesthetic
+//  Accent: #00DC82 (emerald green) on deep navy #0e1117 backgrounds
+// ─────────────────────────────────────────────────────────────────────────────
+
 const COLORS = {
-  primary: '#5648d5',
-  primaryLight: '#776af8',
-  primaryMuted: '#e7eeff',
-  surfaceContainerLow: '#f0f3ff',
-  surfaceContainer: '#e7eeff',
-  surfaceContainerHigh: '#dde9ff',
-  surfaceBright: '#f9f9ff',
-  secondaryContainer: '#e4dff9',
-  onSurface: '#243349',
-  onSurfaceVariant: '#516078',
-  onPrimary: '#fcf7ff',
-  background: '#f9f9ff',
-  white: '#FFFFFF',
-  success: '#10B981',
-  border: '#a3b3ce',
-  textMuted: '#6c7b95',
+  // backgrounds
+  bg:            '#0e1117',
+  bgDeep:        '#080c11',
+  bgCard:        '#131820',
+  bgTopbar:      '#1a1f2b',
+
+  // borders
+  border:        '#1e2533',
+  borderMid:     '#2a2f3a',
+  borderAccent:  '#1e3d2a',
+
+  // text
+  textPrimary:   '#f0f4ff',
+  textSecondary: '#d4dbe8',
+  textMuted:     '#8892a4',
+  textSubtle:    '#5a6478',
+  textDim:       '#3a4555',
+  textDimmer:    '#2a3545',
+
+  // accent
+  accent:        '#00DC82',
+  accentBg:      '#0a2016',
+
+  // semantic
+  warnBg:        '#1a1500',
+  warnBorder:    '#3d2d0a',
+  warnText:      '#a07020',
+  dangerText:    '#f87171',
+  dangerBg:      '#2d0a0a',
+  dangerBorder:  '#5a1a1a',
+  infoBg:        '#0f1f3d',
+  infoBorder:    '#1e3566',
+  infoText:      '#60a5fa',
+
+  // button
+  btnText:       '#0a0e14',
+
+  // footer
+  footerBg:      '#080c11',
+  footerText:    '#2a3545',
+  footerTld:     '#1a4030',
 };
 
-const styles = {
-  wrapper: `background-color: ${COLORS.surfaceBright}; padding: 32px 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;`,
-  container: `max-width: 640px; margin: 0 auto;`,
-  
-  header: `padding: 24px 32px; display: flex; justify-content: space-between; align-items: center;`,
-  logo: `font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 24px; color: ${COLORS.primary}; letter-spacing: -0.5px;`,
-  headerIcons: `display: flex; gap: 16px;`,
-  headerIcon: `width: 24px; height: 24px; color: ${COLORS.textMuted};`,
-  
-  heroCard: `background: linear-gradient(135deg, ${COLORS.surfaceContainerLow} 0%, ${COLORS.surfaceContainer} 100%); border-radius: 12px; padding: 40px; margin: 0 24px 24px 24px; text-align: left;`,
-  heroTitle: `font-family: 'Manrope', sans-serif; font-size: 32px; font-weight: 800; color: ${COLORS.onSurface}; margin: 0 0 16px 0; line-height: 1.2;`,
-  heroTitleAccent: `color: ${COLORS.primary};`,
-  heroSubtitle: `font-size: 16px; color: ${COLORS.onSurfaceVariant}; line-height: 1.6; margin: 0 0 24px 0; max-width: 480px;`,
-  button: `display: inline-block; background: linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%); color: ${COLORS.onPrimary}; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 10px;`,
-  buttonIcon: `vertical-align: middle; margin-left: 8px;`,
-  
-  sectionTitle: `font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 700; color: ${COLORS.onSurface}; margin: 0 0 20px 0; padding: 0 24px;`,
-  cardGrid: `display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 24px 24px 24px;`,
-  card: `background-color: ${COLORS.surfaceContainerLow}; border-radius: 12px; padding: 24px;`,
-  cardIcon: `width: 44px; height: 44px; border-radius: 50%; background-color: ${COLORS.secondaryContainer}; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;`,
-  cardIconSvg: `width: 24px; height: 24px; color: ${COLORS.primary};`,
-  cardTitle: `font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 700; color: ${COLORS.onSurface}; margin: 0 0 8px 0;`,
-  cardDesc: `font-size: 13px; color: ${COLORS.onSurfaceVariant}; line-height: 1.5; margin: 0 0 12px 0;`,
-  cardLink: `font-size: 13px; font-weight: 600; color: ${COLORS.primary}; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;`,
-  
-  codeSection: `background-color: ${COLORS.surfaceContainerLow}; border-radius: 12px; padding: 32px; margin: 0 24px 24px 24px; text-align: center;`,
-  codeLabel: `font-size: 14px; color: ${COLORS.onSurfaceVariant}; margin: 0 0 16px 0;`,
-  codeBox: `background-color: ${COLORS.primaryMuted}; border: 2px dashed ${COLORS.primary}40; border-radius: 8px; padding: 20px; display: inline-block;`,
-  code: `font-size: 32px; font-weight: 700; color: ${COLORS.primary}; letter-spacing: 8px; font-family: 'SF Mono', Monaco, monospace;`,
-  codeNote: `font-size: 13px; color: ${COLORS.textMuted}; margin: 16px 0 0 0;`,
-  
-  successIcon: `width: 56px; height: 56px; border-radius: 50%; background-color: ${COLORS.secondaryContainer}; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;`,
-  successCheck: `width: 28px; height: 28px; color: ${COLORS.primary};`,
-  
-  infoBox: `background-color: ${COLORS.surfaceContainerLow}; border-radius: 8px; padding: 20px; margin: 20px 24px;`,
-  infoTitle: `font-size: 14px; font-weight: 600; color: ${COLORS.onSurface}; margin: 0 0 12px 0;`,
-  infoItem: `font-size: 13px; color: ${COLORS.onSurfaceVariant}; margin: 8px 0; padding-left: 16px; position: relative;`,
-  infoBullet: `position: absolute; left: 0; color: ${COLORS.textMuted};`,
-  
-  ticketCard: `background-color: ${COLORS.surfaceContainerLow}; border-radius: 8px; padding: 20px; margin: 0 24px 24px 24px;`,
-  ticketRow: `display: flex; justify-content: space-between; margin: 10px 0;`,
-  ticketLabel: `font-size: 13px; color: ${COLORS.textMuted};`,
-  ticketValue: `font-size: 13px; color: ${COLORS.onSurface}; font-weight: 500;`,
-  statusBadge: `display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;`,
-  statusArrow: `color: ${COLORS.textMuted}; margin: 0 8px;`,
-  
-  note: `font-size: 13px; color: ${COLORS.textMuted}; margin: 0 24px 24px 24px; font-style: italic; text-align: center;`,
-  
-  footer: `background-color: ${COLORS.surfaceContainerLow}; padding: 24px 32px; margin-top: 24px;`,
-  footerContent: `max-width: 640px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;`,
-  footerText: `font-size: 12px; color: ${COLORS.textMuted}; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;`,
-  footerLinks: `display: flex; gap: 24px;`,
-  footerLink: `font-size: 12px; color: ${COLORS.textMuted}; font-weight: 500; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;`,
-};
+// ─── Shared partials ──────────────────────────────────────────────────────────
 
-export const VERIFICATION_EMAIL_TEMPLATE = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your Email</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body style="margin: 0; padding: 0; background-color: ${COLORS.surfaceBright}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.wrapper}">
-    <tr>
-      <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.header}">
-          <tr>
-            <td style="${styles.logo}">SolEase</td>
-            <td style="${styles.headerIcons}">
-              <span style="${styles.headerIcon}">&#128100;</span>
-              <span style="${styles.headerIcon}">&#10067;</span>
-            </td>
-          </tr>
-        </table>
-        
-        <div style="${styles.heroCard}">
-          <h1 style="${styles.heroTitle}">Verify your email</h1>
-          <p style="${styles.heroSubtitle}">Enter the code below to verify your email address and complete your registration.</p>
-          
-          <div style="${styles.codeSection}">
-            <p style="${styles.codeLabel}">Your verification code</p>
-            <div style="${styles.codeBox}">
-              <span style="${styles.code}">{verificationCode}</span>
-            </div>
-            <p style="${styles.codeNote}">This code expires in 15 minutes</p>
-          </div>
-        </div>
-        
-        <p style="${styles.note}">If you didn't create an account, you can safely ignore this email.</p>
-        
-        <div style="${styles.footer}">
-          <div style="${styles.footerContent}">
-            <span style="${styles.footerText}">&copy; ${new Date().getFullYear()} SolEase. All rights reserved.</span>
-            <div style="${styles.footerLinks}">
-              <a href="#" style="${styles.footerLink}">Help Center</a>
-              <a href="#" style="${styles.footerLink}">Privacy</a>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
+const LOGO_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M8 2L12 6L8 10L4 6L8 2Z" fill="white" opacity="0.5"/>
+  <path d="M8 6L11 9L8 12L5 9L8 6Z" fill="white"/>
+</svg>`;
 
-export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Reset Successful</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body style="margin: 0; padding: 0; background-color: ${COLORS.surfaceBright}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.wrapper}">
-    <tr>
-      <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.header}">
-          <tr>
-            <td style="${styles.logo}">SolEase</td>
-            <td style="${styles.headerIcons}">
-              <span style="${styles.headerIcon}">&#128100;</span>
-              <span style="${styles.headerIcon}">&#10067;</span>
-            </td>
-          </tr>
-        </table>
-        
-        <div style="${styles.heroCard}">
-          <div style="${styles.successIcon}">
-            <span style="${styles.successCheck}">&#10003;</span>
-          </div>
-          <h1 style="${styles.heroTitle}; text-align: center;">Password changed</h1>
-          <p style="${styles.heroSubtitle}; text-align: center; margin: 0 auto 24px auto;">Your password has been updated successfully. You can now sign in with your new password.</p>
-          
-          <div style="${styles.infoBox}">
-            <p style="${styles.infoTitle}">Security tips</p>
-            <p style="${styles.infoItem}"><span style="${styles.infoBullet}">&#8226;</span> Use a unique password you don't reuse elsewhere</p>
-            <p style="${styles.infoItem}"><span style="${styles.infoBullet}">&#8226;</span> Consider enabling two-factor authentication</p>
-            <p style="${styles.infoItem}"><span style="${styles.infoBullet}">&#8226;</span> Never share your password with anyone</p>
-          </div>
-        </div>
-        
-        <p style="${styles.note}">Didn't make this change? Contact support immediately.</p>
-        
-        <div style="${styles.footer}">
-          <div style="${styles.footerContent}">
-            <span style="${styles.footerText}">&copy; ${new Date().getFullYear()} SolEase. All rights reserved.</span>
-            <div style="${styles.footerLinks}">
-              <a href="#" style="${styles.footerLink}">Help Center</a>
-              <a href="#" style="${styles.footerLink}">Privacy</a>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
+const CHECK_SVG = `<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="13" cy="13" r="11" stroke="${COLORS.accent}" stroke-width="1.2"/>
+  <path d="M8 13L11.5 16.5L18 9.5" stroke="${COLORS.accent}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
 
-export const PASSWORD_RESET_REQUEST_TEMPLATE = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Your Password</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body style="margin: 0; padding: 0; background-color: ${COLORS.surfaceBright}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.wrapper}">
-    <tr>
-      <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.header}">
-          <tr>
-            <td style="${styles.logo}">SolEase</td>
-            <td style="${styles.headerIcons}">
-              <span style="${styles.headerIcon}">&#128100;</span>
-              <span style="${styles.headerIcon}">&#10067;</span>
-            </td>
-          </tr>
-        </table>
-        
-        <div style="${styles.heroCard}">
-          <h1 style="${styles.heroTitle}">Reset your password</h1>
-          <p style="${styles.heroSubtitle}">Click the button below to set a new password for your account.</p>
-          
-          <div style="text-align: center; margin: 24px 0;">
-            <a href="{resetURL}" style="${styles.button}">
-              Set new password
-              <span style="${styles.buttonIcon}">&#10140;</span>
-            </a>
-          </div>
-        </div>
-        
-        <p style="${styles.note}">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
-        
-        <div style="${styles.footer}">
-          <div style="${styles.footerContent}">
-            <span style="${styles.footerText}">&copy; ${new Date().getFullYear()} SolEase. All rights reserved.</span>
-            <div style="${styles.footerLinks}">
-              <a href="#" style="${styles.footerLink}">Help Center</a>
-              <a href="#" style="${styles.footerLink}">Privacy</a>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
+const WARN_SVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7 1.5L12.5 11.5H1.5Z" stroke="${COLORS.warnText}" stroke-width="1.2" stroke-linejoin="round"/>
+  <rect x="6.3" y="5.5" width="1.4" height="3.2" fill="${COLORS.warnText}" rx="0.4"/>
+  <circle cx="7" cy="10" r="0.7" fill="${COLORS.warnText}"/>
+</svg>`;
 
-export const TICKET_STATUS_UPDATE_TEMPLATE = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticket Update</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body style="margin: 0; padding: 0; background-color: ${COLORS.surfaceBright}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.wrapper}">
-    <tr>
-      <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.header}">
-          <tr>
-            <td style="${styles.logo}">SolEase</td>
-            <td style="${styles.headerIcons}">
-              <span style="${styles.headerIcon}">&#128100;</span>
-              <span style="${styles.headerIcon}">&#10067;</span>
-            </td>
-          </tr>
-        </table>
-        
-        <div style="${styles.heroCard}">
-          <h1 style="${styles.heroTitle}">Ticket update</h1>
-          <p style="${styles.heroSubtitle}">Hi {{userName}}, your ticket has been updated.</p>
-          
-          <div style="${styles.ticketCard}">
-            <div style="${styles.ticketRow}">
-              <span style="${styles.ticketLabel}">Ticket ID</span>
-              <span style="${styles.ticketValue}">#{{ticketId}}</span>
-            </div>
-            <div style="${styles.ticketRow}">
-              <span style="${styles.ticketLabel}">Subject</span>
-              <span style="${styles.ticketValue}">{{subject}}</span>
-            </div>
-            <div style="${styles.ticketRow}">
-              <span style="${styles.ticketLabel}">Status</span>
-              <span>
-                <span style="background-color: #E5E7EB; color: #6B7280; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">{{previousStatus}}</span>
-                <span style="${styles.statusArrow}">&#10140;</span>
-                <span style="background-color: {{statusColor}}; color: #FFFFFF; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">{{newStatus}}</span>
-              </span>
-            </div>
-          </div>
-          
-          <p style="font-size: 15px; color: ${COLORS.onSurfaceVariant}; margin: 20px 0;">{{statusMessage}}</p>
-          
-          <div style="text-align: center; margin-top: 24px;">
-            <a href="#" style="${styles.button}">
-              View ticket
-              <span style="${styles.buttonIcon}">&#10140;</span>
-            </a>
-          </div>
-        </div>
-        
-        <div style="${styles.footer}">
-          <div style="${styles.footerContent}">
-            <span style="${styles.footerText}">&copy; ${new Date().getFullYear()} SolEase. All rights reserved.</span>
-            <div style="${styles.footerLinks}">
-              <a href="#" style="${styles.footerLink}">Help Center</a>
-              <a href="#" style="${styles.footerLink}">Privacy</a>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
+const INFO_SVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="7" cy="7" r="6" stroke="${COLORS.textDim}" stroke-width="1.2"/>
+  <rect x="6.3" y="5.5" width="1.4" height="4" fill="${COLORS.textDim}" rx="0.5"/>
+  <circle cx="7" cy="4" r="0.8" fill="${COLORS.textDim}"/>
+</svg>`;
+
+// Shared email header (logo + nav link)
+const emailHeader = () => `
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+  style="background-color:${COLORS.bg};border-bottom:1px solid ${COLORS.border};">
+  <tr>
+    <td style="padding:18px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,${COLORS.accent},#36e4da);display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;">
+                    ${LOGO_SVG}
+                  </div>
+                </td>
+                <td style="vertical-align:middle;padding-left:9px;">
+                  <span style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:${COLORS.textPrimary};letter-spacing:-0.3px;">Sol<span style="color:${COLORS.accent}">Ease</span></span>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td style="text-align:right;vertical-align:middle;">
+            <span style="font-size:11px;color:${COLORS.textSubtle};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">solease.io</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+
+// Shared hero banner
+const emailHero = ({ eyebrow, title, subtitle, center = false }) => `
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+  style="background-color:${COLORS.bg};border-bottom:1px solid ${COLORS.border};">
+  <tr>
+    <td style="padding:40px 32px 36px;${center ? 'text-align:center;' : ''}">
+      <!-- eyebrow -->
+      <div style="display:inline-block;border:1px solid ${COLORS.borderMid};border-radius:20px;padding:4px 12px;margin-bottom:18px;">
+        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:${COLORS.accent};vertical-align:middle;margin-right:6px;"></span>
+        <span style="font-size:11px;font-weight:500;color:${COLORS.accent};letter-spacing:0.3px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${eyebrow}</span>
+      </div>
+      <!-- title -->
+      <h1 style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:26px;font-weight:700;line-height:1.2;color:${COLORS.textPrimary};letter-spacing:-0.5px;margin:0 0 10px 0;">
+        ${title}
+      </h1>
+      <!-- subtitle -->
+      <p style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.65;color:${COLORS.textMuted};margin:0;${center ? '' : 'max-width:420px;'}">
+        ${subtitle}
+      </p>
+    </td>
+  </tr>
+</table>`;
+
+// Shared footer
+const emailFooter = (links = ['Help Center', 'Privacy']) => `
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+  style="background-color:${COLORS.footerBg};border-top:1px solid ${COLORS.border};">
+  <tr>
+    <td style="padding:20px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:${COLORS.footerText};">Sol<span style="color:${COLORS.footerTld};">Ease</span></span>
+          </td>
+          <td style="text-align:right;">
+            ${links.map(l => `<a href="#" style="font-size:11px;color:${COLORS.textDim};text-decoration:none;margin-left:16px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${l}</a>`).join('')}
+          </td>
+        </tr>
+      </table>
+      <p style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;color:${COLORS.footerText};margin:8px 0 0 0;">
+        &copy; ${new Date().getFullYear()} SolEase Inc. All rights reserved.
+      </p>
+    </td>
+  </tr>
+</table>`;
+
+// Shared CTA button
+const emailButton = (text, url, ghost = false) => ghost
+  ? `<a href="${url}" style="display:inline-block;background:transparent;color:${COLORS.accent};font-size:14px;font-weight:700;padding:11px 24px;border-radius:8px;text-decoration:none;border:1px solid ${COLORS.borderMid};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${text}</a>`
+  : `<a href="${url}" style="display:inline-block;background-color:${COLORS.accent};color:${COLORS.btnText};font-size:14px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${text}</a>`;
+
+// ─── 1. WELCOME EMAIL ─────────────────────────────────────────────────────────
 
 export const WELCOME_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Welcome to SolEase</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body style="margin: 0; padding: 0; background-color: ${COLORS.surfaceBright}; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.wrapper}">
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
     <tr>
       <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="${styles.header}">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <tr><td>${emailHero({
+            eyebrow: 'New Account',
+            title: `Welcome to SolEase,<br><span style="color:${COLORS.accent}">{{userName}}</span>`,
+            subtitle: 'Experience technical serenity with precision concierge IT support. We manage the complexity so you can focus on what matters.'
+          })}</td></tr>
+
+          <!-- Feature cards -->
           <tr>
-            <td style="${styles.logo}">SolEase</td>
-            <td style="${styles.headerIcons}">
-              <span style="${styles.headerIcon}">&#128100;</span>
-              <span style="${styles.headerIcon}">&#10067;</span>
+            <td style="background-color:${COLORS.bg};padding:32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  ${[
+                    { icon: '🎫', title: 'Submit a ticket',   desc: 'Describe your issue and our concierge handles the rest.',       link: 'Open Portal →' },
+                    { icon: '📚', title: 'Browse knowledge',  desc: 'Curated guides for quick self-service solutions.',               link: 'View Library →' },
+                    { icon: '📊', title: 'Track progress',    desc: 'Real-time updates on all your active requests.',                 link: 'Dashboard →' },
+                  ].map(f => `
+                    <td width="33%" style="vertical-align:top;padding:0 6px;">
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                        style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:10px;">
+                        <tr><td style="padding:16px 14px;">
+                          <div style="width:34px;height:34px;border-radius:8px;background-color:${COLORS.accentBg};border:1px solid ${COLORS.borderAccent};display:inline-flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:10px;">${f.icon}</div>
+                          <div style="font-size:13px;font-weight:600;color:${COLORS.textSecondary};margin-bottom:4px;">${f.title}</div>
+                          <div style="font-size:11px;color:${COLORS.textSubtle};line-height:1.5;margin-bottom:8px;">${f.desc}</div>
+                          <a href="#" style="font-size:11px;font-weight:600;color:${COLORS.accent};text-decoration:none;">${f.link}</a>
+                        </td></tr>
+                      </table>
+                    </td>`).join('')}
+                </tr>
+              </table>
+
+              <div style="text-align:center;margin-top:24px;">
+                ${emailButton('Get started →', '#')}
+              </div>
+              <p style="text-align:center;font-size:12px;color:${COLORS.textDim};margin:14px 0 0 0;">
+                Questions? Reply to this email or contact our support team.
+              </p>
             </td>
           </tr>
+
+          <tr><td>${emailFooter(['Help Center', 'Privacy', 'Security'])}</td></tr>
         </table>
-        
-        <div style="${styles.heroCard}">
-          <h1 style="${styles.heroTitle}">Welcome to SolEase.<br/><span style="${styles.heroTitleAccent}">Your IT, simplified.</span></h1>
-          <p style="${styles.heroSubtitle}">Experience technical serenity with our precision concierge IT support. We're here to manage the complexity so you can focus on what matters.</p>
-          
-          <a href="#" style="${styles.button}">
-            Get started
-            <span style="${styles.buttonIcon}">&#10140;</span>
-          </a>
-        </div>
-        
-        <h2 style="${styles.sectionTitle}">What's next</h2>
-        
-        <div style="${styles.cardGrid}">
-          <div style="${styles.card}">
-            <div style="${styles.cardIcon}">
-              <span style="${styles.cardIconSvg}">&#127917;</span>
-            </div>
-            <h3 style="${styles.cardTitle}">Submit your first ticket</h3>
-            <p style="${styles.cardDesc}">Need assistance? Briefly describe your issue and our concierge will handle the rest.</p>
-            <a href="#" style="${styles.cardLink}">Open Portal <span>&#8599;</span></a>
-          </div>
-          
-          <div style="${styles.card}">
-            <div style="${styles.cardIcon}">
-              <span style="${styles.cardIconSvg}">&#128218;</span>
-            </div>
-            <h3 style="${styles.cardTitle}">Explore knowledge</h3>
-            <p style="${styles.cardDesc}">Access our curated library of guides and technical documentation for quick self-help.</p>
-            <a href="#" style="${styles.cardLink}">Browse Library <span>&#10140;</span></a>
-          </div>
-          
-          <div style="${styles.card}">
-            <div style="${styles.cardIcon}">
-              <span style="${styles.cardIconSvg}">&#128200;</span>
-            </div>
-            <h3 style="${styles.cardTitle}">Track progress</h3>
-            <p style="${styles.cardDesc}">Stay informed with real-time updates on your active requests and resolution steps.</p>
-            <a href="#" style="${styles.cardLink}">View Dashboard <span>&#128197;</span></a>
-          </div>
-        </div>
-        
-        <p style="${styles.note}">Questions? Reply to this email or contact our support team.</p>
-        
-        <div style="${styles.footer}">
-          <div style="${styles.footerContent}">
-            <span style="${styles.footerText}">&copy; ${new Date().getFullYear()} SolEase. All rights reserved.</span>
-            <div style="${styles.footerLinks}">
-              <a href="#" style="${styles.footerLink}">Help Center</a>
-              <a href="#" style="${styles.footerLink}">Privacy</a>
-              <a href="#" style="${styles.footerLink}">Security</a>
-            </div>
-          </div>
-        </div>
       </td>
     </tr>
   </table>
+
+</body>
+</html>
+`;
+
+// ─── 2. VERIFICATION EMAIL ────────────────────────────────────────────────────
+
+export const VERIFICATION_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Verify Your Email — SolEase</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
+    <tr>
+      <td>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <tr><td>${emailHero({
+            eyebrow: 'Email Verification',
+            title: `Verify your<br><span style="color:${COLORS.accent}">email address</span>`,
+            subtitle: 'Enter the code below to complete your account setup. This only takes a moment.'
+          })}</td></tr>
+
+          <!-- OTP block -->
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:32px;">
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:10px;margin-bottom:20px;">
+                <tr>
+                  <td style="padding:28px;text-align:center;">
+                    <p style="font-size:12px;color:${COLORS.textSubtle};margin:0 0 14px 0;">Your one-time verification code</p>
+                    <div style="font-family:'Courier New',Courier,monospace;font-size:38px;font-weight:700;letter-spacing:12px;color:${COLORS.accent};">
+                      {verificationCode}
+                    </div>
+                    <div style="display:inline-block;border:1px solid ${COLORS.border};border-radius:20px;padding:4px 12px;margin-top:14px;">
+                      <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:${COLORS.accent};vertical-align:middle;margin-right:6px;"></span>
+                      <span style="font-size:11px;color:${COLORS.textSubtle};">Expires in 15 minutes</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info notice -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:8px;">
+                <tr>
+                  <td style="padding:12px 16px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:top;padding-right:10px;">${INFO_SVG}</td>
+                        <td style="font-size:12px;color:${COLORS.textSubtle};line-height:1.5;">
+                          Didn't create an account? You can safely ignore this email — nothing will change.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <tr><td>${emailFooter(['Help Center', 'Privacy'])}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+// ─── 3. PASSWORD RESET REQUEST ────────────────────────────────────────────────
+
+export const PASSWORD_RESET_REQUEST_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Reset Your Password — SolEase</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
+    <tr>
+      <td>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <tr><td>${emailHero({
+            eyebrow: 'Password Reset',
+            title: `Reset your<br><span style="color:${COLORS.accent}">password</span>`,
+            subtitle: 'We received a request to reset your SolEase password. Click the button below to set a new one.'
+          })}</td></tr>
+
+          <!-- CTA card -->
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:32px;">
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:10px;margin-bottom:16px;">
+                <tr>
+                  <td style="padding:28px;text-align:center;">
+                    <p style="font-size:13px;color:${COLORS.textSubtle};line-height:1.6;margin:0 0 18px 0;">
+                      This link is single-use and expires in
+                      <span style="color:${COLORS.textSecondary};font-weight:600;">1 hour</span>.
+                    </p>
+                    ${emailButton('Set new password &rarr;', '{resetURL}')}
+                    <p style="font-size:11px;color:${COLORS.textDimmer};margin:14px 0 0 0;">
+                      Or copy the link: {resetURL}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Warning notice -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.warnBg};border:1px solid ${COLORS.warnBorder};border-radius:8px;">
+                <tr>
+                  <td style="padding:12px 16px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:top;padding-right:10px;">${WARN_SVG}</td>
+                        <td style="font-size:12px;color:${COLORS.warnText};line-height:1.5;">
+                          If you didn't request this, your password remains unchanged. No action needed.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <tr><td>${emailFooter(['Help Center', 'Privacy'])}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+// ─── 4. PASSWORD RESET SUCCESS ────────────────────────────────────────────────
+
+export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Password Changed — SolEase</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
+    <tr>
+      <td>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <!-- Hero (centered, with success ring above eyebrow) -->
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:40px 32px 36px;text-align:center;border-bottom:1px solid ${COLORS.border};">
+              <!-- Success ring -->
+              <div style="width:60px;height:60px;border-radius:50%;background-color:${COLORS.accentBg};border:1px solid ${COLORS.borderAccent};display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">
+                ${CHECK_SVG}
+              </div>
+              <!-- Eyebrow -->
+              <div style="display:inline-block;border:1px solid ${COLORS.borderMid};border-radius:20px;padding:4px 12px;margin-bottom:18px;">
+                <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:${COLORS.accent};vertical-align:middle;margin-right:6px;"></span>
+                <span style="font-size:11px;font-weight:500;color:${COLORS.accent};letter-spacing:0.3px;">Security Update</span>
+              </div>
+              <h1 style="font-size:26px;font-weight:700;line-height:1.2;color:${COLORS.textPrimary};letter-spacing:-0.5px;margin:0 0 10px 0;">
+                Password changed<br><span style="color:${COLORS.accent};">successfully</span>
+              </h1>
+              <p style="font-size:14px;line-height:1.65;color:${COLORS.textMuted};margin:0 auto;max-width:380px;">
+                Your SolEase account is now secured with your new password. You can sign in immediately.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Tips + CTA -->
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:32px;">
+              <p style="font-size:11px;font-weight:700;color:${COLORS.textDim};text-transform:uppercase;letter-spacing:0.8px;margin:0 0 12px 0;">Security tips</p>
+
+              ${[
+                'Use a unique password not reused on other services',
+                'Enable two-factor authentication for an extra layer of protection',
+                'Never share your credentials — not even with support agents',
+              ].map((tip, i) => `
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="border-bottom:1px solid ${COLORS.border};">
+                <tr>
+                  <td style="padding:12px 0;vertical-align:top;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:top;padding-right:12px;">
+                          <div style="width:22px;height:22px;border-radius:50%;border:1px solid ${COLORS.borderMid};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${COLORS.accent};">${i + 1}</div>
+                        </td>
+                        <td style="font-size:13px;color:${COLORS.textMuted};line-height:1.55;">${tip}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>`).join('')}
+
+              <div style="text-align:center;margin-top:24px;">
+                ${emailButton('Sign in now &rarr;', '#')}
+              </div>
+              <p style="text-align:center;font-size:12px;color:${COLORS.dangerBg};margin:14px 0 0 0;">
+                Didn't make this change?
+                <strong style="color:${COLORS.dangerText};">Contact support immediately.</strong>
+              </p>
+            </td>
+          </tr>
+
+          <tr><td>${emailFooter(['Help Center', 'Privacy'])}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+// ─── 5. TICKET STATUS UPDATE ──────────────────────────────────────────────────
+
+export const TICKET_STATUS_UPDATE_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Ticket Updated — SolEase</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
+    <tr>
+      <td>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <tr><td>${emailHero({
+            eyebrow: 'Ticket Update',
+            title: `Your ticket has<br><span style="color:${COLORS.accent}">been updated</span>`,
+            subtitle: 'Hi {{userName}}, an agent has reviewed and updated the status of your support request.'
+          })}</td></tr>
+
+          <!-- Ticket details + agent note -->
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:32px;">
+
+              <!-- Ticket table -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="border:1px solid ${COLORS.border};border-radius:10px;overflow:hidden;margin-bottom:16px;">
+                ${[
+                  ['Ticket ID',  '#{{ticketId}}'],
+                  ['Subject',    '{{subject}}'],
+                  ['Priority',   `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background-color:${COLORS.dangerBg};color:${COLORS.dangerText};border:1px solid ${COLORS.dangerBorder};">{{priority}}</span>`],
+                  ['Status',
+                    `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background-color:#1a1f2b;color:${COLORS.textSubtle};border:1px solid ${COLORS.borderMid};">{{previousStatus}}</span>
+                     <span style="color:${COLORS.textDim};font-size:12px;margin:0 5px;">&#8594;</span>
+                     <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background-color:{{statusBgColor}};color:{{statusTextColor}};border:1px solid {{statusBorderColor}};">{{newStatus}}</span>`
+                  ],
+                  ['Updated',    '{{updatedAt}}'],
+                ].map(([label, value]) => `
+                <tr style="border-bottom:1px solid ${COLORS.border};">
+                  <td style="padding:11px 14px;font-size:13px;color:${COLORS.textSubtle};width:130px;">${label}</td>
+                  <td style="padding:11px 14px;font-size:13px;color:${COLORS.textSecondary};font-weight:500;">${value}</td>
+                </tr>`).join('')}
+              </table>
+
+              <!-- Agent note -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:8px;margin-bottom:20px;">
+                <tr>
+                  <td style="padding:16px;">
+                    <p style="font-size:10px;font-weight:700;color:${COLORS.textSubtle};text-transform:uppercase;letter-spacing:0.8px;margin:0 0 8px 0;">Agent note</p>
+                    <p style="font-size:13px;color:${COLORS.textMuted};line-height:1.6;margin:0;">{{statusMessage}}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Buttons -->
+              <div style="text-align:center;">
+                ${emailButton('View ticket &rarr;', '#')}
+                &nbsp;&nbsp;
+                ${emailButton('Reply to agent', '#', true)}
+              </div>
+
+            </td>
+          </tr>
+
+          <tr><td>${emailFooter(['Help Center', 'Privacy', 'Unsubscribe'])}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>
 `;

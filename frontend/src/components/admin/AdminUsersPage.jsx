@@ -128,8 +128,9 @@ const AdminUsersPage = () => {
 
   const confirmDelete = async () => {
     if (!userToDelete) return;
+    const userId = userToDelete.id || userToDelete._id;
     try {
-      await deleteUser(userToDelete._id);
+      await deleteUser(userId);
       toast.success(`${userToDelete.username} deleted!`);
     } catch {
       toast.error(`Failed to delete user`);
@@ -236,7 +237,7 @@ const AdminUsersPage = () => {
           ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {paginatedUsers.map((user) => (
-                  <UserCard key={user._id} user={user} onDelete={(e) => handleDelete(user, e)} />
+                  <UserCard key={user.id || user._id} user={user} onDelete={(e) => handleDelete(user, e)} />
                 ))}
               </div>
           ) : (
@@ -261,7 +262,7 @@ const AdminUsersPage = () => {
                       {paginatedUsers.map((user, index) => (
                         <motion.tr 
                           layout
-                          key={user._id} 
+                          key={user.id || user._id} 
                           variants={itemVariants}
                           initial="hidden"
                           animate="visible"
@@ -303,10 +304,9 @@ const AdminUsersPage = () => {
 
                           <td className="px-4 py-3.5">
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border
-                              ${user.role === "Manager" ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800" :
-                                user.role === "Service Desk" ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800" :
-                                user.role === "IT Support" ? "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800" :
-                                user.role === "Client" ? "bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" :
+                              ${user.role === "MANAGER" ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800" :
+                                user.role === "REVIEWER" ? "bg-purple-100 text-purple-700 border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800" :
+                                user.role === "CLIENT" ? "bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" :
                                 "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800"}`}
                             >
                               <Shield size={10} className="mr-1" />

@@ -46,7 +46,7 @@ export const sendWelcomeEmail = async (email, name) => {
         from: `"${sender.name}" <${sender.email}>`,
         to: email,
         subject: "Welcome to SolEase 🎉",
-        html: WELCOME_EMAIL_TEMPLATE.replace("Hello,", `Hello ${name},`),
+        html: WELCOME_EMAIL_TEMPLATE.replace(/{{userName}}/g, name),
       });
   
       console.log("✅ Welcome email sent successfully:", info.messageId);
@@ -55,7 +55,7 @@ export const sendWelcomeEmail = async (email, name) => {
       console.error("❌ Error sending welcome email:", error);
       throw new Error(`Error sending welcome email: ${error.message}`);
     }
-};
+  };
 
 //Reset password email form in the email view
 export const sendPasswordResetEmail = async (email, resetURL) => {
@@ -76,10 +76,11 @@ export const sendPasswordResetEmail = async (email, resetURL) => {
 };
 
 
-export const sendTicketStatusUpdateEmail = async (email, name, ticketId, subject, previousStatus, newStatus) => {
+export const sendTicketStatusUpdateEmail = async (email, name, ticketId, subject, previousStatus, newStatus, updatedAt) => {
     try {
       const statusColor = getStatusColor(newStatus);
       const statusMessage = getStatusMessage(newStatus);
+      const { bgColor, textColor, borderColor } = getStatusColors(newStatus);
       
       let html = TICKET_STATUS_UPDATE_TEMPLATE
         .replace(/{{ticketId}}/g, ticketId)
@@ -87,8 +88,11 @@ export const sendTicketStatusUpdateEmail = async (email, name, ticketId, subject
         .replace(/{{previousStatus}}/g, previousStatus)
         .replace(/{{newStatus}}/g, newStatus)
         .replace(/{{userName}}/g, name)
-        .replace(/{{statusColor}}/g, statusColor)
-        .replace(/{{statusMessage}}/g, statusMessage);
+        .replace(/{{statusBgColor}}/g, bgColor)
+        .replace(/{{statusTextColor}}/g, textColor)
+        .replace(/{{statusBorderColor}}/g, borderColor)
+        .replace(/{{statusMessage}}/g, statusMessage)
+        .replace(/{{updatedAt}}/g, updatedAt || new Date().toLocaleString());
 
       const info = await transporter.sendMail({
         from: `"${sender.name}" <${sender.email}>`,
@@ -112,6 +116,25 @@ function getStatusColor(status) {
     case 'Resolved': return '#10B981';
     case 'Closed': return '#6B7280';
     default: return '#6366F1';
+  }
+}
+
+function getStatusColors(status) {
+  switch(status) {
+    case 'OPEN': 
+    case 'Open': 
+      return { bgColor: '#1a3a5c', textColor: '#60a5fa', borderColor: '#1e4a7a' };
+    case 'IN_PROGRESS': 
+    case 'In Progress': 
+      return { bgColor: '#3d2e0a', textColor: '#f59e0b', borderColor: '#5c4510' };
+    case 'RESOLVED': 
+    case 'Resolved': 
+      return { bgColor: '#0a2f1f', textColor: '#10b981', borderColor: '#145a3a' };
+    case 'CLOSED': 
+    case 'Closed': 
+      return { bgColor: '#1f1f1f', textColor: '#9ca3af', borderColor: '#374151' };
+    default:
+      return { bgColor: '#1a1f2b', textColor: '#818cf8', borderColor: '#312e81' };
   }
 }
 

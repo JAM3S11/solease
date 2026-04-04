@@ -4,6 +4,8 @@ import { Mail, Send, CheckCircle2 } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForgotPasswordAction, ActionExpiredPage } from "@/hooks/useSensitiveAction.jsx";
+import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const CanvasLogo = ({ isBlurred }) => {
   const canvasRef = useRef(null);
@@ -58,6 +60,8 @@ const ForgotPassForm = () => {
   const [isSending, setIsSending] = useState(false);
   const { isLoading, forgotPassword } = useAuthenticationStore();
   const navigate = useNavigate();
+  const isUseMobile = useIsMobile();
+  const position = isUseMobile ? 'top-center' : 'top-right';
   const { isBlocked, error: blockError, refreshCount, trackRefresh, completeAction, setActionError } = useForgotPasswordAction();
 
   const handleChange = (e) => {
@@ -71,16 +75,25 @@ const ForgotPassForm = () => {
     e.preventDefault();
     
     if (isBlocked) {
+      toast.error(blockError || "Too many attempts. Please try again later.", { position });
       return;
     }
 
     trackRefresh();
+    
+    console.log("📧 Submitting forgot password for:", formData.email);
+    
     try {
       await forgotPassword(formData.email);
+      console.log("✅ forgotPassword resolved successfully");
       completeAction();
       setIsSending(true);
+      toast.success("Password reset link sent to your email!", { position });
     } catch (error) {
-      setActionError(error?.response?.data?.message || "Failed to send reset email. Please try again.");
+      console.error("❌ forgotPassword error:", error);
+      const errorMessage = error?.response?.data?.message || "Failed to send reset email. Please try again.";
+      setActionError(errorMessage);
+      toast.error(errorMessage, { position });
     }
   };
 

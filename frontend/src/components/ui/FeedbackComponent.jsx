@@ -266,15 +266,16 @@ const FeedbackComponent = () => {
   }, [localTicket?.comments]);
 
   const canProvideFeedback = Boolean(localTicket && user);
-  const canModerate = user && ["Reviewer", "Manager", "IT Support"].includes(user.role);
-  const canCreateInternalNotes = user?.role === "Manager";
+  const userRole = user?.role?.toUpperCase();
+  const canModerate = user && ["REVIEWER", "MANAGER"].includes(userRole);
+  const canCreateInternalNotes = userRole === "MANAGER";
   const canChangeStatus =
     ticket &&
-    user && ["Reviewer", "Manager"].includes(user.role) &&
-    (ticket.assignedTo?._id === user?._id ||
-      ticket.assignedTo?.id === user?._id ||
-      ticket.assignedTo === user?._id ||
-      user?.role === "Manager");
+    user && ["REVIEWER", "MANAGER"].includes(userRole) &&
+    (ticket.assignedTo?._id === user?.id ||
+      ticket.assignedTo?.id === user?.id ||
+      ticket.assignedTo === user?.id ||
+      userRole === "MANAGER");
 
   const auditLogs = useMemo(() => {
     const logs = [];

@@ -1,25 +1,28 @@
-import { ContactUs } from "../models/contacts.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const submitContactForm = async (req, res) => {
     const { fullName, email, message } = req.body;
 
     try {
-        // Check if the fields are empty
         if(!fullName || !email || !message){
             throw new Error("All Fields are required for one to proceed");
         };
 
-        //Object for the contact
-        const contactUs = new ContactUs({
-            fullName,
-            email,
-            message,
+        const contactUs = await prisma.contactUs.create({
+            data: {
+                fullName,
+                email,
+                message,
+            }
         });
 
-        //Save the contact us form
-        await contactUs.save();
-
-        //return a response
         res.status(200).json({
             success: true,
             message: "Thank you for reach out to us!",

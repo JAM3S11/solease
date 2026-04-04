@@ -1,9 +1,18 @@
-// controllers/user.controller.js
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const getITSupportUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: "IT Support" }).select("username email");
+    const users = await prisma.user.findMany({ 
+      where: { role: "REVIEWER" },
+      select: { username: true, email: true }
+    });
     res.status(200).json({ users });
   } catch (err) {
     console.error("Error fetching IT Support users:", err);
@@ -13,7 +22,10 @@ export const getITSupportUsers = async (req, res) => {
 
 export const getReviewers = async (req, res) => {
   try {
-    const users = await User.find({ role: "Reviewer" }).select("name username email role");
+    const users = await prisma.user.findMany({ 
+      where: { role: "REVIEWER" },
+      select: { name: true, username: true, email: true, role: true }
+    });
     res.status(200).json({ users });
   } catch (err) {
     console.error("Error fetching Reviewer users:", err);

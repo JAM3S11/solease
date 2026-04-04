@@ -615,13 +615,13 @@ const AdminReportPage = () => {
 
     // User stats
     const totalUsers = users.length;
-    const activeUsers = users.filter(u => u.status === 'Active').length;
-    const rejectedUsers = users.filter(u => u.status === 'Rejected').length;
+    const activeUsers = users.filter(u => u.status === 'ACTIVE' || u.status === 'Active').length;
+    const rejectedUsers = users.filter(u => u.status === 'REJECTED' || u.status === 'Rejected').length;
     const verifiedUsers = users.filter(u => u.isVerified === true).length;
     const rolesDist = {
-      manager: users.filter(u => u.role === 'Manager').length,
-      reviewer: users.filter(u => u.role === 'Reviewer').length,
-      client: users.filter(u => u.role === 'Client').length,
+      manager: users.filter(u => u.role === 'MANAGER').length,
+      reviewer: users.filter(u => u.role === 'REVIEWER').length,
+      client: users.filter(u => u.role === 'CLIENT').length,
     };
 
     // User activity stats
@@ -1506,8 +1506,8 @@ const AdminReportPage = () => {
                           </td>
                           <td className="p-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.role === 'Manager' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                              user.role === 'Reviewer' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                              user.role === 'MANAGER' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                              user.role === 'REVIEWER' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                               'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             }`}>
                               {user.role}
@@ -1765,8 +1765,8 @@ const AdminReportPage = () => {
                         <span className="text-xs text-muted-foreground uppercase font-medium">Role</span>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedUser?.role === 'Manager' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                        selectedUser?.role === 'Reviewer' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                        selectedUser?.role === 'MANAGER' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                        selectedUser?.role === 'REVIEWER' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                       }`}>
                         {selectedUser?.role}

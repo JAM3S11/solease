@@ -54,7 +54,8 @@ const ReviewerTicketDetail = () => {
 
   // AI Assistance: Auto-transition logic
   useEffect(() => {
-    if (ticket?.status === 'Open' && user?.role === 'Reviewer') {
+    const userRole = user?.role?.toUpperCase();
+    if (ticket?.status === 'Open' && userRole === 'REVIEWER') {
       const timer = setTimeout(() => {
         handleStatusChange('In Progress')
         toast.info('AI: Status updated due to inactivity')

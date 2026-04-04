@@ -1,22 +1,40 @@
-// controllers/profile.controller.js
-import { User } from "../models/user.model.js";
-import { ContactUserProfile } from "../models/contactuser.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 import fs from "fs";
 import path from "path";
 
-// Get profile
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
 export const getProfile = async (req, res) => {
   try {
-    const usid = req.userId;
+    const userId = req.userId;
 
-    const user = await User.findById(usid).select("-password");
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        notificationsEnabled: true,
+        profilePhoto: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const condetails = await ContactUserProfile.findOne({ user: usid });
+    const condetails = await prisma.contactUserProfile.findFirst({ where: { userId } });
 
     const contactData = condetails
       ? {
@@ -46,37 +64,52 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// Update profile
 export const putProfile = async (req, res) => {
   try {
     const { personal, contact } = req.body;
 
-    // Only updates the user's name field
     const updatedFields = {};
     if (personal?.name) updatedFields.name = personal.name;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.userId,
-      { $set: updatedFields },
-      { new: true }
-    ).select("-password");
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data: updatedFields,
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        notificationsEnabled: true,
+        profilePhoto: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
 
-    // Update or create contact info
-    let contactProfile = await ContactUserProfile.findOne({ user: req.userId });
+    let contactProfile = await prisma.contactUserProfile.findFirst({ where: { userId: req.userId } });
 
     if (contactProfile) {
-      contactProfile.address = contact?.address || "";
-      contactProfile.country = contact?.country || "";
-      contactProfile.county = contact?.county || "";
-      contactProfile.telephoneNumber = contact?.telephoneNumber || "";
-      await contactProfile.save();
+      contactProfile = await prisma.contactUserProfile.update({
+        where: { id: contactProfile.id },
+        data: {
+          address: contact?.address || "",
+          country: contact?.country || "",
+          county: contact?.county || "",
+          telephoneNumber: contact?.telephoneNumber || "",
+        }
+      });
     } else {
-      contactProfile = await ContactUserProfile.create({
-        user: req.userId,
-        address: contact?.address,
-        country: contact?.country,
-        county: contact?.county,
-        telephoneNumber: contact?.telephoneNumber,
+      contactProfile = await prisma.contactUserProfile.create({
+        data: {
+          userId: req.userId,
+          address: contact?.address || "",
+          country: contact?.country || "",
+          county: contact?.county || "",
+          telephoneNumber: contact?.telephoneNumber || "",
+        }
       });
     }
 
@@ -93,19 +126,17 @@ export const putProfile = async (req, res) => {
   }
 };
 
-// Upload profile photo
 export const uploadProfilePhoto = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    const user = await User.findById(req.userId);
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Delete old profile photo if exists
     if (user.profilePhoto) {
       const oldPhotoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
       if (fs.existsSync(oldPhotoPath)) {
@@ -113,10 +144,12 @@ export const uploadProfilePhoto = async (req, res) => {
       }
     }
 
-    // Update user with new profile photo path
     const profilePhotoPath = `/uploads/profile-photos/${req.file.filename}`;
-    user.profilePhoto = profilePhotoPath;
-    await user.save();
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data: { profilePhoto: profilePhotoPath }
+    });
 
     return res.status(200).json({
       success: true,
@@ -129,24 +162,23 @@ export const uploadProfilePhoto = async (req, res) => {
   }
 };
 
-// Delete profile photo
 export const deleteProfilePhoto = async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
     if (user.profilePhoto) {
-      // Delete the photo file
       const photoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
       if (fs.existsSync(photoPath)) {
         fs.unlinkSync(photoPath);
       }
 
-      // Set profilePhoto to null
-      user.profilePhoto = null;
-      await user.save();
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: { profilePhoto: null }
+      });
 
       return res.status(200).json({
         success: true,

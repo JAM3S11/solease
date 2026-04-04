@@ -1,9 +1,23 @@
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { generateTokenAndSetCookie } from "../util/generateTokenAndSetCookie.js";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail, sendPasswordUpdateRequiredEmail } from "../mailtrap/emails.js";
 import { calculatePasswordStrength } from "../util/passwordStrength.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const signup = async (req, res) => {
     const { username, name, email, password } = req.body;
@@ -15,64 +29,57 @@ export const signup = async (req, res) => {
     console.log("  Password:", password ? "✅ Provided (length: " + password.length + ")" : "NOT PROVIDED");
 
     try {
-        //Check if the fields are empty
         if(!username || !name || !email || !password){
             throw new Error("All Fields are required for one to proceed");
         }
 
-        // Check if user exists
-        const userAlreadyExists = await User.findOne({ email });
+        const userAlreadyExists = await prisma.user.findUnique({ where: { email } });
         console.log("  User already exists:", userAlreadyExists ? "YES" : "NO");
 
         if(userAlreadyExists){
             return res.status(400).json({ success: false, message: "User already exists" });
         }
 
-        const usernameExists = await User.findOne({ username });
+        const usernameExists = await prisma.user.findUnique({ where: { username } });
         if(usernameExists){
             return res.status(400).json({ success: false, message: "Username already taken" });
         }
 
-        //Hashing a password
         const hashedPassword = await bcryptjs.hash(password, 10);
         const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Calculate password strength
         const passwordStrength = calculatePasswordStrength(password);
 
-        //Object for the user
-        const user = new User({
-            username,
-            name,
-            email,
-            password: hashedPassword,
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-            passwordStrength,
-            hasUpdatedWeakPassword: passwordStrength === 'strong' ? true : false
+        const user = await prisma.user.create({
+            data: {
+                username,
+                name,
+                email,
+                password: hashedPassword,
+                verificationToken,
+                verificationTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                passwordStrength,
+                hasUpdatedWeakPassword: passwordStrength === 'strong'
+            }
         });
 
-        //Save
-        try {
-            await user.save();
-        } catch (saveError) {
-            if (saveError.code === 11000) {
-                const field = Object.keys(saveError.keyPattern)[0];
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists` 
-                });
-            }
-            throw saveError;
-        }
+        const normalizedUser = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role?.toLowerCase() || 'client',
+            status: user.status?.toLowerCase() || 'active',
+            isVerified: user.isVerified,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        };
 
-        //create a token
-        generateTokenAndSetCookie(res, user._id);
+        generateTokenAndSetCookie(res, user.id);
 
         console.log("✅ User created successfully:", user.email);
         console.log("📧 Attempting to send verification email to:", user.email.substring(0, 3) + "***@" + user.email.split('@')[1]);
 
-        //Send verification to email (non-blocking)
         sendVerificationEmail(user.email, verificationToken)
             .then(() => {
                 console.log("📧 Verification email sent successfully!");
@@ -83,13 +90,10 @@ export const signup = async (req, res) => {
             });
 
         res.status(201).json({
-			success: true,
-			message: "User created successfully",
-			user: {
-				...user._doc,
-				password: undefined,
-			},
-		});
+            success: true,
+            message: "User created successfully",
+            user: normalizedUser,
+        });
     } catch (error) {
         console.log("Error in sign up", error);
         res.status(400).json({ success: false, message: error.message });
@@ -100,10 +104,11 @@ export const verifyEmail = async (req, res) => {
     const { code } = req.body;
 
     try {
-        //Get the user
-        const user = await User.findOne({
-            verificationToken: code,
-            verificationTokenExpiresAt: { $gt: Date.now() } //greater than the current date
+        const user = await prisma.user.findFirst({
+            where: {
+                verificationToken: code,
+                verificationTokenExpiresAt: { gt: new Date() }
+            }
         });
 
         if(!user){
@@ -113,28 +118,33 @@ export const verifyEmail = async (req, res) => {
             });
         }
 
-        user.isVerified = true;
-        user.verificationToken = undefined;
-        user.verificationTokenExpiresAt = undefined;
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                isVerified: true,
+                verificationToken: null,
+                verificationTokenExpiresAt: null
+            }
+        });
 
-        //Save the user operations
-        await user.save();
+        await sendWelcomeEmail(updatedUser.email, updatedUser.name);
 
-        //Send a welcome email
-        await sendWelcomeEmail(user.email, user.name);
-
-        //return response
         res.status(200).json({
-			success: true,
-			message: "Email verified successfully",
-			user: {
-				...user._doc,
-				password: undefined,
-			},
-		});
+            success: true,
+            message: "Email verified successfully",
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role?.toLowerCase() || 'client',
+                status: updatedUser.status?.toLowerCase() || 'pending',
+                isVerified: updatedUser.isVerified
+            },
+        });
     } catch (error) {
         console.log("Error in verifyEmail ", error);
-		res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: "Server error" });
     }
 }
 
@@ -142,124 +152,128 @@ export const login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const user = await User.findOne({ username });
+        const user = await prisma.user.findUnique({ where: { username } });
         if (!user) {
-			return res.status(400).json({ 
+            return res.status(400).json({ 
                 success: false, 
-                message: "Invalid credentials" });
-		};
+                message: "Invalid credentials" 
+            });
+        };
 
-        if (user.status === "Rejected") {
-          return res.status(403).json({
-            success: false,
-            message: "Your account has been rejected"
-          });
+        if (user.status === "REJECTED") {
+            return res.status(403).json({
+                success: false,
+                message: "Your account has been rejected"
+            });
         }          
 
-        //Check on the password validity
         const isPasswordValid = await bcryptjs.compare(password, user.password);
-		if (!isPasswordValid) {
-			return res.status(400).json({ 
+        if (!isPasswordValid) {
+            return res.status(400).json({ 
                 success: false, 
-                message: "Invalid credentials, please try again." });
-		}
+                message: "Invalid credentials, please try again." 
+            });
+        }
 
-        generateTokenAndSetCookie(res, user._id);
+        generateTokenAndSetCookie(res, user.id);
 
-        //Update last login
-        user.lastLogin = new Date();
-        
-        // Calculate password strength (use stored or calculate fresh)
         let passwordStrength = user.passwordStrength || calculatePasswordStrength(password);
-        
         let passwordUpdateRequired = false;
         let passwordUpdateDeadline = user.passwordUpdateDeadline;
         
-        // Check if password needs update
         if (passwordStrength === 'weak' && !user.hasUpdatedWeakPassword) {
-            // If no deadline set (first time with this feature), set it
             if (!user.passwordUpdateDeadline) {
-                const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+                const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
                 user.passwordUpdateDeadline = deadline;
                 passwordUpdateDeadline = deadline;
                 
-                // Send email notification
                 try {
                     await sendPasswordUpdateRequiredEmail(user.email, user.name, deadline);
                 } catch (emailError) {
                     console.error("Error sending password update email:", emailError);
                 }
             }
-            
-            // Always require password update for weak passwords (but allow login)
             passwordUpdateRequired = true;
         } else if (passwordStrength !== 'weak') {
-            // Strong password - clear deadline and mark as updated
             user.passwordStrength = passwordStrength;
             user.passwordUpdateDeadline = null;
             user.hasUpdatedWeakPassword = true;
             passwordUpdateDeadline = null;
         }
         
-        // Update password strength in user record
         user.passwordStrength = passwordStrength;
-        
-        //Save the login details
-        await user.save();
 
-        //Return thre response
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                lastLogin: new Date(),
+                passwordStrength: passwordStrength,
+                passwordUpdateDeadline: passwordUpdateDeadline,
+                hasUpdatedWeakPassword: user.hasUpdatedWeakPassword
+            }
+        });
+
         res.status(200).json({
-			success: true,
-			message: "Logged in successfully",
-			passwordUpdateRequired,
-			passwordUpdateDeadline,
-			user: {
-				...user._doc,
-				password: undefined,
-			},
-		});
+            success: true,
+            message: "Logged in successfully",
+            passwordUpdateRequired,
+            passwordUpdateDeadline,
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role?.toLowerCase() || 'client',
+                status: updatedUser.status?.toLowerCase() || 'active',
+                isVerified: updatedUser.isVerified,
+                profilePhoto: updatedUser.profilePhoto,
+                notificationsEnabled: updatedUser.notificationsEnabled,
+                createdAt: updatedUser.createdAt,
+                updatedAt: updatedUser.updatedAt
+            },
+        });
     } catch (error) {
         console.log("Error in login ", error);
-		res.status(400).json({ success: false, message: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 }
 
 export const logout = async (req, res) => {
     res.clearCookie("token");
-	res.status(200).json({ 
+    res.status(200).json({ 
         success: true, 
-        message: "Logged out successfully" });
+        message: "Logged out successfully" 
+    });
 }
 
 export const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await prisma.user.findUnique({ where: { email } });
         if(!user){
             return res.status(400).json({ 
                 success: false, 
-                message: "User not found" });
+                message: "User not found" 
+            });
         }
 
-        //Generate a reset jwt token
         const resetToken = crypto.randomBytes(20).toString("hex");
-		const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+        const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000);
 
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpiresAt = resetTokenExpiresAt;
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetPasswordToken: resetToken,
+                resetPasswordExpiresAt: expiresAt
+            }
+        });
 
-        //Save
-        await user.save();
-
-        //Send email for forgot password
         await sendPasswordResetEmail(
             user.email, 
             `${process.env.CLIENT_URL}/auth/reset-password/${resetToken}`
         );
         
-
-        // Return response
         res.status(200).json({ 
             success: true, 
             message: "Password reset link sent to your email" 
@@ -275,9 +289,11 @@ export const resetPassword = async (req, res) => {
         const { token } = req.params;
         const { password } = req.body;
 
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpiresAt: { $gt: new Date() }
+        const user = await prisma.user.findFirst({
+            where: {
+                resetPasswordToken: token,
+                resetPasswordExpiresAt: { gt: new Date() }
+            }
         });
 
         if(!user){
@@ -287,34 +303,31 @@ export const resetPassword = async (req, res) => {
             });
         }
 
-        // update password
-		const hashedPassword = await bcryptjs.hash(password, 10);
+        const hashedPassword = await bcryptjs.hash(password, 10);
 
-        // Update the following
-        user.password = hashedPassword;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpiresAt = undefined;
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetPasswordToken: null,
+                resetPasswordExpiresAt: null
+            }
+        });
 
-        //Save
-        await user.save();
-
-        //Send a successfull reset password email
         await sendResetSuccessEmail(user.email);
 
-        // Return a response
         res.status(200).json({
             success: true,
             message: "Password reset successfully"
         })
     } catch (error) {
         console.log("Error in resetPassword ", error);
-		res.status(400).json({ success: false, message: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 }
 
-// Manager role only
 export const createReviewer = async (req, res) => {
-    if (req.user.role !== "Manager") {
+    if (req.user.role !== "MANAGER") {
         return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
@@ -325,26 +338,32 @@ export const createReviewer = async (req, res) => {
             throw new Error("All Fields are required for one to proceed");
         }
 
-        const userAlreadyExists = await User.findOne({ email });
+        const userAlreadyExists = await prisma.user.findUnique({ where: { email } });
         if(userAlreadyExists){
             return res.status(400).json({ success: false, message: "User already exists" });
         }
 
         const hashedPassword = await bcryptjs.hash(password, 10);
-        const user = new User({
-            username,
-            name,
-            email,
-            password: hashedPassword,
-            role: "Reviewer",
-            status: "Active"
+        
+        const user = await prisma.user.create({
+            data: {
+                username,
+                name,
+                email,
+                password: hashedPassword,
+                role: "REVIEWER",
+                status: "ACTIVE"
+            }
         });
 
         const resetToken = crypto.randomBytes(20).toString("hex");
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000;
-
-        await user.save();
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetPasswordToken: resetToken,
+                resetPasswordExpiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000)
+            }
+        });
 
         await sendPasswordResetEmail(
             user.email,
@@ -355,8 +374,12 @@ export const createReviewer = async (req, res) => {
             success: true,
             message: "Reviewer created successfully; password reset email sent",
             user: {
-                ...user._doc,
-                password: undefined,
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                email: user.email,
+                role: user.role?.toLowerCase() || 'reviewer',
+                status: user.status?.toLowerCase() || 'active'
             },
         });
     } catch (error) {
@@ -366,20 +389,42 @@ export const createReviewer = async (req, res) => {
 };
 
 export const checkAuth = async (req, res) => {
-	try {
-		const user = await User.findById(req.userId).select("-password");
-		if (!user) {
-			return res.status(401).json({ 
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: {
+                id: true,
+                username: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+                isVerified: true,
+                profilePhoto: true,
+                notificationsEnabled: true,
+                createdAt: true,
+                updatedAt: true
+            }
+        });
+        if (!user) {
+            return res.status(401).json({ 
                 success: false, 
                 message: "User not found" 
             });
-		}
+        }
 
-		res.status(200).json({ success: true, user });
-	} catch (error) {
-		console.log("Error in checkAuth ", error);
-		res.status(500).json({ success: false, message: error.message });
-	}
+        res.status(200).json({ 
+            success: true, 
+            user: {
+                ...user,
+                role: user.role?.toLowerCase() || 'client',
+                status: user.status?.toLowerCase() || 'pending'
+            }
+        });
+    } catch (error) {
+        console.log("Error in checkAuth ", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
 
 export const changePassword = async (req, res) => {
@@ -400,7 +445,7 @@ export const changePassword = async (req, res) => {
             });
         }
         
-        const user = await User.findById(req.userId);
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -408,7 +453,6 @@ export const changePassword = async (req, res) => {
             });
         }
         
-        // Verify current password
         const isPasswordValid = await bcryptjs.compare(currentPassword, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({
@@ -417,7 +461,6 @@ export const changePassword = async (req, res) => {
             });
         }
         
-        // Check new password strength
         const passwordStrength = calculatePasswordStrength(newPassword);
         if (passwordStrength !== 'strong') {
             return res.status(400).json({
@@ -426,16 +469,17 @@ export const changePassword = async (req, res) => {
             });
         }
         
-        // Hash new password
         const hashedPassword = await bcryptjs.hash(newPassword, 10);
         
-        // Update user
-        user.password = hashedPassword;
-        user.passwordStrength = 'strong';
-        user.hasUpdatedWeakPassword = true;
-        user.passwordUpdateDeadline = null;
-        
-        await user.save();
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                passwordStrength: 'strong',
+                hasUpdatedWeakPassword: true,
+                passwordUpdateDeadline: null
+            }
+        });
         
         res.status(200).json({
             success: true,

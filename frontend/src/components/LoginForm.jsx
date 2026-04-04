@@ -171,6 +171,9 @@ const LoginForm = () => {
       const response = await login(formData.username, formData.password);
       const { user, passwordUpdateRequired, passwordUpdateDeadline } = response;
 
+      console.log("🔍 Login response:", user);
+      console.log("🔍 User role:", user?.role);
+
       // Reset form after successful login
       setFormData({ username: "", password: "", rememberMe: false });
       setValidationErrors({});
@@ -191,11 +194,25 @@ const LoginForm = () => {
         return;
       }
 
-      switch (user.role) {
-        case "Client": navigate("/client-dashboard"); break;
-        case "Reviewer": navigate("/reviewer-dashboard"); break;
-        case "Manager": navigate("/admin-dashboard"); break;
-        default: navigate("/");
+      const userRole = user?.role?.toLowerCase();
+      console.log("🔍 Normalized role:", userRole);
+      
+      switch (userRole) {
+        case "client": 
+          console.log("➡️ Navigating to /client-dashboard");
+          navigate("/client-dashboard"); 
+          break;
+        case "reviewer": 
+          console.log("➡️ Navigating to /reviewer-dashboard");
+          navigate("/reviewer-dashboard"); 
+          break;
+        case "manager": 
+          console.log("➡️ Navigating to /admin-dashboard");
+          navigate("/admin-dashboard"); 
+          break;
+        default: 
+          console.log("➡️ Navigating to / (default) - role not matched");
+          navigate("/");
       }
       
       toast.success(`Welcome back, ${user.name || "User"}.`, {
@@ -206,12 +223,10 @@ const LoginForm = () => {
         }
       });
     } catch (err) {
+      console.error("❌ Login error:", err.message);
       toast.error(err.message || "Invalid credentials.", {
         position,
         description: `Try again later ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'})}`,
-        // action: {
-        //   label: "Invalid"
-        // }
       });
     }
   };

@@ -26,7 +26,7 @@ export const verifyEmailLimiter = rateLimit({
 
 export const forgotPasswordLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
-  max: 3, 
+  max: 10, 
   message: { message: "Too many password reset requests. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,

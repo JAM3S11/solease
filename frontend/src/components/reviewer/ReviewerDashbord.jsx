@@ -11,10 +11,10 @@ import { NumberTicker } from '../ui/number-ticker'
 // Profile Avatar Helper
 const getProfileAvatar = (user, size = "md") => {
   const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm", lg: "w-12 h-12 text-base" };
-  const role = user?.role?.toLowerCase();
-  const gradientClass = role === "manager" || role === "admin"
+  const role = user?.role?.toUpperCase();
+  const gradientClass = role === "MANAGER" || role === "ADMIN"
     ? "bg-gradient-to-br from-purple-500 to-purple-600"
-    : role === "reviewer"
+    : role === "REVIEWER"
       ? "bg-gradient-to-br from-green-500 to-emerald-600"
       : "bg-gradient-to-br from-blue-500 to-blue-600";
   const initials = user?.name?.charAt(0) || user?.username?.charAt(0) || "?";
@@ -799,9 +799,9 @@ const ReviewerDashbord = () => {
                               <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
                                 <span
                                   className={`w-2 h-2 rounded-full ${
-                                    role === "Client"
+                                    role === "CLIENT"
                                       ? "bg-blue-500"
-                                      : role === "Reviewer"
+                                      : role === "REVIEWER"
                                         ? "bg-green-500"
                                         : "bg-purple-500"
                                   }`}

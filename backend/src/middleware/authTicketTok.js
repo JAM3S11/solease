@@ -1,10 +1,15 @@
-// backend/src/middleware/authTicketTok.js
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model.js";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const protect = async (req, res, next) => {
   try {
-    // 1. Get token (cookie OR header)
     let token = req.cookies?.token;
 
     if (!token && req.headers.authorization?.startsWith("Bearer")) {
@@ -15,21 +20,34 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Unauthorized - no token provided" });
     }
 
-    // 2. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "mysecretkey"); 
-    // 👆 fallback to "mysecretkey" if env missing
 
     if (!decoded || !decoded.userId) {
       return res.status(401).json({ success: false, message: "Unauthorized - invalid token" });
     }
 
-    // 3. Fetch user
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        isVerified: true,
+        notificationsEnabled: true,
+        profilePhoto: true,
+        passwordStrength: true,
+        passwordUpdateDeadline: true,
+        hasUpdatedWeakPassword: true
+      }
+    });
+    
     if (!user) {
       return res.status(401).json({ success: false, message: "Unauthorized - user not found" });
     }
 
-    // 4. Attach user to request
     req.user = user;
 
     next();

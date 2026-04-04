@@ -16,8 +16,9 @@ const TicketDetailModal = ({ ticket, onClose, itSupportUsers = [], onUpdate }) =
 
   if (!ticket) return null;
 
-  const canUpdateStatus = ["Manager", "Reviewer", "Service Desk"].includes(user?.role);
-  const canAssign = user?.role === "Manager";
+  const userRole = user?.role?.toUpperCase();
+  const canUpdateStatus = ["MANAGER", "REVIEWER"].includes(userRole);
+  const canAssign = userRole === "MANAGER";
 
   const handleUpdate = async () => {
     try {
@@ -354,12 +355,13 @@ const TicketDetailModal = ({ ticket, onClose, itSupportUsers = [], onUpdate }) =
           {(ticket.status === 'Resolved' || ticket.status === 'In Progress') && (
             <button
               onClick={() => {
+                const role = user?.role?.toUpperCase();
                 onClose();
-                if (user?.role === 'Client') {
+                if (role === 'CLIENT') {
                   navigate(`/client-dashboard/ticket/${ticket._id}/feedback`);
-                } else if (user?.role === 'Reviewer') {
+                } else if (role === 'REVIEWER') {
                   navigate(`/reviewer-dashboard/ticket/${ticket._id}/feedback`);
-                } else if (user?.role === 'Manager') {
+                } else if (role === 'MANAGER') {
                   navigate(`/client-dashboard/ticket/${ticket._id}/feedback`);
                 }
               }}

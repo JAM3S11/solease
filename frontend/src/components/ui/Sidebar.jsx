@@ -60,9 +60,10 @@ export function AppSidebar({ userRole }) {
   }, [safeTickets]);
 
   const currentMenu = useMemo(() => {
-    const baseMenu = MENU_CONFIG[userRole] ?? { top: [] };
+    const roleKey = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase() : 'Client';
+    const baseMenu = MENU_CONFIG[roleKey] ?? { top: [] };
     
-    if (userRole === 'Reviewer') {
+    if (userRole === 'reviewer') {
       return {
         ...baseMenu,
         top: baseMenu.top.map(item => {
@@ -86,7 +87,7 @@ export function AppSidebar({ userRole }) {
       };
     }
 
-    if (userRole === 'Manager') {
+    if (userRole === 'manager') {
       return {
         ...baseMenu,
         top: baseMenu.top.map(item => {

@@ -1,0 +1,16 @@
+$kind: http-request
+name: http://localhost:5001/sol/auth/login
+url: http://localhost:5001/sol/auth/login
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\": \"adminManager\",\r
+
+    \    \"password\": \"Admin@123\"\r
+
+    }"
+order: 3260012575621190

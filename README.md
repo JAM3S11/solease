@@ -347,7 +347,11 @@ The decision to migrate from MongoDB to PostgreSQL was not made lightly—it was
 All new deployments should use PostgreSQL. Existing MongoDB deployments will continue to function but will not receive updates or new feature support. The migration guide in the Installation section provides detailed instructions for transitioning from MongoDB to PostgreSQL.
 
 #### Mongoose Schemas (Replaced by Prisma)
-The Mongoose schema definitions that previously defined data models for Users, Tickets, and Contacts have been deprecated and replaced by Prisma schema definitions. The Prisma-based approach provides type-safe database operations, automatic migrations, and improved developer experience through better IDE integration and autocomplete support. The `src/models/` directory is now marked as legacy, and all new database operations should use the Prisma client from `src/prisma/`.
+The Mongoose schema definitions that previously defined data models for Users, Tickets, and Contacts have been deprecated and replaced by Prisma schema definitions. The Prisma-based approach provides type-safe database operations, automatic migrations, and improved developer experience through better IDE integration and autocomplete support.
+
+The legacy Mongoose models are documented in [`backend/README.md`](./backend/README.md).
+
+**Note**: The `src/models/` directory is now marked as legacy. All new database operations should use the Prisma client.
 
 #### triggerAIResponse Function (Enhanced by Gemini AI)
 The original `triggerAIResponse` function that provided basic AI response triggering capabilities has been deprecated in favor of the full Google Gemini AI integration. While the original function provided simple automated responses, the new Gemini AI integration offers intelligent ticket categorization with confidence scores, contextual response suggestions based on historical resolutions, sentiment analysis on client communications, and comprehensive workflow automation throughout the entire ticket lifecycle. The new AI capabilities far exceed what was possible with the original `triggerAIResponse` function, making it obsolete for all but the most basic use cases.

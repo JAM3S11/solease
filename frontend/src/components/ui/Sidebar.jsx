@@ -1,7 +1,7 @@
 // components/ui/Sidebar.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronsUpDown, Hash, Clock, Briefcase, MoreHorizontal, Plus, ChevronLeft } from "lucide-react";
+import { ChevronsUpDown, Hash, Clock, Briefcase, MoreHorizontal, Plus, ChevronLeft, BookOpen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -263,8 +263,44 @@ export function AppSidebar({ userRole }) {
       </SidebarContent>
 
       {/* Footer: Bottom nav + User card */}
-      <SidebarFooter className="py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <SidebarFooter className="py-2 sm:py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         <SidebarMenu className={cn("gap-1 transition-all duration-300", isCollapsed ? "px-0" : "px-2")}>
+          {/* Knowledge Base Quick Access - Notification Style */}
+          <SidebarMenuItem className={cn("transition-all duration-300", isCollapsed ? "mb-1" : "mb-2")}>
+            <button
+              onClick={() => navigate("/client-dashboard/knowledge")}
+              className={cn(
+                "w-full flex items-center gap-2 sm:gap-3 rounded-lg transition-all duration-200",
+                isCollapsed 
+                  ? "justify-center p-2 hover:bg-primary/10" 
+                  : "px-3 py-2 sm:px-3 sm:py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900/40 dark:hover:to-purple-900/40 border border-violet-200 dark:border-violet-800/30"
+              )}
+              title={isCollapsed ? "Knowledge Base" : undefined}
+            >
+              <div className={cn(
+                "flex items-center justify-center rounded-lg flex-shrink-0",
+                isCollapsed ? "w-8 h-8" : "w-8 h-8 sm:w-9 sm:h-9"
+              )}>
+                <BookOpen className={cn("text-violet-600 dark:text-violet-400", isCollapsed ? "w-4 h-4" : "w-4 h-4 sm:w-5 sm:h-5")} />
+              </div>
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0 flex flex-col items-start">
+                  <span className="text-xs sm:text-sm font-semibold text-violet-700 dark:text-violet-300 truncate w-full">
+                    Knowledge Base
+                  </span>
+                  <span className="text-[10px] text-violet-500 dark:text-violet-400 truncate">
+                    Quick help articles
+                  </span>
+                </div>
+              )}
+              {!isCollapsed && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-violet-500 text-white rounded-full flex-shrink-0">
+                  9
+                </span>
+              )}
+            </button>
+          </SidebarMenuItem>
+
           {/* {currentMenu.bottom.map((item) => (
             <NavItem
               key={item.name}

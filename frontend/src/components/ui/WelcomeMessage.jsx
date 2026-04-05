@@ -265,7 +265,7 @@ const WelcomeMessage = () => {
           Icon={Headphones}
           title="Contact Support"
           description="Need immediate help? Reach out to our support team."
-          link="/client-dashboard/contact"
+          link="/client-dashboard/new-ticket"
           linkText="Get in Touch"
           accentColor="indigo"
         />

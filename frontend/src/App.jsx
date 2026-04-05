@@ -61,6 +61,7 @@ import { useAuthenticationStore } from "./store/authStore";
 import ReviewerProfilePage from "./components/reviewer/ReviewerProfilePage";
 import AllNotificationsPage from "./components/ui/AllNotificationsPage";
 import HelpSupportPage from "./components/ui/HelpSupportPage";
+import KnowledgeBasePage from "./components/ui/KnowledgeBasePage";
 import GettingStartedPage from "./pages/GettingStartedPage";
 import AccountSecurityPage from "./pages/AccountSecurityPage";
 import BillingPaymentsPage from "./pages/BillingPaymentsPage";
@@ -131,6 +132,7 @@ const dashboardRoutes = [
   "/reviewer-dashboard/notifications",
   "/client-dashboard/notifications",
   "/help-support",
+  "/client-dashboard/knowledge",
 ];
 
 const App = () => {
@@ -467,6 +469,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
               <HelpSupportPage />
+            </ProtectedRoute>
+          } />
+
+        {/* Knowledge Base - Dedicated route */}
+        <Route path="/client-dashboard/knowledge"
+          element={
+            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
+              <KnowledgeBasePage />
             </ProtectedRoute>
           } />
 

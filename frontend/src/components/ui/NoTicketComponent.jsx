@@ -243,7 +243,7 @@ const NoTicketComponent = ({ noTicket, type = "client" }) => {
               Icon={HelpCircle}
               title="Contact Support"
               description="Need immediate help? Reach out to our support team."
-              link="/client-dashboard/contact"
+              link="/client-dashboard/new-ticket"
               linkText="Get Help"
               accentColor="indigo"
             />

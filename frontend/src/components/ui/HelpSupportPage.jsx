@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
 import useTicketStore from "../../store/ticketStore";
@@ -164,11 +164,77 @@ const popularTopics = [
   { label: "Ticket Status", color: "gray" }
 ];
 
+const sampleTickets = [
+  {
+    _id: "sample1",
+    subject: "VPN Connection Failure - Court Records Access",
+    description: "Unable to connect to the secure VPN network required to access the e-filing system for court submissions. This has been ongoing since the recent network update.",
+    status: "Open",
+    urgency: "Critical",
+    issueType: "Network Connectivity",
+    location: "High Court Building, Floor 3",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    isSample: true
+  },
+  {
+    _id: "sample2",
+    subject: "Legal Case Management Software Crash",
+    description: "The case management system crashes intermittently when uploading large case files (PDFs over 50MB). Losing unsaved work is a major concern for deadline-driven filings.",
+    status: "In Progress",
+    urgency: "High",
+    issueType: "Software Issue",
+    location: "County Prosecutor's Office",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    isSample: true
+  },
+  {
+    _id: "sample3",
+    subject: "Printer Not Recognized - Deposition Documents",
+    description: "Network printer in the deposition room is not being recognized by the document management system. Cannot print official deposition documents.",
+    status: "Resolved",
+    urgency: "Medium",
+    issueType: "Hardware Issue",
+    location: "Law Firm - Floor 2",
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    isSample: true
+  },
+  {
+    _id: "sample4",
+    subject: "Email Authentication Issue - Court Notifications",
+    description: "Not receiving court notification emails. Suspect authentication issues with the secure email gateway affecting legal communication timelines.",
+    status: "Open",
+    urgency: "High",
+    issueType: "Account Access",
+    location: "Government Legal Services Division",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    isSample: true
+  },
+  {
+    _id: "sample5",
+    subject: "Scanner Calibration for Evidence Digitization",
+    description: "High-resolution scanner in evidence room producing distorted images. Critical for digitizing physical evidence for court presentations.",
+    status: "In Progress",
+    urgency: "Medium",
+    issueType: "Hardware Issue",
+    location: "Evidence Storage Facility",
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    isSample: true
+  }
+];
+
 const HelpSupportPage = () => {
   const { user } = useAuthenticationStore();
   const userRole = user?.role?.toLowerCase() || "client";
   const { tickets, fetchTickets } = useTicketStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isKnowledgeBaseRoute = location.pathname === "/client-dashboard/knowledge";
   
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [expandedFaq, setExpandedFaq] = useState(null);
@@ -182,6 +248,18 @@ const HelpSupportPage = () => {
     address: ""
   });
   const [activeSection, setActiveSection] = useState("getting-started");
+  const [showSampleTickets, setShowSampleTickets] = useState(isKnowledgeBaseRoute);
+
+  const hasTickets = tickets && tickets.length > 0;
+  const displayTickets = hasTickets ? tickets : sampleTickets;
+
+  useEffect(() => {
+    setShowSampleTickets(false);
+  }, [tickets]);
+
+  useEffect(() => {
+    setShowSampleTickets(isKnowledgeBaseRoute);
+  }, [isKnowledgeBaseRoute]);
 
   useEffect(() => {
     if (userRole === "client") {
@@ -211,20 +289,26 @@ const HelpSupportPage = () => {
 
   const roleContent = {
     client: {
-      title: "How can we help you today?",
-      subtitle: "Find answers to common questions or get in touch with our support team."
+      title: isKnowledgeBaseRoute ? "Knowledge Base" : "How can we help you today?",
+      subtitle: isKnowledgeBaseRoute 
+        ? "Browse our comprehensive knowledge base for ICT solutions tailored to government and legal professionals."
+        : "Find answers to common questions or get in touch with our support team."
     },
     reviewer: {
-      title: "Reviewer Help Center",
-      subtitle: "Manage tickets, handle escalations, and access reviewer tools."
+      title: isKnowledgeBaseRoute ? "Knowledge Base" : "Reviewer Help Center",
+      subtitle: isKnowledgeBaseRoute
+        ? "Browse our comprehensive knowledge base for ICT solutions tailored to government and legal professionals."
+        : "Manage tickets, handle escalations, and access reviewer tools."
     },
     manager: {
-      title: "Manager Dashboard Help",
-      subtitle: "Oversee team performance, manage tickets, and access reports."
+      title: isKnowledgeBaseRoute ? "Knowledge Base" : "Manager Dashboard Help",
+      subtitle: isKnowledgeBaseRoute
+        ? "Browse our comprehensive knowledge base for ICT solutions tailored to government and legal professionals."
+        : "Oversee team performance, manage tickets, and access reports."
     }
   };
 
-  const recentTickets = tickets.slice(0, 3);
+  const recentTickets = displayTickets.slice(0, 3);
   const roleFaqs = faqs[userRole] || faqs.client;
   
   const filteredFaqs = roleFaqs.filter(faq => 
@@ -547,12 +631,15 @@ const HelpSupportPage = () => {
   };
 
   const renderClientTickets = () => {
-    const filteredTickets = tickets.filter(ticket =>
+    const filteredTickets = displayTickets.filter(ticket =>
       !searchQuery || 
       ticket.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.status?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const showNoTickets = filteredTickets.length === 0;
+    const showingSamples = !hasTickets && !showSampleTickets;
 
     return (
       <motion.div
@@ -560,13 +647,49 @@ const HelpSupportPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-2.5 sm:space-y-3 lg:space-y-4"
       >
-        {filteredTickets.length === 0 ? (
+        {!showSampleTickets && !hasTickets && (
+          <div className="flex items-center justify-between p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Ticket size={16} className="text-amber-600 dark:text-amber-400" />
+              <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-200">
+                Showing sample tickets to help you understand common ICT issues in legal/government settings.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSampleTickets(true)}
+              className="text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 flex items-center gap-1 whitespace-nowrap"
+            >
+              View Sample <ChevronRight size={12} />
+            </button>
+          </div>
+        )}
+        
+        {showSampleTickets && (
+          <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-full">
+                Sample
+              </span>
+              <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
+                Viewing sample tickets. These are examples of common issues.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSampleTickets(false)}
+              className="text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 flex items-center gap-1 whitespace-nowrap"
+            >
+              Close <ChevronRight size={12} className="rotate-90" />
+            </button>
+          </div>
+        )}
+
+        {showNoTickets ? (
           <div className="text-center py-6 sm:py-8 lg:py-12 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
             <Ticket size={28} className="mx-auto mb-2 sm:mb-3 text-gray-400 sm:size-10" />
             <p className="text-xs sm:text-sm lg:text-base text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-              {tickets.length === 0 ? "You haven't submitted any tickets yet." : "No tickets match your search."}
+              {hasTickets ? "No tickets match your search." : "You haven't submitted any tickets yet."}
             </p>
-            {tickets.length === 0 && (
+            {!hasTickets && (
               <a href="/client-dashboard/new-ticket" className="text-primary hover:underline font-medium text-xs sm:text-sm">
                 Submit your first ticket
               </a>
@@ -589,6 +712,11 @@ const HelpSupportPage = () => {
                       <span className="text-[9px] sm:text-[10px] lg:text-xs font-semibold text-primary uppercase">
                         #{ticket.ticketId || ticket._id?.slice(-6)}
                       </span>
+                      {ticket.isSample && (
+                        <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                          Sample
+                        </span>
+                      )}
                     </div>
                     <h3 className="font-medium text-xs sm:text-sm lg:text-base text-gray-800 dark:text-gray-200 truncate">
                       {ticket.subject}
@@ -602,12 +730,18 @@ const HelpSupportPage = () => {
                       </p>
                     )}
                   </div>
-                  <button
-                    onClick={() => navigate(`/client-dashboard/ticket/${ticket._id}/feedback`)}
-                    className="text-primary hover:underline text-[10px] sm:text-xs lg:text-sm flex items-center gap-1 flex-shrink-0"
-                  >
-                    View <ChevronRight size={10} className="sm:size-3.5" />
-                  </button>
+                  {ticket.isSample ? (
+                    <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 flex-shrink-0">
+                      Sample <ChevronRight size={10} className="sm:size-3.5" />
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => navigate(`/client-dashboard/ticket/${ticket._id}/feedback`)}
+                      className="text-primary hover:underline text-[10px] sm:text-xs lg:text-sm flex items-center gap-1 flex-shrink-0"
+                    >
+                      View <ChevronRight size={10} className="sm:size-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -898,7 +1032,19 @@ const HelpSupportPage = () => {
               transition={{ delay: 0.4 }}
               className="p-4 sm:p-5 lg:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800"
             >
-              <h3 className="text-sm font-medium mb-3 sm:mb-4 text-gray-900 dark:text-white">My Recent Tickets</h3>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                  {hasTickets || showSampleTickets ? "Sample Tickets" : "My Recent Tickets"}
+                </h3>
+                {(showSampleTickets || !hasTickets) && (
+                  <button
+                    onClick={() => setShowSampleTickets(!showSampleTickets)}
+                    className="px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+                  >
+                    {showSampleTickets ? "Close" : "Demo"}
+                  </button>
+                )}
+              </div>
               <div className="space-y-2.5 sm:space-y-3 lg:space-y-4">
                 {recentTickets.length === 0 ? (
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center py-3 sm:py-4">

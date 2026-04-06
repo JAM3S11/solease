@@ -16,6 +16,8 @@ const STATUS_COLORS = {
   "Closed": "bg-gray-500"
 };
 
+const getNotificationId = (notification) => notification?._id || notification?.id;
+
 const AllNotificationsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthenticationStore();
@@ -85,15 +87,16 @@ const AllNotificationsPage = () => {
   );
 
   const handleNotificationClick = async (notification) => {
+    const notificationId = getNotificationId(notification);
     if (notification.type === "NOTE_SHARED") {
-      if (!notification.read) {
-        await markAsRead(notification._id);
+      if (!notification.read && notificationId) {
+        await markAsRead(notificationId);
       }
       setSelectedNoteNotification(notification);
       return;
     }
-    if (!notification.read) {
-      await markAsRead(notification._id);
+    if (!notification.read && notificationId) {
+      await markAsRead(notificationId);
     }
     navigate(getTicketPath(notification));
   };
@@ -101,10 +104,12 @@ const AllNotificationsPage = () => {
   const handleToggleRead = async (e, notification) => {
     e.preventDefault();
     e.stopPropagation();
+    const notificationId = getNotificationId(notification);
+    if (!notificationId) return;
     if (notification.read) {
-      await markAsUnread(notification._id);
+      await markAsUnread(notificationId);
     } else {
-      await markAsRead(notification._id);
+      await markAsRead(notificationId);
     }
   };
 
@@ -288,7 +293,7 @@ const AllNotificationsPage = () => {
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {paginatedNotifications.map((notification, index) => (
                 <motion.div
-                  key={notification._id}
+                  key={getNotificationId(notification)}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
@@ -310,6 +315,7 @@ const AllNotificationsPage = () => {
                         </p>
                         <button
                           type="button"
+                          onMouseDown={(e) => e.stopPropagation()}
                           onClick={(e) => handleToggleRead(e, notification)}
                           className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0"
                           title={notification.read ? "Mark as unread" : "Mark as read"}
@@ -511,9 +517,9 @@ const AllNotificationsPage = () => {
               </button>
               <button
                 onClick={() => {
-                  const ticketId = selectedNoteNotification.ticketId;
-                  if (!selectedNoteNotification.read) {
-                    markAsRead(selectedNoteNotification._id);
+                  const notificationId = getNotificationId(selectedNoteNotification);
+                  if (!selectedNoteNotification.read && notificationId) {
+                    markAsRead(notificationId);
                   }
                   closeNotePreview();
                   navigate(getTicketPath(selectedNoteNotification));

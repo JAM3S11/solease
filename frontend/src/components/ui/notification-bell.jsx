@@ -22,13 +22,16 @@ const STATUS_COLORS = {
   "Closed": "bg-gray-500"
 }
 
+const getNotificationId = (notification) => notification?._id || notification?.id
+
 const NotePreviewModal = ({ notification, onClose, getTicketPath, navigate, formatTimeAgo, markAsRead }) => {
   if (!notification) return null;
   
   const handleViewTicket = async () => {
     const ticketId = notification.ticketId;
-    if (!notification.read) {
-      await markAsRead(notification._id);
+    const notificationId = getNotificationId(notification);
+    if (!notification.read && notificationId) {
+      await markAsRead(notificationId);
     }
     onClose();
     navigate(getTicketPath(ticketId));
@@ -144,6 +147,7 @@ export function NotificationBell() {
   }
 
   const handleNotificationClick = async (notification) => {
+    const notificationId = getNotificationId(notification);
     if (notification.type === "NOTE_SHARED") {
       setDropdownOpen(false)
       setTimeout(() => {
@@ -151,8 +155,8 @@ export function NotificationBell() {
       }, 100)
       return;
     }
-    if (!notification.read) {
-      await markAsRead(notification._id);
+    if (!notification.read && notificationId) {
+      await markAsRead(notificationId);
     }
     const ticketId = notification.ticketId || notification.ticket?._id;
     navigate(getTicketPath(ticketId));
@@ -161,10 +165,12 @@ export function NotificationBell() {
   const handleToggleRead = async (e, notification) => {
     e.preventDefault();
     e.stopPropagation();
+    const notificationId = getNotificationId(notification);
+    if (!notificationId) return;
     if (notification.read) {
-      await markAsUnread(notification._id);
+      await markAsUnread(notificationId);
     } else {
-      await markAsRead(notification._id);
+      await markAsRead(notificationId);
     }
   };
 
@@ -243,8 +249,11 @@ export function NotificationBell() {
             <div className="max-h-96 overflow-y-auto">
               {notifications.slice(0, 10).map((notification) => (
                 <DropdownMenuItem
-                  key={notification._id}
-                  onClick={() => handleNotificationClick(notification)}
+                  key={getNotificationId(notification)}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    handleNotificationClick(notification)
+                  }}
                   className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
                 >
                   <div className="flex items-start gap-3 w-full">
@@ -271,6 +280,7 @@ export function NotificationBell() {
                     </div>
                     <button
                       type="button"
+                      onPointerDown={(e) => e.stopPropagation()}
                       onClick={(e) => handleToggleRead(e, notification)}
                       className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0"
                       title={notification.read ? "Mark as unread" : "Mark as read"}

@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import api from "../lib/axios";
 
+const getNotificationId = (notification) => notification?._id || notification?.id;
+const countUnread = (notifications = []) => notifications.filter((n) => !n.read).length;
+
 const useNotificationStore = create((set) => ({
     notifications: [],
     unreadCount: 0,
@@ -12,9 +15,13 @@ const useNotificationStore = create((set) => ({
         set({ loading: true, error: null });
         try {
             const res = await api.get("/notifications");
+            const fetchedNotifications = res.data.notifications || [];
             set({
-                notifications: res.data.notifications,
-                unreadCount: res.data.unreadCount,
+                notifications: fetchedNotifications,
+                unreadCount:
+                    typeof res.data.unreadCount === "number"
+                        ? res.data.unreadCount
+                        : countUnread(fetchedNotifications),
                 loading: false
             });
         } catch (error) {
@@ -29,37 +36,51 @@ const useNotificationStore = create((set) => ({
     fetchUnreadCount: async () => {
         try {
             const res = await api.get("/notifications/unread-count");
-            set({ unreadCount: res.data.unreadCount });
+            if (typeof res.data.unreadCount === "number") {
+                set({ unreadCount: res.data.unreadCount });
+            } else {
+                set((state) => ({ unreadCount: countUnread(state.notifications) }));
+            }
         } catch (error) {
             console.error("Error fetching unread count:", error);
         }
     },
 
     markAsRead: async (notificationId) => {
+        if (!notificationId) return;
         try {
             const res = await api.put(`/notifications/${notificationId}/read`);
-            set((state) => ({
-                notifications: state.notifications.map(n =>
-                    n._id === notificationId ? { ...n, read: true } : n
-                ),
-                unreadCount: res.data.unreadCount
-            }));
+            set((state) => {
+                const nextNotifications = state.notifications.map(n =>
+                    getNotificationId(n) === notificationId ? { ...n, read: true } : n
+                );
+                return {
+                    notifications: nextNotifications,
+                    unreadCount:
+                        typeof res?.data?.unreadCount === "number"
+                            ? res.data.unreadCount
+                            : countUnread(nextNotifications)
+                };
+            });
         } catch (error) {
             console.error("Error marking notification as read:", error);
         }
     },
 
     markAsUnread: async (notificationId) => {
+        if (!notificationId) return;
         try {
-            await api.put(`/notifications/${notificationId}/unread`);
+            const res = await api.put(`/notifications/${notificationId}/unread`);
             set((state) => {
-                const notification = state.notifications.find(n => n._id === notificationId);
-                const wasUnread = notification && !notification.read;
+                const nextNotifications = state.notifications.map(n =>
+                    getNotificationId(n) === notificationId ? { ...n, read: false } : n
+                );
                 return {
-                    notifications: state.notifications.map(n =>
-                        n._id === notificationId ? { ...n, read: false } : n
-                    ),
-                    unreadCount: wasUnread ? state.unreadCount + 1 : state.unreadCount
+                    notifications: nextNotifications,
+                    unreadCount:
+                        typeof res?.data?.unreadCount === "number"
+                            ? res.data.unreadCount
+                            : countUnread(nextNotifications)
                 };
             });
         } catch (error) {

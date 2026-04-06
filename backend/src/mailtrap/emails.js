@@ -1,6 +1,109 @@
 import { transporter, sender } from "../mailtrap/mailtrap.config.js";
 import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, WELCOME_EMAIL_TEMPLATE, TICKET_STATUS_UPDATE_TEMPLATE } from "../mailtrap/emailsTemplate.js";
 
+const TICKET_ASSIGNED_TEMPLATE = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .ticket-info { background: white; border: 1px solid #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .ticket-id { font-size: 14px; color: #3B82F6; font-weight: bold; }
+    .ticket-subject { font-size: 18px; font-weight: bold; color: #1f2937; margin: 10px 0; }
+    .assignee { background: #ecfdf5; border: 1px solid #10b981; padding: 15px; border-radius: 8px; margin: 15px 0; }
+    .assignee-name { font-weight: bold; color: #059669; }
+    .button { display: inline-block; background: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎫 Ticket Assignment Update</h1>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{{userName}}</strong>,</p>
+      <p>Your ticket has been assigned to a support team member. Here's the update:</p>
+      
+      <div class="ticket-info">
+        <div class="ticket-id">Ticket #{{ticketId}}</div>
+        <div class="ticket-subject">{{subject}}</div>
+      </div>
+      
+      <div class="assignee">
+        <p><strong>Assigned To:</strong> <span class="assignee-name">{{assigneeName}}</span></p>
+        <p>A support team member will now work on resolving your issue.</p>
+      </div>
+      
+      <p>You will receive further notifications as your ticket progresses through the resolution process.</p>
+      
+      <center>
+        <a href="{{ticketUrl}}" class="button">View Ticket Details</a>
+      </center>
+      
+      <div class="footer">
+        <p>This is an automated message from SolEase Support System.</p>
+        <p>Please do not reply to this email.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+const TICKET_COMMENT_TEMPLATE = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .ticket-info { background: white; border: 1px solid #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .ticket-id { font-size: 14px; color: #8B5CF6; font-weight: bold; }
+    .ticket-subject { font-size: 18px; font-weight: bold; color: #1f2937; margin: 10px 0; }
+    .comment { background: white; border-left: 4px solid #8B5CF6; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    .button { display: inline-block; background: #8B5CF6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💬 New Comment on Your Ticket</h1>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{{userName}}</strong>,</p>
+      <p>There's a new comment on your ticket:</p>
+      
+      <div class="ticket-info">
+        <div class="ticket-id">Ticket #{{ticketId}}</div>
+        <div class="ticket-subject">{{subject}}</div>
+      </div>
+      
+      <div class="comment">
+        <p><strong>{{commenterName}}</strong> commented:</p>
+        <p>{{commentContent}}</p>
+      </div>
+      
+      <center>
+        <a href="{{ticketUrl}}" class="button">View Full Conversation</a>
+      </center>
+      
+      <div class="footer">
+        <p>This is an automated message from SolEase Support System.</p>
+        <p>Please do not reply to this email.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 ///Verification page in the email
 export const sendVerificationEmail = async (email, verificationToken) => {
     const recipient = email;
@@ -107,7 +210,63 @@ export const sendTicketStatusUpdateEmail = async (email, name, ticketId, subject
       console.error("❌ Error sending ticket status update email:", error);
       throw new Error(`Error sending ticket status update email: ${error.message}`);
     }
-};
+  };
+
+export const sendTicketAssignedEmail = async (email, name, ticketId, subject, assigneeName, updatedAt) => {
+    try {
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+      const ticketUrl = `${clientUrl}/client-dashboard/ticket/${ticketId}/feedback`;
+      
+      let html = TICKET_ASSIGNED_TEMPLATE
+        .replace(/{{ticketId}}/g, ticketId.slice(-6).toUpperCase())
+        .replace(/{{subject}}/g, subject)
+        .replace(/{{userName}}/g, name)
+        .replace(/{{assigneeName}}/g, assigneeName)
+        .replace(/{{ticketUrl}}/g, ticketUrl)
+        .replace(/{{updatedAt}}/g, updatedAt || new Date().toLocaleString());
+
+      const info = await transporter.sendMail({
+        from: `"${sender.name}" <${sender.email}>`,
+        to: email,
+        subject: `Ticket #${ticketId.slice(-6).toUpperCase()} - Assigned to Support Team`,
+        html: html,
+      });
+  
+      console.log("✅ Ticket assigned email sent successfully:", info.messageId);
+      return info;
+    } catch (error) {
+      console.error("❌ Error sending ticket assigned email:", error);
+      throw new Error(`Error sending ticket assigned email: ${error.message}`);
+    }
+  };
+
+export const sendTicketCommentEmail = async (email, name, ticketId, subject, commenterName, commentContent) => {
+    try {
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+      const ticketUrl = `${clientUrl}/client-dashboard/ticket/${ticketId}/feedback`;
+      
+      let html = TICKET_COMMENT_TEMPLATE
+        .replace(/{{ticketId}}/g, ticketId.slice(-6).toUpperCase())
+        .replace(/{{subject}}/g, subject)
+        .replace(/{{userName}}/g, name)
+        .replace(/{{commenterName}}/g, commenterName)
+        .replace(/{{commentContent}}/g, commentContent.substring(0, 200) + (commentContent.length > 200 ? '...' : ''))
+        .replace(/{{ticketUrl}}/g, ticketUrl);
+
+      const info = await transporter.sendMail({
+        from: `"${sender.name}" <${sender.email}>`,
+        to: email,
+        subject: `Ticket #${ticketId.slice(-6).toUpperCase()} - New Comment`,
+        html: html,
+      });
+  
+      console.log("✅ Ticket comment email sent successfully:", info.messageId);
+      return info;
+    } catch (error) {
+      console.error("❌ Error sending ticket comment email:", error);
+      throw new Error(`Error sending ticket comment email: ${error.message}`);
+    }
+  };
 
 function getStatusColor(status) {
   switch(status) {

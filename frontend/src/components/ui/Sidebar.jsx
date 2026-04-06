@@ -47,16 +47,17 @@ export function AppSidebar({ userRole }) {
     if (!user?._id) return 0;
     return safeTickets.filter(t => {
       if (!t || !t.assignedTo) return false;
+      const assignedTo = t.assignedTo;
       const isAssignedToMe = 
-        t.assignedTo._id === user._id || 
-        t.assignedTo.id === user._id ||
-        t.assignedTo === user._id;
+        assignedTo?._id === user._id || 
+        assignedTo?.id === user._id ||
+        assignedTo === user._id;
       return isAssignedToMe && t.status !== 'Closed';
     }).length;
   }, [safeTickets, user?._id]);
 
   const pendingTicketsCount = useMemo(() => {
-    return safeTickets.filter(t => !t.assignedTo).length;
+    return safeTickets.filter(t => t && !t.assignedTo).length;
   }, [safeTickets]);
 
   const currentMenu = useMemo(() => {

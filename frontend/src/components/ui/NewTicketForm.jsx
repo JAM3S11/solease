@@ -11,7 +11,7 @@ import api from "../../lib/axios";
 
 const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', tickets = [] }) => {
   const { user } = useAuthenticationStore();
-  const { createTicket, loading, uploadLoading, deleteTicket } = useTicketStore();
+  const { createTicket, fetchTickets, loading, uploadLoading, deleteTicket } = useTicketStore();
   
   const showWelcome = role === 'client' && (!tickets || tickets.length === 0);
 
@@ -183,6 +183,7 @@ const NewTicketForm = ({ role = 'client', navigatePath = '/client-dashboard', ti
       
       if (ticket) {
         toast.success("Ticket created successfully!");
+        await fetchTickets();
         setFormData({ location: "", issueType: "", subject: "", description: "", urgency: "" });
         setSelectedFile(null);
         setFilePreview(null);

@@ -49,6 +49,24 @@ const useNotificationStore = create((set) => ({
         }
     },
 
+    markAsUnread: async (notificationId) => {
+        try {
+            await api.put(`/notifications/${notificationId}/unread`);
+            set((state) => {
+                const notification = state.notifications.find(n => n._id === notificationId);
+                const wasUnread = notification && !notification.read;
+                return {
+                    notifications: state.notifications.map(n =>
+                        n._id === notificationId ? { ...n, read: false } : n
+                    ),
+                    unreadCount: wasUnread ? state.unreadCount + 1 : state.unreadCount
+                };
+            });
+        } catch (error) {
+            console.error("Error marking notification as unread:", error);
+        }
+    },
+
     markAllAsRead: async () => {
         try {
             await api.put("/notifications/read-all");

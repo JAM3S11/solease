@@ -125,7 +125,7 @@ const ReviewerAssignedTickets = () => {
 
         {/* Stats Grid */}
         {!loading && !error && assignedTickets.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {[
               { label: 'Total', val: stats.total, icon: Tickets, color: 'blue' },
               { label: 'Open', val: stats.open, icon: Clock, color: 'orange' },

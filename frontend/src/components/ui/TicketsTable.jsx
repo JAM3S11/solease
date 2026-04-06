@@ -44,6 +44,8 @@ const TicketsTable = ({
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [ticketToDelete, setTicketToDelete] = useState(null);
 
+  const [showFilters, setShowFilters] = useState(false);
+
   const handleSort = (columnKey) => {
     setSortConfig((prev) => ({
       key: columnKey,
@@ -363,21 +365,43 @@ const TicketsTable = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative w-full sm:w-64 lg:w-96">
+      {/* Mobile Filter Toggle */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filters
+            {(issueTypeFilter || statusFilter || dateFilter || search) && (
+              <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs rounded-full">Active</span>
+            )}
+          </span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
+
+      {/* Filter Bar */}
+      <div className={`flex flex-col lg:flex-row lg:items-center justify-between gap-3 ${showFilters ? 'block' : 'hidden lg:flex'}`}>
+        {/* Search - Full width on mobile, fixed width on desktop */}
+        <div className="relative w-full lg:min-w-[200px] lg:flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+            placeholder="Search tickets..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Filters and View Mode - Horizontal row on desktop */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-2">
           {showIssueTypeFilter && (
-            <div className="w-32 sm:w-40 lg:w-44">
+            <div className="min-w-[120px]">
               <Listbox value={issueTypeFilter} onChange={onIssueTypeChange}>
                 <div className="relative">
                   <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -407,7 +431,7 @@ const TicketsTable = ({
           )}
 
           {showStatusFilter && (
-            <div className="w-28 sm:w-36 lg:w-40">
+            <div className="min-w-[100px]">
               <Listbox value={statusFilter} onChange={onStatusChange}>
                 <div className="relative">
                   <ListboxButton className="relative w-full cursor-default rounded-xl bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -437,13 +461,13 @@ const TicketsTable = ({
           )}
 
           {showDateFilter && (
-            <div className="relative w-32 sm:w-36 lg:w-40">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="relative min-w-[120px]">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="date"
                 value={dateFilter}
                 onChange={(e) => onDateChange(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
           )}

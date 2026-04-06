@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { createNotification } from "./notification.controllers.js";
-import { sendTicketStatusUpdateEmail } from "../mailtrap/emails.js";
+import { sendTicketStatusUpdateEmail, sendTicketAssignedEmail, sendTicketCommentEmail } from "../mailtrap/emails.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -67,6 +67,13 @@ const URGENCY_MAP = {
     "Critical": "CRITICAL"
 };
 
+const STATUS_MAP_DB_TO_FRONTEND = {
+    "OPEN": "Open",
+    "IN_PROGRESS": "In Progress",
+    "RESOLVED": "Resolved",
+    "CLOSED": "Closed"
+};
+
 const STATUS_MAP = {
     "Open": "OPEN",
     "In Progress": "IN_PROGRESS",
@@ -128,10 +135,16 @@ export const createTicket = async (req, res) => {
             }
         });
 
+        const ticketWithId = {
+            ...updatedTicket,
+            _id: updatedTicket.id,
+            id: undefined
+        };
+
         res.status(201).json({
             success: true,
             message: "Ticket created successfully",
-            ticket: updatedTicket,
+            ticket: ticketWithId,
         })
     } catch (error) {
         console.log("Error creating the ticket", error);
@@ -170,13 +183,20 @@ export const getTickets = async (req, res) => {
 
         const ticketsWithFullPhotoUrl = tickets.map(ticket => ({
             ...ticket,
+            status: STATUS_MAP_DB_TO_FRONTEND[ticket.status] || ticket.status,
+            _id: ticket.id,
+            id: undefined,
             user: ticket.user ? { ...ticket.user, profilePhoto: ticket.user.profilePhoto ? `${baseUrl}${ticket.user.profilePhoto}` : null } : null,
             assignedTo: ticket.assignedTo ? { ...ticket.assignedTo, profilePhoto: ticket.assignedTo.profilePhoto ? `${baseUrl}${ticket.assignedTo.profilePhoto}` : null } : null,
             comments: ticket.comments?.map(comment => ({
                 ...comment,
+                _id: comment.id,
+                id: undefined,
                 user: comment.user ? { ...comment.user, profilePhoto: comment.user.profilePhoto ? `${baseUrl}${comment.user.profilePhoto}` : null } : null,
                 replies: comment.replies?.map(reply => ({
                     ...reply,
+                    _id: reply.id,
+                    id: undefined,
                     user: reply.user ? { ...reply.user, profilePhoto: reply.user.profilePhoto ? `${baseUrl}${reply.user.profilePhoto}` : null } : null
                 }))
             }))
@@ -368,6 +388,7 @@ export const assignTicket = async (req, res) => {
             where: { id },
             data: updateData,
             include: {
+                user: { select: { id: true, username: true, name: true, email: true, notificationsEnabled: true } },
                 assignedTo: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } }
             }
         });
@@ -384,6 +405,33 @@ export const assignTicket = async (req, res) => {
             );
         } catch (notificationError) {
             console.error("Error creating notification:", notificationError);
+        }
+
+        if (updatedTicket.user) {
+            try {
+                await createNotification(
+                    updatedTicket.user.id,
+                    ticket.id,
+                    "TICKET_ASSIGNED_TO_REVIEWER",
+                    `Ticket Assigned to Reviewer: ${ticket.subject}`,
+                    `Your ticket "${ticket.subject}" has been assigned to ${assignedUser.name || assignedUser.username} for review.`,
+                    previousAssigneeId,
+                    assignedUser.id
+                );
+
+                if (updatedTicket.user.notificationsEnabled !== false && updatedTicket.user.email) {
+                    await sendTicketAssignedEmail(
+                        updatedTicket.user.email,
+                        updatedTicket.user.name || updatedTicket.user.username,
+                        ticket.id,
+                        ticket.subject,
+                        assignedUser.name || assignedUser.username,
+                        new Date().toLocaleString()
+                    );
+                }
+            } catch (notificationError) {
+                console.error("Error creating notification for ticket owner:", notificationError);
+            }
         }
 
         res.status(200).json({
@@ -425,10 +473,11 @@ export const submitFeedback = async (req, res) => {
             });
         }
 
-        if (ticket.status !== "RESOLVED" && ticket.status !== "IN_PROGRESS" && ticket.status !== "CLOSED") {
+        const normalizedStatus = ticket.status?.toUpperCase();
+        if (normalizedStatus !== "RESOLVED" && normalizedStatus !== "IN_PROGRESS" && normalizedStatus !== "CLOSED" && normalizedStatus !== "OPEN") {
             return res.status(400).json({
                 success: false,
-                message: "Can only submit feedback on resolved, in progress, or closed tickets"
+                message: "Can only submit feedback on open, in progress, resolved, or closed tickets"
             });
         }
 
@@ -451,12 +500,40 @@ export const submitFeedback = async (req, res) => {
         const updatedTicket = await prisma.ticket.findUnique({
             where: { id },
             include: {
+                user: { select: { id: true, username: true, name: true, email: true, notificationsEnabled: true } },
                 comments: { 
                     where: { id: comment.id },
                     include: { user: { select: { id: true, username: true, name: true, role: true, profilePhoto: true } } }
                 }
             }
         });
+
+        try {
+            if (ticket.userId !== req.user.id) {
+                await createNotification(
+                    ticket.userId,
+                    ticket.id,
+                    "NEW_COMMENT",
+                    `New Feedback on Your Ticket: ${ticket.subject}`,
+                    `${req.user.name || req.user.username} has submitted feedback on ticket "${ticket.subject}"`,
+                    null,
+                    null
+                );
+
+                if (updatedTicket.user && updatedTicket.user.notificationsEnabled !== false && updatedTicket.user.email) {
+                    await sendTicketCommentEmail(
+                        updatedTicket.user.email,
+                        updatedTicket.user.name || updatedTicket.user.username,
+                        ticket.id,
+                        ticket.subject,
+                        req.user.name || req.user.username,
+                        content
+                    );
+                }
+            }
+        } catch (notificationError) {
+            console.error("Error creating notification for feedback:", notificationError);
+        }
 
         res.status(201).json({
             success: true,
@@ -502,6 +579,14 @@ export const addReply = async (req, res) => {
             });
         }
 
+        const normalizedStatus = ticket.status?.toUpperCase();
+        if (normalizedStatus !== "OPEN" && normalizedStatus !== "IN_PROGRESS" && normalizedStatus !== "RESOLVED" && normalizedStatus !== "CLOSED") {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot add reply on tickets that are not open, in progress, resolved, or closed"
+            });
+        }
+
         const reply = await prisma.reply.create({
             data: {
                 commentId: comment.id,
@@ -528,6 +613,38 @@ export const addReply = async (req, res) => {
                 where: { id: ticketId },
                 data: { chatEnabled: true }
             });
+        }
+
+        try {
+            if (ticket.userId !== req.user.id) {
+                const ticketWithUser = await prisma.ticket.findUnique({
+                    where: { id: ticketId },
+                    include: { user: { select: { id: true, username: true, name: true, email: true, notificationsEnabled: true } } }
+                });
+
+                await createNotification(
+                    ticket.userId,
+                    ticket.id,
+                    "NEW_COMMENT",
+                    `New Reply on Your Ticket: ${ticket.subject}`,
+                    `${req.user.name || req.user.username} replied to your ticket "${ticket.subject}"`,
+                    null,
+                    null
+                );
+
+                if (ticketWithUser?.user && ticketWithUser.user.notificationsEnabled !== false && ticketWithUser.user.email) {
+                    await sendTicketCommentEmail(
+                        ticketWithUser.user.email,
+                        ticketWithUser.user.name || ticketWithUser.user.username,
+                        ticket.id,
+                        ticket.subject,
+                        req.user.name || req.user.username,
+                        content
+                    );
+                }
+            }
+        } catch (notificationError) {
+            console.error("Error creating notification for reply:", notificationError);
         }
 
         res.status(201).json({

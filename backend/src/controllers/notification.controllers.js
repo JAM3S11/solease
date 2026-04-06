@@ -46,12 +46,45 @@ export const markNotificationAsRead = async (req, res) => {
             }
         });
 
-        if (!notification) {
-            return res.status(404).json({
-                success: false,
-                message: "Notification not found"
+        const unreadCount = await prisma.notification.count({
+            where: { userId: req.user.id, read: false }
+        });
+
+        res.status(200).json({
+            success: true,
+            notification,
+            unreadCount
+        });
+    } catch (error) {
+        if (error.code === 'P2025') {
+            const unreadCount = await prisma.notification.count({
+                where: { userId: req.user.id, read: false }
+            });
+            return res.status(200).json({
+                success: true,
+                message: "Notification already removed",
+                unreadCount
             });
         }
+        console.error("Error marking notification as read:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error marking notification as read"
+        });
+    }
+};
+
+export const markNotificationAsUnread = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const notification = await prisma.notification.update({
+            where: { id, userId: req.user.id },
+            data: {
+                read: false,
+                readAt: null
+            }
+        });
 
         const unreadCount = await prisma.notification.count({
             where: { userId: req.user.id, read: false }
@@ -63,10 +96,20 @@ export const markNotificationAsRead = async (req, res) => {
             unreadCount
         });
     } catch (error) {
-        console.error("Error marking notification as read:", error);
+        if (error.code === 'P2025') {
+            const unreadCount = await prisma.notification.count({
+                where: { userId: req.user.id, read: false }
+            });
+            return res.status(200).json({
+                success: true,
+                message: "Notification already removed",
+                unreadCount
+            });
+        }
+        console.error("Error marking notification as unread:", error);
         res.status(500).json({
             success: false,
-            message: "Error marking notification as read"
+            message: "Error marking notification as unread"
         });
     }
 };

@@ -43,11 +43,26 @@ const AdminDashboard = () => {
 
   const { openTickets, resolvedTickets, inProgressTickets, closedTickets, pendingTickets, totalTickets, resolutionRate } = useMemo(() => {
     const t = tickets;
-    const open = t.filter((ticket) => ticket.status === "Open" && !ticket.assignedTo).length;
-    const resolved = t.filter((ticket) => ticket.status === "Resolved").length;
-    const inProgress = t.filter((ticket) => ticket.status === "In Progress").length;
-    const closed = t.filter((ticket) => ticket.status === "Closed").length;
-    const pending = t.filter((ticket) => ticket.status === "Open").length;
+    const open = t.filter((ticket) => {
+      const status = ticket.status?.trim();
+      return status === "Open" && !ticket.assignedTo;
+    }).length;
+    const resolved = t.filter((ticket) => {
+      const status = ticket.status?.trim();
+      return status === "Resolved";
+    }).length;
+    const inProgress = t.filter((ticket) => {
+      const status = ticket.status?.trim();
+      return status === "In Progress";
+    }).length;
+    const closed = t.filter((ticket) => {
+      const status = ticket.status?.trim();
+      return status === "Closed";
+    }).length;
+    const pending = t.filter((ticket) => {
+      const status = ticket.status?.trim();
+      return status === "Open";
+    }).length;
     const total = t.length;
     const successfullyClosed = resolved + closed;
     const rate = total ? ((successfullyClosed / total) * 100).toFixed(0) : 0;
@@ -89,8 +104,8 @@ const AdminDashboard = () => {
   const statsCards = [
     { label: "Total Tickets", value: totalTickets, icon: Tickets, color: "blue", bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10", path: "/admin-dashboard/admin-tickets", clickable: true },
     { label: "Pending", value: pendingTickets, icon: Clock, color: "orange", bgGradient: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/10", path: "/admin-dashboard/admin-pending-tickets", clickable: true },
-    { label: "In Progress", value: inProgressTickets, icon: TrendingUp, color: "violet", bgGradient: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/10", path: null, clickable: false },
-    { label: "Resolved", value: resolvedTickets, icon: CheckCircle, color: "emerald", bgGradient: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10", path: null, clickable: false },
+    { label: "In Progress", value: inProgressTickets, icon: TrendingUp, color: "violet", bgGradient: "from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/10", path: "/admin-dashboard/admin-tickets?status=In%20Progress", clickable: true },
+    { label: "Resolved", value: resolvedTickets, icon: CheckCircle, color: "emerald", bgGradient: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10", path: "/admin-dashboard/admin-tickets?status=Resolved", clickable: true },
   ];
 
   const quickActions = [

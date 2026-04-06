@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import useNotificationStore from "../../store/notificationStore";
 import { 
   Bell, CheckCheck, Clock, Filter, Search, ChevronLeft, ChevronRight,
-  CheckCircle, AlertCircle, Info, X, RotateCcw
+  CheckCircle, AlertCircle, Info, X, RotateCcw, UserPlus, MessageCircle, Share2
 } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -19,7 +19,7 @@ const STATUS_COLORS = {
 const AllNotificationsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthenticationStore();
-  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead, unmarkAllAsRead } = useNotificationStore();
+  const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAsUnread, markAllAsRead, unmarkAllAsRead } = useNotificationStore();
 
   const allRead = unreadCount === 0 && notifications.length > 0;
 
@@ -29,6 +29,7 @@ const AllNotificationsPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
   const [itemsPerPageOpen, setItemsPerPageOpen] = useState(false);
+  const [selectedNoteNotification, setSelectedNoteNotification] = useState(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -38,12 +39,20 @@ const AllNotificationsPage = () => {
     setCurrentPage(1);
   }, [searchQuery, filter, itemsPerPage]);
 
-  const getTicketPath = (ticketId) => {
-    const userRole = user?.role;
-    if (userRole === 'Manager' || userRole === 'Admin') {
+  const getTicketPath = (notification) => {
+    // Handle both direct ticketId and nested ticket object
+    const ticketId = notification.ticketId || notification.ticket?._id;
+    const userRole = user?.role?.toUpperCase();
+    
+    if (!ticketId) {
+      // Fallback: go to client dashboard
+      return '/client-dashboard';
+    }
+    
+    if (userRole === 'MANAGER' || userRole === 'ADMIN') {
       return `/admin-dashboard/admin-tickets/${ticketId}`;
-    } else if (userRole === 'Reviewer') {
-      return `/reviewer-dashboard/ticket/${ticketId}`;
+    } else if (userRole === 'REVIEWER') {
+      return `/reviewer-dashboard/ticket/${ticketId}/feedback`;
     } else {
       return `/client-dashboard/ticket/${ticketId}/feedback`;
     }
@@ -76,10 +85,31 @@ const AllNotificationsPage = () => {
   );
 
   const handleNotificationClick = async (notification) => {
+    if (notification.type === "NOTE_SHARED") {
+      if (!notification.read) {
+        await markAsRead(notification._id);
+      }
+      setSelectedNoteNotification(notification);
+      return;
+    }
     if (!notification.read) {
       await markAsRead(notification._id);
     }
-    navigate(getTicketPath(notification.ticket?._id || notification.ticket));
+    navigate(getTicketPath(notification));
+  };
+
+  const handleToggleRead = async (e, notification) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (notification.read) {
+      await markAsUnread(notification._id);
+    } else {
+      await markAsRead(notification._id);
+    }
+  };
+
+  const closeNotePreview = () => {
+    setSelectedNoteNotification(null);
   };
 
   const handleMarkAllRead = async () => {
@@ -94,9 +124,31 @@ const AllNotificationsPage = () => {
     const baseClass = "p-2 rounded-full";
     switch (type) {
       case "status_update":
+      case "STATUS_UPDATE":
+      case "TICKET_STATUS_UPDATE":
         return (
           <div className={`${baseClass} ${read ? "bg-gray-100 dark:bg-gray-800" : "bg-blue-100 dark:bg-blue-900/40"}`}>
             <Clock className={`h-4 w-4 ${read ? "text-gray-400" : "text-blue-600 dark:text-blue-400"}`} />
+          </div>
+        );
+      case "TICKET_ASSIGNED":
+      case "TICKET_ASSIGNED_TO_REVIEWER":
+        return (
+          <div className={`${baseClass} ${read ? "bg-gray-100 dark:bg-gray-800" : "bg-green-100 dark:bg-green-900/40"}`}>
+            <UserPlus className={`h-4 w-4 ${read ? "text-gray-400" : "text-green-600 dark:text-green-400"}`} />
+          </div>
+        );
+      case "NEW_COMMENT":
+      case "NEW_REPLY":
+        return (
+          <div className={`${baseClass} ${read ? "bg-gray-100 dark:bg-gray-800" : "bg-purple-100 dark:bg-purple-900/40"}`}>
+            <MessageCircle className={`h-4 w-4 ${read ? "text-gray-400" : "text-purple-600 dark:text-purple-400"}`} />
+          </div>
+        );
+      case "NOTE_SHARED":
+        return (
+          <div className={`${baseClass} ${read ? "bg-gray-100 dark:bg-gray-800" : "bg-orange-100 dark:bg-orange-900/40"}`}>
+            <Share2 className={`h-4 w-4 ${read ? "text-gray-400" : "text-orange-600 dark:text-orange-400"}`} />
           </div>
         );
       default:
@@ -256,9 +308,17 @@ const AllNotificationsPage = () => {
                         }`}>
                           {notification.title}
                         </p>
-                        {!notification.read && (
-                          <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleRead(e, notification)}
+                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0"
+                          title={notification.read ? "Mark as unread" : "Mark as read"}
+                        >
+                          <CheckCheck 
+                            size={16} 
+                            className={notification.read ? "text-blue-500" : "text-gray-400"} 
+                          />
+                        </button>
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                         {notification.message}
@@ -403,6 +463,69 @@ const AllNotificationsPage = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Note Preview Modal */}
+      {selectedNoteNotification && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                  <Share2 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Shared Note</h3>
+              </div>
+              <button 
+                onClick={closeNotePreview}
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">From</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedNoteNotification.message}</p>
+              </div>
+              
+              {selectedNoteNotification.ticketId && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Ticket</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">#{selectedNoteNotification.ticketId.slice(-6).toUpperCase()}</p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                <Clock size={12} />
+                <span>{formatTimeAgo(selectedNoteNotification.createdAt)}</span>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-2">
+              <button
+                onClick={closeNotePreview}
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  const ticketId = selectedNoteNotification.ticketId;
+                  if (!selectedNoteNotification.read) {
+                    markAsRead(selectedNoteNotification._id);
+                  }
+                  closeNotePreview();
+                  navigate(getTicketPath(selectedNoteNotification));
+                }}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              >
+                View Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

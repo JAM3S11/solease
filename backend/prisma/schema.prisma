@@ -38,6 +38,7 @@ model User {
   replies         Reply[]
   notifications   Notification[]
   contactProfiles ContactUserProfile[]
+  personalNotes   PersonalNote[]
 }
 
 model Ticket {
@@ -113,6 +114,20 @@ model Notification {
   readAt         DateTime?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+}
+
+model PersonalNote {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticketId    String
+  content     String
+  sharedWith  String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([ticketId])
 }
 
 model ContactUs {
@@ -204,4 +219,6 @@ enum NotificationType {
   TICKET_ASSIGNED
   TICKET_RESOLVED
   FEEDBACK_REQUESTED
+  NOTE_SHARED
+  NOTE_SHARED_OWNER
 }

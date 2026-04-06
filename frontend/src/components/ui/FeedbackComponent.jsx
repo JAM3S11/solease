@@ -25,6 +25,7 @@ import {
   PlusCircle,
   Search,
   Send,
+  Share2,
   Trash2,
   Upload,
   UserPlus,
@@ -36,6 +37,8 @@ import toast from "react-hot-toast";
 import DashboardLayout from "../ui/DashboardLayout";
 import { useAuthenticationStore } from "../../store/authStore";
 import useTicketStore from "../../store/ticketStore";
+import usePersonalNoteStore from "../../store/personalNoteStore";
+import api from "../../lib/axios";
 
 const STATUS_OPTIONS = ["Open", "In Progress", "Resolved", "Closed"];
 
@@ -71,11 +74,19 @@ const formatReadableDate = (value) => {
   return new Date(value).toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
 };
 
-const getUserDisplayName = (message, fallbackUser) => {
+const getUserDisplayName = (message, currentUser) => {
+  if (!message?.user) return "Unknown";
   if (message.user?.name) return message.user.name;
   if (message.user?.username) return message.user.username;
-  if (message.user?._id === fallbackUser?._id) return fallbackUser?.name || fallbackUser?.username || "You";
+  const msgUserId = message.user._id || message.user.id;
+  const currUserId = currentUser?._id || currentUser?.id;
+  if (msgUserId === currUserId) return "You";
   return "Support Team";
+};
+
+const getMessageUserInitials = (message) => {
+  const name = getUserDisplayName(message, null);
+  return name?.slice(0, 2)?.toUpperCase() || "UN";
 };
 
 const getIssueTypeInitials = (issueType) => {
@@ -93,6 +104,78 @@ const getFullProfilePhoto = (photo) => {
   if (!photo) return null;
   if (photo.startsWith("http")) return photo;
   return `${import.meta.env.VITE_API_URL}${photo}`;
+};
+
+const ShareNoteModalContent = ({ availableUsers, selectedUsers, setSelectedUsers, onClose, onShare, currentSharedWith = [] }) => {
+  const isCurrentlyShared = (userId) => currentSharedWith.includes(userId);
+  const isSelected = (userId) => selectedUsers.includes(userId);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Share Note</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X size={20} />
+          </button>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">Select users to share this note with:</p>
+        <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+          {availableUsers.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No users available</p>
+          ) : (
+            availableUsers.map((userItem) => {
+              const currentlyShared = isCurrentlyShared(userItem.id);
+              const selected = isSelected(userItem.id);
+              
+              return (
+                <label 
+                  key={userItem.id} 
+                  className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                    currentlyShared ? "bg-green-50 dark:bg-green-900/20" : "hover:bg-secondary"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedUsers([...selectedUsers, userItem.id]);
+                      } else {
+                        setSelectedUsers(selectedUsers.filter(sid => sid !== userItem.id));
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <div className="flex flex-col flex-1">
+                    <span className="text-sm text-foreground">{userItem.name || userItem.username}</span>
+                    <span className="text-xs text-muted-foreground">{userItem.role}</span>
+                  </div>
+                  {currentlyShared && (
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">Shared</span>
+                  )}
+                </label>
+              );
+            })
+          )}
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onShare}
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const FeedbackComponent = () => {
@@ -177,53 +260,94 @@ const FeedbackComponent = () => {
   const [mobileView, setMobileView] = useState("summary");
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
-  // Personal notes state - unique per user and ticket
+  // Personal notes - database based
+  const { notes, fetchNotes, createNote, deleteNote, shareNote, unshareNote } = usePersonalNoteStore();
   const [draft, setDraft] = useState("");
-  const [notes, setNotes] = useState([]);
-  const [notesLoaded, setNotesLoaded] = useState(false);
-  
-  // Derive storage key - only create after user is loaded
-  const storageKey = user?._id 
-    ? `solease-personal-notes-${user._id}-${id}`
-    : null;
+  const [savingNote, setSavingNote] = useState(false);
+  const [shareModal, setShareModal] = useState({ show: false, noteId: null });
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [currentSharedWith, setCurrentSharedWith] = useState([]);
 
-  // Load notes when storage key becomes available (user loaded)
+  // Fetch notes when component mounts
   useEffect(() => {
-    if (!storageKey || notesLoaded) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setNotes(raw ? JSON.parse(raw) : []);
-      setNotesLoaded(true);
-    } catch {
-      setNotes([]);
-      setNotesLoaded(true);
+    if (id) {
+      fetchNotes(id);
     }
-  }, [storageKey, notesLoaded]);
+  }, [id, fetchNotes]);
 
-  // Save notes to localStorage whenever they change
+  // Fetch available users for sharing
   useEffect(() => {
-    if (!storageKey || !notesLoaded) return;
-    localStorage.setItem(storageKey, JSON.stringify(notes));
-  }, [storageKey, notes, notesLoaded]);
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get("/user/get-reviewers");
+        setAvailableUsers(res.data.users || []);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
-  const handleSaveLocal = () => {
-    if (!draft.trim() || !storageKey) return;
-    setNotes((prev) => [
-      {
-        id: crypto.randomUUID(),
-        content: draft.trim(),
-        createdAt: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
-    setDraft("");
-    toast.success("Personal note saved");
+  const handleSaveNote = async () => {
+    if (!draft.trim()) {
+      toast.error("Please enter some text for your note");
+      return;
+    }
+    setSavingNote(true);
+    try {
+      console.log("Saving note with ticketId:", id, "content length:", draft.trim().length);
+      await createNote(id, draft.trim(), []);
+      setDraft("");
+      toast.success("Personal note saved");
+      fetchNotes(id);
+    } catch (error) {
+      console.error("Failed to save note:", error);
+      toast.error(error?.response?.data?.message || "Failed to save note");
+    } finally {
+      setSavingNote(false);
+    }
   };
 
-  const handleDeleteNote = (noteId) => {
-    if (!storageKey) return;
-    setNotes((prev) => prev.filter((note) => note.id !== noteId));
-    toast.success("Note deleted");
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await deleteNote(noteId);
+      toast.success("Note deleted");
+      fetchNotes(id);
+    } catch (error) {
+      toast.error("Failed to delete note");
+    }
+  };
+
+  const handleShareNote = async (noteId) => {
+    try {
+      console.log("Sharing note:", noteId, "with users:", selectedUsers);
+      await shareNote(noteId, selectedUsers);
+      toast.success(selectedUsers.length === 0 ? "Removed all shared users" : "Note shared successfully");
+      setShareModal({ show: false, noteId: null });
+      setSelectedUsers([]);
+      setCurrentSharedWith([]);
+      fetchNotes(id);
+    } catch (error) {
+      console.error("Failed to share note:", error);
+      toast.error(error?.response?.data?.message || "Failed to share note");
+    }
+  };
+
+  const openShareModal = (noteId, currentSharedWith = []) => {
+    setShareModal({ show: true, noteId });
+    setSelectedUsers(currentSharedWith || []);
+    setCurrentSharedWith(currentSharedWith || []);
+  };
+
+  const handleUnshareNote = async (noteId, userIdToRemove) => {
+    try {
+      await unshareNote(noteId, userIdToRemove);
+      toast.success("Removed from shared note");
+      fetchNotes(id);
+    } catch (error) {
+      toast.error("Failed to remove user from note");
+    }
   };
 
   useEffect(() => {
@@ -241,21 +365,12 @@ const FeedbackComponent = () => {
     return () => clearInterval(interval);
   }, [fetchTickets]);
 
-  // Sync with store ticket - don't override if user just sent a message
+  // Sync with store ticket - always sync with server data to see others' messages
   useEffect(() => {
     if (ticketFromStore && ticketFromStore._id === id) {
-      setLocalTicket(prev => {
-        // Only update if the ticket has more comments than our optimistic update
-        if (prev && prev.comments && ticketFromStore.comments) {
-          const prevCommentCount = prev.comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
-          const ticketCommentCount = ticketFromStore.comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
-          // If store has more comments, sync with it
-          if (ticketCommentCount > prevCommentCount) {
-            return ticketFromStore;
-          }
-        }
-        return prev || ticketFromStore;
-      });
+      // Always sync with server data to ensure we see messages from others
+      // This is important so the sender can see replies from the receiver
+      setLocalTicket(ticketFromStore);
     }
   }, [ticketFromStore, id]);
 
@@ -265,7 +380,17 @@ const FeedbackComponent = () => {
     }
   }, [localTicket?.comments]);
 
-  const canProvideFeedback = Boolean(localTicket && user);
+  const canProvideFeedback = useMemo(() => {
+    if (!localTicket || !user) return false;
+    const userRole = user.role?.toUpperCase();
+    if (userRole === "MANAGER" || userRole === "REVIEWER") return true;
+    if (userRole === "CLIENT" && localTicket.user) {
+      const ticketUserId = localTicket.user.id || localTicket.user._id;
+      const currentUserId = user.id || user._id;
+      return ticketUserId === currentUserId;
+    }
+    return false;
+  }, [localTicket, user]);
   const userRole = user?.role?.toUpperCase();
   const canModerate = user && ["REVIEWER", "MANAGER"].includes(userRole);
   const canCreateInternalNotes = userRole === "MANAGER";
@@ -442,6 +567,34 @@ const FeedbackComponent = () => {
     });
   }, [allMessages, messageSearch, user]);
 
+  const groupedMessages = useMemo(() => {
+    if (!filteredMessages.length) return [];
+    const groups = [];
+    let currentGroup = null;
+    
+    filteredMessages.forEach((message) => {
+      const isSelf = (message.user?._id === user?._id) || (message.user?.id === user?.id);
+      
+      if (!currentGroup || currentGroup.isSelf !== isSelf) {
+        if (currentGroup) {
+          groups.push(currentGroup);
+        }
+        currentGroup = {
+          isSelf,
+          messages: [message]
+        };
+      } else {
+        currentGroup.messages.push(message);
+      }
+    });
+    
+    if (currentGroup) {
+      groups.push(currentGroup);
+    }
+    
+    return groups;
+  }, [filteredMessages, user]);
+
   const handleStatusChange = async (nextStatus) => {
     if (!ticket || !nextStatus || nextStatus === ticket.status) return;
     setStatusLoading(true);
@@ -467,6 +620,7 @@ const FeedbackComponent = () => {
       content: messageContent,
       user: {
         _id: user?._id,
+        id: user?.id,
         name: user?.name,
         username: user?.username,
         profilePhoto: getFullProfilePhoto(user?.profilePhoto),
@@ -474,7 +628,7 @@ const FeedbackComponent = () => {
       },
       createdAt: new Date().toISOString(),
       type: isFirstMessage ? "comment" : "reply",
-      ...(isFirstMessage ? {} : { commentId: localTicket?.comments?.[localTicket.comments.length - 1]?._id })
+      ...(isFirstMessage ? {} : { commentId: localTicket?.comments?.[localTicket.comments.length - 1]?._id || localTicket?.comments?.[localTicket.comments.length - 1]?.id })
     };
 
     // Apply optimistic update
@@ -503,9 +657,10 @@ const FeedbackComponent = () => {
         await submitFeedback(id, messageContent);
       } else {
         const latestComment = localTicket.comments[localTicket.comments.length - 1];
-        await addReply(id, latestComment._id, messageContent);
+        const commentId = latestComment._id || latestComment.id;
+        await addReply(id, commentId, messageContent);
       }
-      // Refresh silently in background
+      // Refresh to get latest data including any replies from others
       fetchTickets();
     } catch (error) {
       // Rollback on error
@@ -1011,115 +1166,99 @@ const FeedbackComponent = () => {
               </div>
 
               <div className="space-y-6">
-                {filteredMessages.length === 0 && (
+                {groupedMessages.length === 0 && (
                   <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
                     No messages found for this conversation.
                   </div>
                 )}
 
-                {filteredMessages.map((message) => {
-                  const isSelf = message.user?._id === user?._id;
-                  const isComment = message.type === "comment";
-                  const isHidden = Boolean(message.isHidden);
-                  const messageOwner = getUserDisplayName(message, user);
-                  const canEditOwn = isSelf;
-                  const canModerateComment = canModerate && isComment && !isSelf;
-
+                {groupedMessages.map((group, groupIndex) => {
+                  const isSelf = group.isSelf;
+                  const firstMessage = group.messages[0];
+                  const messageOwner = getUserDisplayName(firstMessage, user);
+                  
                   return (
-                    <div
-                      key={`${message.type}-${message.id}`}
-                      className={`group flex gap-4 ${isSelf ? "flex-row-reverse" : ""} max-w-2xl ${isSelf ? "ml-auto" : ""}`}
-                    >
-                      <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden`}>
-                        {message.user?.profilePhoto ? (
-                          <img 
-                            src={getFullProfilePhoto(message.user.profilePhoto)} 
-                            alt={messageOwner}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="font-medium text-xs text-primary">
-                            {messageOwner?.slice(0, 2)?.toUpperCase() || "ST"}
-                          </span>
-                        )}
+                    <div key={groupIndex} className="space-y-2">
+                      <div className={`flex items-center gap-2 mb-2 ${isSelf ? "justify-end" : "justify-start"}`}>
+                        <span className="text-xs text-muted-foreground">
+                          {isSelf ? "You" : messageOwner}
+                        </span>
                       </div>
-                      <div className={isSelf ? "flex flex-col items-end" : ""}>
-                        <div className="flex items-center gap-2 mb-1">
-                          {!isSelf && (
-                            <>
-                              <span className="text-sm font-medium text-foreground">{messageOwner}</span>
-                              <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
-                            </>
-                          )}
-                          {isSelf && (
-                            <>
-                              <span className="text-[10px] text-muted-foreground">{formatShortTime(message.createdAt)}</span>
-                              <span className="text-sm font-medium text-foreground">You</span>
-                            </>
-                          )}
-                        </div>
+                      {group.messages.map((message) => {
+                        const isComment = message.type === "comment";
+                        const isHidden = Boolean(message.isHidden);
+                        const canModerateComment = canModerate && isComment && !isSelf;
+                        
+                        const msgUserId = message.user?._id || message.user?.id;
+                        const currentUserId = user?._id || user?.id;
+                        
+                        // If no user is logged in, default to showing on left (not self)
+                        let isSelfCheck = false;
+                        if (msgUserId && currentUserId) {
+                          isSelfCheck = msgUserId === currentUserId;
+                        }
 
-                        <div
-                          className={`border p-4 rounded-2xl ${isSelf
-                            ? "bg-primary text-primary-foreground rounded-tr-none"
-                            : "border-border bg-card text-foreground rounded-tl-none"
-                            }`}
-                        >
-                          <p className="text-sm leading-relaxed">{message.content}</p>
-                        </div>
-
-                        {isHidden && canModerate && (
-                          <p className="text-xs font-medium text-amber-500 mt-1">This comment is hidden.</p>
-                        )}
-
-                        <div className="flex items-center gap-1 mt-2 opacity-0 transition-opacity group-hover:opacity-100">
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(message.content || "");
-                              toast.success("Copied to clipboard");
-                            }}
-                            className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
+                        return (
+                          <div
+                            key={`${message.type}-${message.id}`}
+                            className={`group flex gap-4 ${isSelfCheck ? "flex-row-reverse" : ""} max-w-2xl ${isSelfCheck ? "ml-auto" : ""}`}
                           >
-                            <Clipboard size={14} />
-                          </button>
-                          {canEditOwn && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  setEditModal({ show: true, message, content: message.content || "" })
-                                }
-                                className="rounded-md border border-border bg-card p-1.5 text-muted-foreground hover:bg-secondary"
+                            <div className={`w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden`}>
+                              {message.user?.profilePhoto ? (
+                                <img 
+                                  src={getFullProfilePhoto(message.user.profilePhoto)} 
+                                  alt={getUserDisplayName(message, user)}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="font-medium text-xs text-primary">
+                                  {getMessageUserInitials(message)}
+                                </span>
+                              )}
+                            </div>
+                            <div className={isSelfCheck ? "flex flex-col items-end" : ""}>
+                              <div
+                                className={`border p-3 rounded-2xl ${isSelfCheck
+                                  ? "bg-primary text-primary-foreground rounded-tr-none"
+                                  : "border-border bg-card text-foreground rounded-tl-none"
+                                  }`}
                               >
-                                <Pencil size={14} />
-                              </button>
-                              <button
-                                onClick={() => setDeleteModal({ show: true, message })}
-                                className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </>
-                          )}
-                          {canModerateComment && !isHidden && (
-                            <button
-                              onClick={() => setHideModal({ show: true, commentId: message._id })}
-                              disabled={moderating === message._id}
-                              className="rounded-md border border-destructive/20 bg-destructive/10 p-1.5 text-destructive hover:bg-destructive/20 disabled:opacity-50"
-                            >
-                              <EyeOff size={14} />
-                            </button>
-                          )}
-                          {canModerateComment && isHidden && (
-                            <button
-                              onClick={() => setUnhideModal({ show: true, commentId: message._id })}
-                              disabled={moderating === message._id}
-                              className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-1.5 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50"
-                            >
-                              <Eye size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                                <p className="text-sm leading-relaxed">{message.content}</p>
+                              </div>
+                              <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100">
+                                <span className="text-[10px] text-muted-foreground mr-1">
+                                  {formatShortTime(message.createdAt)}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(message.content || "");
+                                    toast.success("Copied to clipboard");
+                                  }}
+                                  className="rounded-md border border-border bg-card p-1 text-muted-foreground hover:bg-secondary"
+                                >
+                                  <Clipboard size={12} />
+                                </button>
+                                {isSelfCheck && (
+                                  <button
+                                    onClick={() =>
+                                      setEditModal({ show: true, message, content: message.content || "" })
+                                    }
+                                    className="rounded-md border border-border bg-card p-1 text-muted-foreground hover:bg-secondary"
+                                  >
+                                    <Pencil size={12} />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => setDeleteModal({ show: true, message })}
+                                  className="rounded-md border border-destructive/20 bg-destructive/10 p-1 text-destructive hover:bg-destructive/20"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -1195,14 +1334,11 @@ const FeedbackComponent = () => {
                           </ListboxOptions>
                         </div>
                       </Listbox>
-                      {/* <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <Search size={18} />
-                      </button> */}
                     </div>
                     <button
                       onClick={handleSubmitMessage}
                       disabled={loading || !newMessage.trim()}
-                      className="group relative flex items-center gap-2 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 text-white dark:text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md hover:shadow-lg"
+                      className="group relative flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md hover:shadow-lg"
                     >
                       <Send size={16} className="transition-transform group-hover:translate-x-0.1" />
                       <span>Send</span>
@@ -1214,10 +1350,10 @@ const FeedbackComponent = () => {
               <div className="shrink-0 p-4 border-t border-border bg-amber-500/10 text-sm text-amber-500">
                 <div className="flex items-center gap-2">
                   <AlertCircle size={16} />
-                  Feedback is available only for ticket participants.
+                  <span>Feedback is available only for ticket participants.</span>
                 </div>
-                </div>
-              )}
+              </div>
+            )}
             </section>
         ) : activeView === "audit" ? (
           <section className={`flex-1 flex flex-col min-h-0 bg-background overflow-y-auto ${mobileView === "notes" ? "hidden lg:block" : "block"}`}>
@@ -1386,11 +1522,12 @@ const FeedbackComponent = () => {
               />
               <div className="p-2 border-t border-border flex justify-end gap-2">
                 <button
-                  onClick={handleSaveLocal}
-                  disabled={!draft.trim()}
+                  type="button"
+                  onClick={handleSaveNote}
+                  disabled={savingNote || !draft.trim()}
                   className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[10px] font-medium py-1 px-3 rounded uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Save Note
+                  {savingNote ? "Saving..." : "Save Note"}
                 </button>
                 {canCreateInternalNotes && (
                   <button
@@ -1419,15 +1556,57 @@ const FeedbackComponent = () => {
               ) : (
                 notes.map((note) => (
                   <div key={note.id} className="bg-card/50 border border-border p-4 rounded-xl group relative">
-                    <button
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="absolute top-2 right-2 p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
-                      title="Delete note"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-1 absolute top-2 right-2">
+                      <button
+                        onClick={() => openShareModal(note.id, note.sharedWith)}
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Share note"
+                      >
+                        <Share2 size={14} />
+                      </button>
+                      {note.userId === user?._id && (
+                        <button
+                          onClick={() => handleDeleteNote(note.id)}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete note"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                    {note.user && note.user.id !== user?._id && (
+                      <p className="text-[10px] text-primary mb-1">
+                        By {note.user.name || note.user.username}
+                      </p>
+                    )}
                     <p className="text-[10px] text-muted-foreground mb-2">{formatReadableDate(note.createdAt)}</p>
                     <p className="text-xs text-muted-foreground italic">"{note.content}"</p>
+                    {note.sharedWith && note.sharedWith.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-[10px] text-blue-500 mb-1">Shared with:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {note.sharedWith.map((sharedUserId) => {
+                            const sharedUser = availableUsers.find(u => u.id === sharedUserId);
+                            const isNoteOwner = note.userId === user?._id;
+                            const isCurrentUser = sharedUserId === user?._id;
+                            return (
+                              <span key={sharedUserId} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded text-[10px]">
+                                {sharedUser?.name || sharedUser?.username || sharedUserId.slice(0, 8)}
+                                {(isNoteOwner || isCurrentUser) && (
+                                  <button
+                                    onClick={() => handleUnshareNote(note.id, sharedUserId)}
+                                    className="hover:text-red-500"
+                                    title={isNoteOwner ? "Remove from sharing" : "Remove yourself"}
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                )}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -1720,6 +1899,18 @@ const FeedbackComponent = () => {
           </div>
         </div>
       )}
+
+        {/* Share Note Modal */}
+        {shareModal.show ? (
+          <ShareNoteModalContent 
+            availableUsers={availableUsers}
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            onClose={() => setShareModal({ show: false, noteId: null })}
+            onShare={() => handleShareNote(shareModal.noteId)}
+            currentSharedWith={currentSharedWith}
+          />
+        ) : null}
     </DashboardLayout>
   );
 };

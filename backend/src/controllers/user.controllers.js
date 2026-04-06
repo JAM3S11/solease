@@ -23,8 +23,11 @@ export const getITSupportUsers = async (req, res) => {
 export const getReviewers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({ 
-      where: { role: "REVIEWER" },
-      select: { name: true, username: true, email: true, role: true }
+      where: { 
+        role: { in: ["REVIEWER", "MANAGER"] },
+        status: "ACTIVE"
+      },
+      select: { id: true, name: true, username: true, email: true, role: true }
     });
     res.status(200).json({ users });
   } catch (err) {

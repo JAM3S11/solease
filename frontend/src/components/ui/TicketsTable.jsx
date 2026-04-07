@@ -69,7 +69,7 @@ const TicketsTable = ({
       ticket.subject?.toLowerCase().includes(search.toLowerCase()) ||
       ticket.description?.toLowerCase().includes(search.toLowerCase());
     const matchIssueType = issueTypeFilter ? ticket.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase() : true;
-    const matchStatus = statusFilter ? ticket.status === statusFilter : true;
+    const matchStatus = statusFilter ? (ticket.status === statusFilter || ticket.status === statusFilter.toUpperCase() || ticket.status === statusFilter.toLowerCase()) : true;
     const matchDate = dateFilter ? new Date(ticket.createdAt).toISOString().split("T")[0] === dateFilter : true;
     return matchSearch && matchIssueType && matchStatus && matchDate;
   });
@@ -226,14 +226,14 @@ const TicketsTable = ({
         render: (ticket) => (
           <div className="flex items-center gap-2">
             <motion.span
-              animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+              animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 2, repeat: Infinity }}
               className={`w-3 h-3 rounded-full shadow-sm ${
-                ticket.status === "Open"
+                ticket.status === "Open" || ticket.status === "OPEN"
                   ? "bg-blue-500 shadow-blue-500/50"
-                  : ticket.status === "In Progress"
+                  : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                     ? "bg-yellow-500 shadow-yellow-500/50"
-                    : ticket.status === "Resolved"
+                    : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                       ? "bg-green-500"
                       : "bg-gray-400"
               }`}
@@ -638,14 +638,14 @@ const TicketsTable = ({
                     
                     <div className="flex items-center gap-2 mb-2">
                       <motion.span
-                        animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                        animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                         transition={{ duration: 2, repeat: Infinity }}
                         className={`w-2.5 h-2.5 rounded-full ${
-                          ticket.status === "Open"
+                          ticket.status === "Open" || ticket.status === "OPEN"
                             ? "bg-blue-500"
-                            : ticket.status === "In Progress"
+                            : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                               ? "bg-yellow-500"
-                              : ticket.status === "Resolved"
+                              : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                 ? "bg-green-500"
                                 : "bg-gray-400"
                         }`}
@@ -762,14 +762,14 @@ const TicketsTable = ({
                         {ticket.issueType || 'General'}
                       </span>
                       <motion.span
-                        animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                        animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                         transition={{ duration: 2, repeat: Infinity }}
                         className={`w-2 h-2 rounded-full ${
-                          ticket.status === "Open"
+                          ticket.status === "Open" || ticket.status === "OPEN"
                             ? "bg-blue-500"
-                            : ticket.status === "In Progress"
+                            : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                               ? "bg-yellow-500"
-                              : ticket.status === "Resolved"
+                              : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                 ? "bg-green-500"
                                 : "bg-gray-400"
                         }`}

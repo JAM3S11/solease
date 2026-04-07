@@ -74,6 +74,13 @@ const STATUS_MAP_DB_TO_FRONTEND = {
     "CLOSED": "Closed"
 };
 
+const URGENCY_MAP_DB_TO_FRONTEND = {
+    "CRITICAL": "Critical",
+    "HIGH": "High",
+    "MEDIUM": "Medium",
+    "LOW": "Low"
+};
+
 const STATUS_MAP = {
     "Open": "OPEN",
     "In Progress": "IN_PROGRESS",
@@ -184,6 +191,7 @@ export const getTickets = async (req, res) => {
         const ticketsWithFullPhotoUrl = tickets.map(ticket => ({
             ...ticket,
             status: STATUS_MAP_DB_TO_FRONTEND[ticket.status] || ticket.status,
+            urgency: URGENCY_MAP_DB_TO_FRONTEND[ticket.urgency] || ticket.urgency,
             _id: ticket.id,
             id: undefined,
             user: ticket.user ? { ...ticket.user, profilePhoto: ticket.user.profilePhoto ? `${baseUrl}${ticket.user.profilePhoto}` : null } : null,

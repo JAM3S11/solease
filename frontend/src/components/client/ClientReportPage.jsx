@@ -21,8 +21,8 @@ import NoReport from "../ui/NoReport";
 import NoRecordsFound from "../ui/NoRecordsFound";
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
-const SUCCESS_STATUSES = ['Closed', 'Resolved'];
-const ACTIVE_STATUSES = ['Open', 'In Progress'];
+const SUCCESS_STATUSES = ['Closed', 'Resolved', 'CLOSED', 'RESOLVED'];
+const ACTIVE_STATUSES = ['Open', 'In Progress', 'OPEN', 'IN_PROGRESS'];
 const DATE_RANGES = [
     { value: '7', label: 'Last 7 Days' },
     { value: '30', label: 'Last 30 Days' },
@@ -55,12 +55,12 @@ const formatFullDate = (date) => {
 };
 
 const calculateSLACompliance = (tickets) => {
-    const urgentTickets = tickets.filter(t => t.urgency === 'Critical' || t.urgency === 'High');
+    const urgentTickets = tickets.filter(t => t.urgency === 'Critical' || t.urgency === 'CRITICAL' || t.urgency === 'High' || t.urgency === 'HIGH');
     const resolvedUrgent = urgentTickets.filter(t => SUCCESS_STATUSES.includes(t.status));
     
     const onTime = resolvedUrgent.filter(t => {
         const resolutionTime = getDaysDifference(new Date(t.createdAt), new Date(t.updatedAt));
-        return t.urgency === 'Critical' ? resolutionTime <= 1 : resolutionTime <= 3;
+        return (t.urgency === 'Critical' || t.urgency === 'CRITICAL') ? resolutionTime <= 1 : resolutionTime <= 3;
     }).length;
 
     return {
@@ -141,7 +141,7 @@ const calculateDetailedFeedbackAnalytics = (tickets) => {
 
 const calculateAverageResolutionTime = (tickets) => {
     const closedTickets = tickets.filter(t => 
-        t.status === 'Closed' && t.updatedAt && t.createdAt
+        (t.status === 'Closed' || t.status === 'CLOSED') && t.updatedAt && t.createdAt
     );
     if (closedTickets.length === 0) return { value: 'N/A', change: '0%', isPositiveBetter: false };
 
@@ -225,7 +225,7 @@ const calculateMonthlyResolutionTimeData = (tickets) => {
     const data = periods.map(p => {
         const closed = tickets.filter(t => {
             const d = t.updatedAt ? new Date(t.updatedAt) : null;
-            return t.status === 'Closed' && d && d >= p.start && d <= p.end;
+            return (t.status === 'Closed' || t.status === 'CLOSED') && d && d >= p.start && d <= p.end;
         });
         if (closed.length === 0) return null;
         const avg = closed.reduce((sum, t) => sum + getDaysDifference(new Date(t.createdAt), new Date(t.updatedAt)), 0) / closed.length;
@@ -236,7 +236,7 @@ const calculateMonthlyResolutionTimeData = (tickets) => {
 };
 
 const calculateCriticalTickets = (tickets) => {
-    return tickets.filter(t => t.urgency === 'High' || t.urgency === 'Critical').length;
+    return tickets.filter(t => t.urgency === 'High' || t.urgency === 'HIGH' || t.urgency === 'Critical' || t.urgency === 'CRITICAL').length;
 };
 
 const calculateAverageResponseTime = (tickets) => {
@@ -265,7 +265,7 @@ const calculateFirstResponseRate = (tickets) => {
 };
 
 const calculateAutoResolved = (tickets) => {
-    return tickets.filter(t => t.resolutionMethod === 'Auto' && (t.status === 'Resolved' || t.status === 'Closed')).length;
+    return tickets.filter(t => (t.resolutionMethod === 'Auto' || t.resolutionMethod === 'AUTO') && (t.status === 'Resolved' || t.status === 'RESOLVED' || t.status === 'Closed' || t.status === 'CLOSED')).length;
 };
 
 const calculateReopenedTickets = () => {
@@ -283,23 +283,35 @@ const calculateActiveDiscussions = (tickets) => {
 };
 
 const calculateTicketsByStatus = (tickets) => {
-    const statusCounts = { 'Open': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0 };
+    const statusCounts = { 'Open': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0, 'OPEN': 0, 'IN_PROGRESS': 0, 'RESOLVED': 0, 'CLOSED': 0 };
     tickets.forEach(t => {
         if (Object.hasOwn(statusCounts, t.status)) {
             statusCounts[t.status]++;
         }
     });
-    return Object.entries(statusCounts).map(([status, count]) => ({ status, count })).filter(i => i.count > 0);
+    const mergedCounts = {
+        'Open': statusCounts['Open'] + statusCounts['OPEN'],
+        'In Progress': statusCounts['In Progress'] + statusCounts['IN_PROGRESS'],
+        'Resolved': statusCounts['Resolved'] + statusCounts['RESOLVED'],
+        'Closed': statusCounts['Closed'] + statusCounts['CLOSED']
+    };
+    return Object.entries(mergedCounts).map(([status, count]) => ({ status, count })).filter(i => i.count > 0);
 };
 
 const calculateTicketsByUrgency = (tickets) => {
-    const urgencyCounts = { 'Low': 0, 'Medium': 0, 'High': 0, 'Critical': 0 };
+    const urgencyCounts = { 'Low': 0, 'Medium': 0, 'High': 0, 'Critical': 0, 'LOW': 0, 'MEDIUM': 0, 'HIGH': 0, 'CRITICAL': 0 };
     tickets.forEach(t => {
         if (Object.hasOwn(urgencyCounts, t.urgency)) {
             urgencyCounts[t.urgency]++;
         }
     });
-    return Object.entries(urgencyCounts).map(([urgency, count]) => ({ urgency, count })).filter(i => i.count > 0);
+    const mergedCounts = {
+        'Low': urgencyCounts['Low'] + urgencyCounts['LOW'],
+        'Medium': urgencyCounts['Medium'] + urgencyCounts['MEDIUM'],
+        'High': urgencyCounts['High'] + urgencyCounts['HIGH'],
+        'Critical': urgencyCounts['Critical'] + urgencyCounts['CRITICAL']
+    };
+    return Object.entries(mergedCounts).map(([urgency, count]) => ({ urgency, count })).filter(i => i.count > 0);
 };
 
 const calculateReviewerActivity = (tickets) => {
@@ -488,7 +500,7 @@ const calculateResolutionPerformance = (tickets) => {
 
     const slaViolations = resolvedTickets.filter(t => {
         const time = getDaysDifference(new Date(t.createdAt), new Date(t.updatedAt));
-        return (t.urgency === 'High' || t.urgency === 'Critical') && time > 3;
+        return (t.urgency === 'High' || t.urgency === 'HIGH' || t.urgency === 'Critical' || t.urgency === 'CRITICAL') && time > 3;
     }).length;
 
     return { 
@@ -579,11 +591,11 @@ const ClientReportPage = () => {
     });
     
     useEffect(() => {
-        fetchTickets("Client");
+        fetchTickets();
         setLastSynced(new Date());
         
         const interval = setInterval(() => {
-            fetchTickets("Client");
+            fetchTickets();
             setLastSynced(new Date());
         }, 60000);
         
@@ -627,7 +639,7 @@ const ClientReportPage = () => {
     const handleSyncData = async () => {
         setIsSyncing(true);
         try {
-            await fetchTickets("Client");
+            await fetchTickets();
             setLastSynced(new Date());
         } finally {
             setIsSyncing(false);
@@ -774,9 +786,13 @@ const ClientReportPage = () => {
     const STATUS_OPTIONS = [
         { value: 'all', label: 'All Status' },
         { value: 'Open', label: 'Open' },
+        { value: 'OPEN', label: 'Open' },
         { value: 'In Progress', label: 'In Progress' },
+        { value: 'IN_PROGRESS', label: 'In Progress' },
         { value: 'Resolved', label: 'Resolved' },
+        { value: 'RESOLVED', label: 'Resolved' },
         { value: 'Closed', label: 'Closed' },
+        { value: 'CLOSED', label: 'Closed' },
     ];
 
     const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
@@ -786,14 +802,29 @@ const ClientReportPage = () => {
         return Array.isArray(tickets) ? tickets : [];
     }, [tickets]);
 
-    // User's tickets (unfiltered)
+    // User's tickets (unfiltered) - backend already filters by user for CLIENT role
     const userAllTickets = useMemo(() => {
-        return safeTickets.filter(t => (t.user?._id || t.user) === user._id);
+        const userId = user?._id;
+        if (!userId) return [];
+        return safeTickets.filter(t => {
+            const ticketUserId = t.user?._id || t.user;
+            // Check both direct comparison and string comparison
+            return ticketUserId === userId || 
+                   ticketUserId === String(userId) || 
+                   String(ticketUserId) === String(userId);
+        });
     }, [safeTickets, user]);
 
     // Check if user has any tickets at all (for distinguishing "no records" vs "no tickets ever")
     const userHasAnyTickets = useMemo(() => {
-        return safeTickets.some(t => (t.user?._id || t.user) === user._id);
+        const userId = user?._id;
+        if (!userId) return false;
+        return safeTickets.some(t => {
+            const ticketUserId = t.user?._id || t.user;
+            return ticketUserId === userId || 
+                   ticketUserId === String(userId) || 
+                   String(ticketUserId) === String(userId);
+        });
     }, [safeTickets, user]);
 
     const clientTickets = useMemo(() => {
@@ -816,8 +847,8 @@ const ClientReportPage = () => {
     const stats = useMemo(() => ({
         total: clientTickets.length,
         resolved: clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length,
-        open: clientTickets.filter(t => t.status === 'Open').length,
-        inProgress: clientTickets.filter(t => t.status === 'In Progress').length,
+        open: clientTickets.filter(t => t.status === 'Open' || t.status === 'OPEN').length,
+        inProgress: clientTickets.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
         avgRes: calculateAverageResolutionTime(clientTickets),
         sat: calculateUserSatisfaction(clientTickets),
         categories: calculateOpenTicketsByCategory(clientTickets),
@@ -864,7 +895,7 @@ const ClientReportPage = () => {
         }
         
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(t => t.status === statusFilter);
+            filtered = filtered.filter(t => t.status === statusFilter || t.status === statusFilter.toUpperCase() || t.status === statusFilter.toLowerCase());
         }
         
         filtered.sort((a, b) => {
@@ -1271,10 +1302,10 @@ const ClientReportPage = () => {
                                             </div>
                                             <div className="space-y-3">
                                                 {[
-                                                    { label: 'Critical', value: stats.byUrgency.find(u => u.urgency === 'Critical')?.count || 0, color: 'bg-red-500' },
-                                                    { label: 'High', value: stats.byUrgency.find(u => u.urgency === 'High')?.count || 0, color: 'bg-orange-500' },
-                                                    { label: 'Medium', value: stats.byUrgency.find(u => u.urgency === 'Medium')?.count || 0, color: 'bg-yellow-500' },
-                                                    { label: 'Low', value: stats.byUrgency.find(u => u.urgency === 'Low')?.count || 0, color: 'bg-green-500' },
+                                                    { label: 'Critical', value: (stats.byUrgency.find(u => u.urgency === 'Critical')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'CRITICAL')?.count || 0), color: 'bg-red-500' },
+                                                    { label: 'High', value: (stats.byUrgency.find(u => u.urgency === 'High')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'HIGH')?.count || 0), color: 'bg-orange-500' },
+                                                    { label: 'Medium', value: (stats.byUrgency.find(u => u.urgency === 'Medium')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'MEDIUM')?.count || 0), color: 'bg-yellow-500' },
+                                                    { label: 'Low', value: (stats.byUrgency.find(u => u.urgency === 'Low')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'LOW')?.count || 0), color: 'bg-green-500' },
                                                 ].map(item => (
                                                     <div key={item.label} className="flex items-center justify-between">
                                                         <div className="flex items-center gap-2">
@@ -1499,18 +1530,18 @@ const ClientReportPage = () => {
                                                             </div>
                                                             <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                                                 <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                                                                    ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                                    ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                    ticket.status === 'Resolved' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                                                    (ticket.status === 'Open' || ticket.status === 'OPEN') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                                    (ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                    (ticket.status === 'Resolved' || ticket.status === 'RESOLVED') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                                                                     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                                                 }`}>
                                                                     {ticket.status}
                                                                 </span>
                                                                 {visibleColumns.urgency && (
                                                                     <span className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold rounded ${
-                                                                        ticket.urgency === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                                                        ticket.urgency === 'High' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                                        ticket.urgency === 'Medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                        (ticket.urgency === 'Critical' || ticket.urgency === 'CRITICAL') ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                                        (ticket.urgency === 'High' || ticket.urgency === 'HIGH') ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                                        (ticket.urgency === 'Medium' || ticket.urgency === 'MEDIUM') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
                                                                         'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                                                     }`}>
                                                                         <span className={`w-1 h-1 rounded-full ${getUrgencyColor(ticket.urgency)}`}></span>
@@ -1603,9 +1634,9 @@ const ClientReportPage = () => {
                                                                         return (
                                                                             <td key={col.key} className="px-4 py-3">
                                                                                 <span className={`flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-full ${
-                                                                                    ticket.urgency === 'Critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                                                                    ticket.urgency === 'High' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                                                    ticket.urgency === 'Medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                                    (ticket.urgency === 'Critical' || ticket.urgency === 'CRITICAL') ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                                                    (ticket.urgency === 'High' || ticket.urgency === 'HIGH') ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                                                    (ticket.urgency === 'Medium' || ticket.urgency === 'MEDIUM') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
                                                                                     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                                                                 }`}>
                                                                                     <span className={`w-1.5 h-1.5 rounded-full ${getUrgencyColor(ticket.urgency)}`}></span>
@@ -1618,9 +1649,9 @@ const ClientReportPage = () => {
                                                                         return (
                                                                             <td key={col.key} className="px-4 py-3">
                                                                                 <span className={`px-2 py-1 text-xs font-bold rounded-full ${
-                                                                                    ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                                                    ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                                    ticket.status === 'Resolved' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                                                                    (ticket.status === 'Open' || ticket.status === 'OPEN') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                                                    (ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                                                    (ticket.status === 'Resolved' || ticket.status === 'RESOLVED') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                                                                                     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                                                                 }`}>
                                                                                     {ticket.status}
@@ -2196,15 +2227,15 @@ const ClientReportPage = () => {
                                                                 <div className={`absolute left-1.5 sm:left-2 w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 ${
                                                                     SUCCESS_STATUSES.includes(ticket.status) 
                                                                         ? 'bg-green-500 border-green-500' 
-                                                                        : ticket.status === 'In Progress'
+                                                                        : (ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS')
                                                                             ? 'bg-yellow-500 border-yellow-500'
                                                                             : 'bg-blue-500 border-blue-500'
                                                                 }`}></div>
                                                                 <div className="flex-1 p-2 sm:p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg sm:rounded-xl">
                                                                     <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
                                                                         <span className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold rounded-full ${
-                                                                            ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' :
-                                                                            ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' :
+                                                                            (ticket.status === 'Open' || ticket.status === 'OPEN') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' :
+                                                                            (ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400' :
                                                                             SUCCESS_STATUSES.includes(ticket.status) ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
                                                                             'bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-400'
                                                                         }`}>

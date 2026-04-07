@@ -49,16 +49,16 @@ const ReviewerAssignedTickets = () => {
       t.assignedTo.id === user?._id ||
       t.assignedTo === user?._id
     );
-    return isAssignedToMe && t.status !== 'Closed';
+    return isAssignedToMe && t.status !== 'CLOSED' && t.status !== 'Closed';
   });
 
   // Stats
   const stats = {
     total: assignedTickets.length,
-    open: assignedTickets.filter(t => t.status === 'Open').length,
-    inProgress: assignedTickets.filter(t => t.status === 'In Progress').length,
-    resolved: assignedTickets.filter(t => t.status === 'Resolved').length,
-    pendingFeedback: assignedTickets.filter(t => t.status === 'Resolved' && t.comments && t.comments.length > 0).length
+    open: assignedTickets.filter(t => t.status === 'Open' || t.status === 'OPEN').length,
+    inProgress: assignedTickets.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
+    resolved: assignedTickets.filter(t => t.status === 'Resolved' || t.status === 'RESOLVED').length,
+    pendingFeedback: assignedTickets.filter(t => (t.status === 'Resolved' || t.status === 'RESOLVED') && t.comments && t.comments.length > 0).length
   }
 
   const getColorClasses = (color) => {

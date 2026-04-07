@@ -80,10 +80,10 @@ const ReviewerDashbord = () => {
 
   const stats = {
     total: assignedTickets.length,
-    open: assignedTickets.filter(t => t.status === 'Open').length,
-    inProgress: assignedTickets.filter(t => t.status === 'In Progress').length,
-    resolved: assignedTickets.filter(t => t.status === 'Resolved').length,
-    pendingFeedback: assignedTickets.filter(t => t.status === 'Resolved' && t.comments && t.comments.length > 0 && t.comments.some(c => !c.hidden)).length
+    open: assignedTickets.filter(t => t.status === 'Open' || t.status === 'OPEN').length,
+    inProgress: assignedTickets.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
+    resolved: assignedTickets.filter(t => t.status === 'Resolved' || t.status === 'RESOLVED').length,
+    pendingFeedback: assignedTickets.filter(t => (t.status === 'Resolved' || t.status === 'RESOLVED' || t.status === 'CLOSED') && t.comments && t.comments.length > 0 && t.comments.some(c => !c.isHidden)).length
   }
 
   const getColorClasses = (color) => {
@@ -443,14 +443,14 @@ const ReviewerDashbord = () => {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <motion.span
-                              animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                              animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                               transition={{ duration: 2, repeat: Infinity }}
                               className={`w-2.5 h-2.5 rounded-full shadow-sm ${
-                                ticket.status === "Open"
+                                ticket.status === "Open" || ticket.status === "OPEN"
                                   ? "bg-blue-500 shadow-blue-500/50"
-                                  : ticket.status === "In Progress"
+                                  : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                                     ? "bg-yellow-500 shadow-yellow-500/50"
-                                    : ticket.status === "Resolved"
+                                    : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                       ? "bg-green-500"
                                       : "bg-gray-400"
                               }`}
@@ -561,14 +561,14 @@ const ReviewerDashbord = () => {
                             {ticket.issueType || 'General'}
                           </span>
                           <motion.span
-                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                            animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                             transition={{ duration: 2, repeat: Infinity }}
                             className={`w-2 h-2 rounded-full ${
-                              ticket.status === "Open"
+                              ticket.status === "Open" || ticket.status === "OPEN"
                                 ? "bg-blue-500"
-                                : ticket.status === "In Progress"
+                                : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                                   ? "bg-yellow-500"
-                                  : ticket.status === "Resolved"
+                                  : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                     ? "bg-green-500"
                                     : "bg-gray-400"
                             }`}
@@ -780,9 +780,9 @@ const ReviewerDashbord = () => {
                   })
 
                   allMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                  const roleGroups = { Client: [], Reviewer: [], Manager: [] }
+                  const roleGroups = { CLIENT: [], REVIEWER: [], MANAGER: [] }
                   allMessages.forEach((msg) => {
-                    const role = msg.user?.role || "Unknown"
+                    const role = msg.user?.role?.toUpperCase() || "UNKNOWN"
                     if (roleGroups[role] && roleGroups[role].length < 2) {
                       roleGroups[role].push(msg)
                     }
@@ -792,7 +792,7 @@ const ReviewerDashbord = () => {
 
                   return hasMessages ? (
                     <>
-                      {["Client", "Reviewer", "Manager"].map(
+                      {["CLIENT", "REVIEWER", "MANAGER"].map(
                         (role) =>
                           roleGroups[role].length > 0 && (
                             <div key={role} className="space-y-3">

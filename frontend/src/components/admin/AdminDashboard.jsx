@@ -45,23 +45,23 @@ const AdminDashboard = () => {
     const t = tickets;
     const open = t.filter((ticket) => {
       const status = ticket.status?.trim();
-      return status === "Open" && !ticket.assignedTo;
+      return (status === "Open" || status === "OPEN") && !ticket.assignedTo;
     }).length;
     const resolved = t.filter((ticket) => {
       const status = ticket.status?.trim();
-      return status === "Resolved";
+      return status === "Resolved" || status === "RESOLVED";
     }).length;
     const inProgress = t.filter((ticket) => {
       const status = ticket.status?.trim();
-      return status === "In Progress";
+      return status === "In Progress" || status === "IN_PROGRESS";
     }).length;
     const closed = t.filter((ticket) => {
       const status = ticket.status?.trim();
-      return status === "Closed";
+      return status === "Closed" || status === "CLOSED";
     }).length;
     const pending = t.filter((ticket) => {
       const status = ticket.status?.trim();
-      return status === "Open";
+      return status === "Open" || status === "OPEN";
     }).length;
     const total = t.length;
     const successfullyClosed = resolved + closed;
@@ -74,7 +74,7 @@ const AdminDashboard = () => {
   }, [tickets]);
 
   const criticalTickets = useMemo(() => {
-    return tickets.filter((ticket) => ticket.urgency === "Critical" && ticket.status !== "Resolved" && ticket.status !== "Closed");
+    return tickets.filter((ticket) => (ticket.urgency === "Critical" || ticket.urgency === "CRITICAL") && ticket.status !== "Resolved" && ticket.status !== "RESOLVED" && ticket.status !== "Closed" && ticket.status !== "CLOSED");
   }, [tickets]);
 
   const { mergeData } = useMemo(() => {
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
           tickets.forEach((ticket) => {
               const day = new Date(ticket.createdAt).toLocaleDateString("en-us", { weekday: "short" });
               const dayKey = day === "Thu" ? "Thur" : day;
-              if (!statusFilter || ticket.status === statusFilter) {
+              if (!statusFilter || ticket.status === statusFilter || ticket.status === statusFilter.toUpperCase()) {
                   counts[dayKey] = (counts[dayKey] || 0) + 1;
               }
           });
@@ -670,14 +670,14 @@ const AdminDashboard = () => {
                       </span>
                     </div>
                     <motion.span
-                      animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                      animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                       transition={{ duration: 2, repeat: Infinity }}
                       className={`w-2.5 h-2.5 rounded-full ${
-                        ticket.status === "Open"
+                        ticket.status === "Open" || ticket.status === "OPEN"
                           ? "bg-blue-500 shadow-blue-500/50"
-                          : ticket.status === "In Progress"
+                          : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                             ? "bg-yellow-500 shadow-yellow-500/50"
-                            : ticket.status === "Resolved"
+                            : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                               ? "bg-green-500"
                               : "bg-gray-400"
                       }`}
@@ -881,8 +881,9 @@ const AdminDashboard = () => {
                             {ticket.urgency}
                           </span>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            ticket.status === 'Open' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
-                            ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' :
+                            ticket.status === 'Open' || ticket.status === 'OPEN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                            ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' :
+                            ticket.status === 'Resolved' || ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
                             'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                           }`}>
                             {ticket.status}

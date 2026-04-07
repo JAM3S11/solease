@@ -145,8 +145,8 @@ const ClientDashboard = () => {
 
   const stats = {
     total: safeTickets.length,
-    open: safeTickets.filter((t) => t.status === "Open" || t.status === "In Progress").length,
-    resolved: safeTickets.filter((t) => t.status === "Resolved").length,
+    open: safeTickets.filter((t) => t.status === "Open" || t.status === "OPEN" || t.status === "In Progress" || t.status === "IN_PROGRESS").length,
+    resolved: safeTickets.filter((t) => t.status === "Resolved" || t.status === "RESOLVED").length,
     feedbackSubmitted: safeTickets.filter((t) => t.feedbackSubmitted).length,
     activeChats: safeTickets.filter((t) => t.chatEnabled).length,
   };
@@ -690,14 +690,14 @@ const ClientDashboard = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <motion.span
-                              animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                              animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                               transition={{ duration: 2, repeat: Infinity }}
                               className={`w-3 h-3 rounded-full shadow-sm ${
-                                ticket.status === "Open"
+                                ticket.status === "Open" || ticket.status === "OPEN"
                                   ? "bg-blue-500 shadow-blue-500/50"
-                                  : ticket.status === "In Progress"
+                                  : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                                     ? "bg-yellow-500 shadow-yellow-500/50"
-                                    : ticket.status === "Resolved"
+                                    : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                       ? "bg-green-500"
                                       : "bg-gray-400"
                               }`}
@@ -839,14 +839,14 @@ const ClientDashboard = () => {
                         
                         <div className="flex items-center gap-2 mb-2">
                           <motion.span
-                            animate={ticket.status !== "Resolved" ? { scale: [1, 1.1, 1] } : {}}
+                            animate={ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? { scale: [1, 1.1, 1] } : {}}
                             transition={{ duration: 2, repeat: Infinity }}
                             className={`w-2.5 h-2.5 rounded-full ${
-                              ticket.status === "Open"
+                              ticket.status === "Open" || ticket.status === "OPEN"
                                 ? "bg-blue-500"
-                                : ticket.status === "In Progress"
+                                : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                                   ? "bg-yellow-500"
-                                  : ticket.status === "Resolved"
+                                  : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                     ? "bg-green-500"
                                     : "bg-gray-400"
                             }`}
@@ -952,21 +952,21 @@ const ClientDashboard = () => {
                             {ticket.urgency}
                           </span>
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                            ticket.status === "Open"
+                            ticket.status === "Open" || ticket.status === "OPEN"
                               ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-                              : ticket.status === "In Progress"
+                              : ticket.status === "In Progress" || ticket.status === "IN_PROGRESS"
                                 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
-                                : ticket.status === "Resolved"
+                                : ticket.status === "Resolved" || ticket.status === "RESOLVED"
                                   ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
                                   : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${
-                              ticket.status === "Open" ? "bg-blue-500" :
-                              ticket.status === "In Progress" ? "bg-yellow-500" :
-                              ticket.status === "Resolved" ? "bg-green-500" : "bg-gray-400"
-                            } ${ticket.status !== "Resolved" ? "animate-pulse" : ""}`} />
+                              ticket.status === "Open" || ticket.status === "OPEN" ? "bg-blue-500" :
+                              ticket.status === "In Progress" || ticket.status === "IN_PROGRESS" ? "bg-yellow-500" :
+                              ticket.status === "Resolved" || ticket.status === "RESOLVED" ? "bg-green-500" : "bg-gray-400"
+                            } ${ticket.status !== "Resolved" && ticket.status !== "RESOLVED" ? "animate-pulse" : ""}`} />
                             <span className="hidden sm:inline">{ticket.status}</span>
-                            <span className="sm:hidden">{ticket.status === "In Progress" ? "Progress" : ticket.status}</span>
+                            <span className="sm:hidden">{ticket.status === "In Progress" || ticket.status === "IN_PROGRESS" ? "Progress" : ticket.status}</span>
                           </span>
                         </div>
                         <h3 className="font-medium text-sm sm:text-base text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -1093,9 +1093,9 @@ const ClientDashboard = () => {
                   });
 
                   allMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                  const roleGroups = { Client: [], Reviewer: [], Manager: [] };
+                  const roleGroups = { CLIENT: [], REVIEWER: [], MANAGER: [] };
                   allMessages.forEach((msg) => {
-                    const role = msg.user?.role || "Unknown";
+                    const role = msg.user?.role?.toUpperCase() || "UNKNOWN";
                     if (roleGroups[role] && roleGroups[role].length < 2) {
                       roleGroups[role].push(msg);
                     }
@@ -1105,7 +1105,7 @@ const ClientDashboard = () => {
 
                   return hasMessages ? (
                     <>
-                      {["Client", "Reviewer", "Manager"].map(
+                      {["CLIENT", "REVIEWER", "MANAGER"].map(
                         (role) =>
                           roleGroups[role].length > 0 && (
                             <div key={role} className="space-y-3">

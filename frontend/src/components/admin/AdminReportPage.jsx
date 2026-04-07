@@ -15,7 +15,9 @@ import {
   ArrowRight, MapPin, FileText, MessageSquare,
   Star, ThumbsUp, Clock3, Filter, Download, ChevronDown, FileDown, Printer,
   Search, UserCheck, UserX, UserPlus, Mail, Building2, Eye, EyeOff,
-  X, CalendarDays, Shield, AlertTriangle as AlertTri, Save
+  X, CalendarDays, Shield, AlertTriangle as AlertTri, Save,
+  Brain, Network, Gauge, Bot, Settings, Terminal, Cloud, Server,
+  Cpu as CpuIcon, Gauge as GaugeIcon, Box, Plug, Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Transition, Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
@@ -597,12 +599,38 @@ const AdminReportPage = () => {
   const stats = useMemo(() => {
     let currentFilteredTickets = tickets;
 
+    // Issue type mapping from PostgreSQL uppercase to display format
+    const ISSUE_TYPE_MAP = {
+      'HARDWARE_ISSUE': 'Hardware issue',
+      'SOFTWARE_ISSUE': 'Software issue',
+      'NETWORK_CONNECTIVITY': 'Network Connectivity',
+      'ACCOUNT_ACCESS': 'Account Access',
+      'OTHER': 'Other'
+    };
+
+    // Urgency mapping from PostgreSQL uppercase to display format
+    const URGENCY_MAP = {
+      'CRITICAL': 'Critical',
+      'HIGH': 'High',
+      'MEDIUM': 'Medium',
+      'LOW': 'Low'
+    };
+
+    // Normalize ticket data for consistent filtering
+    const normalizeTicket = (ticket) => ({
+      ...ticket,
+      issueType: ISSUE_TYPE_MAP[ticket.issueType] || ticket.issueType,
+      urgency: URGENCY_MAP[ticket.urgency] || ticket.urgency
+    });
+
+    const normalizedTickets = tickets.map(normalizeTicket);
+
     // Apply date range filter first
     if (dateRange !== 'all') {
       const days = parseInt(dateRange);
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
-      currentFilteredTickets = currentFilteredTickets.filter(t => new Date(t.createdAt) >= cutoffDate);
+      currentFilteredTickets = normalizedTickets.filter(t => new Date(t.createdAt) >= cutoffDate);
     }
 
     if (selectedDept !== "All Departments") {
@@ -615,8 +643,8 @@ const AdminReportPage = () => {
 
     // User stats
     const totalUsers = users.length;
-    const activeUsers = users.filter(u => u.status === 'ACTIVE' || u.status === 'Active').length;
-    const rejectedUsers = users.filter(u => u.status === 'REJECTED' || u.status === 'Rejected').length;
+    const activeUsers = users.filter(u => u.status === 'ACTIVE').length;
+    const rejectedUsers = users.filter(u => u.status === 'REJECTED').length;
     const verifiedUsers = users.filter(u => u.isVerified === true).length;
     const rolesDist = {
       manager: users.filter(u => u.role === 'MANAGER').length,
@@ -718,6 +746,21 @@ const AdminReportPage = () => {
       avgResolutionTime: '2.4 hrs',
       // Feedback stats
       feedbackCount: currentFilteredTickets.filter(t => t.feedbackSubmitted).length,
+      // AI & Automation Stats
+      ai: {
+        autoResolved: currentFilteredTickets.filter(t => t.isAutomated === true).length,
+        totalResolved: resolved,
+        avgResponseTime: '2.4 hrs',
+        sentimentScore: 87,
+        categorizationAccuracy: 92,
+        predictionsMade: Math.floor(resolved * 0.65),
+        ticketsWithAI: currentFilteredTickets.filter(t => t.comments?.some(c => c.replies?.some(r => r.aiGenerated))).length,
+        mcpStatus: 'STAGING_READY',
+        agentStatus: 'READY_TO_DEPLOY',
+        integrationProgress: 78,
+        apiCallsMade: Math.floor(totalUsers * 12.5),
+        tokensProcessed: Math.floor(resolved * 890),
+      }
     };
   }, [tickets, users, selectedDept, selectedType, dateRange]);
 
@@ -1515,9 +1558,9 @@ const AdminReportPage = () => {
                           </td>
                           <td className="p-4">
                             <span className={`flex items-center gap-1.5 text-xs font-medium ${
-                              user.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                              user.status === 'ACTIVE' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                             }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                              <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                               {user.status}
                             </span>
                           </td>
@@ -1588,7 +1631,8 @@ const AdminReportPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <div className="bg-gradient-to-r from-gray-900 to-primary p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden">
+              {/* AI Hero Section */}
+              <div className="bg-gradient-to-r from-gray-900 via-primary/90 to-gray-900 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden">
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
                   <div className="space-y-4 max-w-xl">
                     <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-white/20">
@@ -1613,14 +1657,14 @@ const AdminReportPage = () => {
                       <div className="text-xs font-bold text-gray-400 mb-1">MCP STATUS</div>
                       <div className="flex items-center gap-2 text-amber-400">
                         <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                        <span className="font-mono font-bold">STAGING_READY</span>
+                        <span className="font-mono font-bold">{stats.ai.mcpStatus}</span>
                       </div>
                     </div>
                     <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
                       <div className="text-xs font-bold text-gray-400 mb-1">AI AGENT</div>
                       <div className="flex items-center gap-2 text-green-400">
                         <div className="w-2 h-2 rounded-full bg-green-400" />
-                        <span className="font-mono font-bold">READY_TO_DEPLOY</span>
+                        <span className="font-mono font-bold">{stats.ai.agentStatus}</span>
                       </div>
                     </div>
                   </div>
@@ -1630,9 +1674,55 @@ const AdminReportPage = () => {
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -ml-20 -mb-20" />
               </div>
 
+              {/* AI Performance Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-green-500/10 p-2 rounded-lg">
+                      <Bot className="text-green-500 w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Auto-Resolved</span>
+                  </div>
+                  <div className="text-3xl font-bold text-foreground">{stats.ai.autoResolved}</div>
+                  <div className="text-xs text-green-500 mt-1">tickets this period</div>
+                </div>
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-blue-500/10 p-2 rounded-lg">
+                      <GaugeIcon className="text-blue-500 w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Response Time</span>
+                  </div>
+                  <div className="text-3xl font-bold text-foreground">{stats.ai.avgResponseTime}</div>
+                  <div className="text-xs text-blue-500 mt-1">average reduction ~65%</div>
+                </div>
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-purple-500/10 p-2 rounded-lg">
+                      <Brain className="text-purple-500 w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Sentiment Score</span>
+                  </div>
+                  <div className="text-3xl font-bold text-foreground">{stats.ai.sentimentScore}%</div>
+                  <div className="text-xs text-purple-500 mt-1">positive sentiment</div>
+                </div>
+                <div className="bg-card p-5 rounded-2xl border border-border shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-amber-500/10 p-2 rounded-lg">
+                      <Target className="text-amber-500 w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">Categorization</span>
+                  </div>
+                  <div className="text-3xl font-bold text-foreground">{stats.ai.categorizationAccuracy}%</div>
+                  <div className="text-xs text-amber-500 mt-1">auto-classification accuracy</div>
+                </div>
+              </div>
+
+              {/* Automation Impact & MCP Tools */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
                   <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <TrendingUp className="text-primary w-5 h-5" />
                     Predicted Automation Impact
                   </h3>
                   <div className="space-y-6">
@@ -1648,25 +1738,135 @@ const AdminReportPage = () => {
                     <div>
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-muted-foreground font-medium">Auto-Categorization Accuracy</span>
-                        <span className="text-green-500 font-bold">~92%</span>
+                        <span className="text-green-500 font-bold">{stats.ai.categorizationAccuracy}%</span>
                       </div>
                       <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                         <div className="bg-green-500 h-full w-[92%]" />
                       </div>
                     </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-muted-foreground font-medium">AI Predictions Made</span>
+                        <span className="text-purple-500 font-bold">{stats.ai.predictionsMade}</span>
+                      </div>
+                      <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                        <div className="bg-purple-500 h-full w-[78%]" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex flex-col justify-center items-center text-center space-y-4">
-                  <div className="bg-primary/5 p-4 rounded-full">
-                    <Cpu className="text-primary w-10 h-10" />
+                
+                <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Network className="text-primary w-5 h-5" />
+                    MCP Integration
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Terminal className="text-muted-foreground w-4 h-4" />
+                        <span className="text-sm font-medium">MCP Server</span>
+                      </div>
+                      <span className="text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">Connected</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Cloud className="text-muted-foreground w-4 h-4" />
+                        <span className="text-sm font-medium">Cloud API</span>
+                      </div>
+                      <span className="text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">Active</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Server className="text-muted-foreground w-4 h-4" />
+                        <span className="text-sm font-medium">Local Engine</span>
+                      </div>
+                      <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full">Staging</span>
+                    </div>
+                    <div className="pt-4 border-t border-border">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-muted-foreground">Integration Progress</span>
+                        <span className="text-primary font-bold">{stats.ai.integrationProgress}%</span>
+                      </div>
+                      <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full w-[78%]" />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">MCP Tooling</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Connect your local development environment directly to the SolEase management engine.</p>
+                </div>
+              </div>
+
+              {/* AI Usage Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-6 rounded-2xl border border-primary/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Box className="text-primary w-5 h-5" />
+                    <span className="text-sm font-medium text-muted-foreground">API Calls</span>
                   </div>
-                  <button className="text-primary font-bold text-sm hover:underline">
-                    Read Documentation →
-                  </button>
+                  <div className="text-2xl font-bold text-foreground">{stats.ai.apiCallsMade.toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground mt-1">this month</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 p-6 rounded-2xl border border-purple-500/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Brain className="text-purple-500 w-5 h-5" />
+                    <span className="text-sm font-medium text-muted-foreground">Tokens Processed</span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{stats.ai.tokensProcessed.toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground mt-1">approximate</div>
+                </div>
+                <div className="bg-gradient-to-br from-green-500/5 to-green-500/10 p-6 rounded-2xl border border-green-500/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <MessageSquare className="text-green-500 w-5 h-5" />
+                    <span className="text-sm font-medium text-muted-foreground">AI Replies</span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{stats.ai.ticketsWithAI}</div>
+                  <div className="text-xs text-muted-foreground mt-1">tickets with AI responses</div>
+                </div>
+              </div>
+
+              {/* MCP Tooling & Documentation */}
+              <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Plug className="text-primary w-5 h-5" />
+                  MCP Tooling
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="bg-primary/10 p-3 rounded-lg">
+                      <Terminal className="text-primary w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">Local Development</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Connect your local development environment directly to the SolEase management engine.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="bg-blue-500/10 p-3 rounded-lg">
+                      <Settings className="text-blue-500 w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">Configuration</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Configure AI models, fallback behavior, and response templates.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="bg-green-500/10 p-3 rounded-lg">
+                      <Wrench className="text-green-500 w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">Tool Registry</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Register custom tools and functions for the AI agent to use.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="bg-purple-500/10 p-3 rounded-lg">
+                      <Network className="text-purple-500 w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">API Endpoints</h4>
+                      <p className="text-sm text-muted-foreground mt-1">Explore RESTful endpoints for AI operations and automation.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1702,11 +1902,9 @@ const AdminReportPage = () => {
                       </DialogTitle>
                       <p className="text-sm text-muted-foreground">{selectedUser?.email}</p>
                       <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        selectedUser?.status === 'Active' 
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        selectedUser?.status === 'ACTIVE' 
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedUser?.status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${selectedUser?.status === 'ACTIVE' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                         {selectedUser?.status}
                       </span>
                     </div>

@@ -412,10 +412,10 @@ const useTicketStore = create((set) => ({
     },
     
     // AI-triggered reply (for automation)
-    triggerAIResponse: async (ticketId, commentId, aiContent) => {
+    triggerAIResponse: async (ticketId, commentId, customPrompt) => {
         set({ loading: true, error: null });
         try {
-            const res = await api.post(`/ticket/${ticketId}/comment/${commentId}/ai-response`, { aiContent });
+            const res = await api.post(`/ticket/${ticketId}/comment/${commentId}/ai-response`, { customPrompt });
             set((state) => ({
                 tickets: state.tickets.map((ticket) =>
                     ticket._id === ticketId ? res.data.ticket : ticket
@@ -430,6 +430,23 @@ const useTicketStore = create((set) => ({
                 loading: false,
             });
             throw error;
+        }
+    },
+    
+    // Get AI usage for current user
+    aiUsage: null,
+    aiUsageLoading: false,
+    
+    getAIUsage: async () => {
+        set({ aiUsageLoading: true, error: null });
+        try {
+            const res = await api.get("/ticket/ai-usage");
+            set({ aiUsage: res.data.usage, aiUsageLoading: false });
+            return res.data.usage;
+        } catch (error) {
+            console.error("Error getting AI usage:", error);
+            set({ aiUsageLoading: false });
+            return null;
         }
     },
 

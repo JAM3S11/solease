@@ -29,6 +29,9 @@ model User {
   lastActivity               DateTime?
   onlineAt                   DateTime?
   profilePhoto               String?
+  planTier                   PlanTier          @default(BASIC)
+  aiReplyCount               Int              @default(0)
+  aiReplyResetAt              DateTime          @default(now())
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
 
@@ -180,6 +183,12 @@ enum PasswordStrength {
   weak
   medium
   strong
+}
+
+enum PlanTier {
+  BASIC
+  PRO
+  ENTERPRISE
 }
 
 enum IssueType {

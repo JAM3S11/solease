@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AlertCircle,
+  Bot,
   CheckCircle2,
   ChevronDown,
   Clipboard,
@@ -26,8 +27,10 @@ import {
   Search,
   Send,
   Share2,
+  Sparkles,
   Trash2,
   Upload,
+  Zap,
   UserPlus,
   Video,
   X,
@@ -228,6 +231,9 @@ const FeedbackComponent = () => {
     uploadFile,
     uploadLoading,
     uploadProgress,
+    triggerAIResponse,
+    getAIUsage,
+    aiUsage,
   } = useTicketStore();
 
   const ticketFromStore = tickets.find((entry) => entry?._id === id);
@@ -259,6 +265,27 @@ const FeedbackComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [mobileView, setMobileView] = useState("summary");
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  // AI features
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiUsageData, setAiUsageData] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+
+  useEffect(() => {
+    const fetchAiUsage = async () => {
+      try {
+        const usage = await getAIUsage();
+        setAiUsageData(usage);
+      } catch (err) {
+        console.error("Error fetching AI usage:", err);
+      }
+    };
+    fetchAiUsage();
+  }, [getAIUsage]);
+
+  const canUseAI = aiUsageData?.canUse && aiUsageData?.remaining > 0;
+  const planTier = aiUsageData?.planTier || "BASIC";
 
   // Personal notes - database based
   const { notes, fetchNotes, createNote, deleteNote, shareNote, unshareNote } = usePersonalNoteStore();
@@ -1343,6 +1370,27 @@ const FeedbackComponent = () => {
                       <Send size={16} className="transition-transform group-hover:translate-x-0.1" />
                       <span>Send</span>
                     </button>
+                    {canUseAI && (
+                      <button
+                        onClick={() => setShowAiModal(true)}
+                        disabled={aiLoading}
+                        className="group relative flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium py-2 px-3 rounded-lg text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95 shadow-md"
+                        title="Generate AI Response"
+                      >
+                        {aiLoading ? (
+                          <Sparkles size={16} className="animate-spin" />
+                        ) : (
+                          <Sparkles size={16} />
+                        )}
+                        <span className="hidden sm:inline">AI</span>
+                      </button>
+                    )}
+                    {!canUseAI && (
+                      <div className="flex items-center gap-1 text-xs text-gray-400 px-2" title={`Plan: ${planTier}`}>
+                        <Zap size={12} />
+                        <span>{aiUsageData?.remaining || 0}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1911,6 +1959,77 @@ const FeedbackComponent = () => {
             currentSharedWith={currentSharedWith}
           />
         ) : null}
+
+        {/* AI Response Modal */}
+        {showAiModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={20} className="text-blue-600" />
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Generate AI Response</h3>
+                </div>
+                <button onClick={() => setShowAiModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-4">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Custom Prompt (optional)
+                  </label>
+                  <textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="Describe what you want the AI to respond with..."
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                  <span>Plan: <span className="font-medium">{planTier}</span></span>
+                  <span>Remaining: <span className="font-medium">{aiUsageData?.remaining || 0}</span>/{aiUsageData?.maxPerHour === Infinity ? "∞" : aiUsageData?.maxPerHour}</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!ticket?.comments?.length) {
+                      toast.error("No comment found to reply to");
+                      return;
+                    }
+                    setAiLoading(true);
+                    try {
+                      const latestComment = ticket.comments[ticket.comments.length - 1];
+                      const commentId = latestComment._id || latestComment.id;
+                      await triggerAIResponse(id, commentId, customPrompt);
+                      toast.success("AI response generated!");
+                      setShowAiModal(false);
+                      setCustomPrompt("");
+                      fetchTickets();
+                    } catch (err) {
+                      toast.error(err.response?.data?.message || "Failed to generate AI response");
+                    } finally {
+                      setAiLoading(false);
+                    }
+                  }}
+                  disabled={aiLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium py-2 px-4 rounded-lg transition-all"
+                >
+                  {aiLoading ? (
+                    <>
+                      <Sparkles size={16} className="animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      <span>Generate AI Response</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </DashboardLayout>
   );
 };

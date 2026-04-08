@@ -66,22 +66,22 @@ const AdminTicketsView = () => {
     setCurrentPage(1);
   }, [search, issueTypeFilter, statusFilter, dateFilter, viewMode]);
 
-  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const safeTickets = Array.isArray(tickets) ? tickets.filter(t => t && t._id) : [];
 
   // Card stats
   const stats = {
     total: safeTickets.length,
     open: safeTickets.filter(
-      (t) => t.status === "Open"
+      (t) => t && t.status === "Open"
     ).length,
     resolved: safeTickets.filter(
-      (t) => t.status === "Resolved"
+      (t) => t && t.status === "Resolved"
     ).length,
     feedbackSubmitted: safeTickets.filter(
-      (t) => t.comments?.length > 0
+      (t) => t && t.comments?.length > 0
     ).length,
     activeChats: safeTickets.filter(
-      (t) => t.status === "In Progress"
+      (t) => t && t.status === "In Progress"
     ).length,
   };
 
@@ -416,6 +416,7 @@ const AdminTicketsView = () => {
           issueTypeFilter ? (
             <DetailedTicketsView
               tickets={safeTickets.filter(t =>
+                t &&
                 (!search || t.issueType?.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase())) &&
                 (t.issueType?.trim().toLowerCase() === issueTypeFilter.trim().toLowerCase()) &&
                 (!statusFilter || t.status === statusFilter) &&

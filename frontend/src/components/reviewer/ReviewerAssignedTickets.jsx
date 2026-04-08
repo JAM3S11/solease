@@ -39,16 +39,16 @@ const ReviewerAssignedTickets = () => {
     fetchTickets()
   }, [fetchTickets])
 
-  const safeTickets = Array.isArray(tickets) ? tickets : []
+  const safeTickets = Array.isArray(tickets) ? tickets.filter(t => t && t._id) : []
+
+  const userId = user?._id || user?.id;
 
   // Filter to only show tickets assigned to this reviewer
   const assignedTickets = safeTickets.filter(t => {
+    if (!t || !userId) return false;
     // Only show tickets where assignedTo matches the current user
-    const isAssignedToMe = t.assignedTo && (
-      t.assignedTo._id === user?._id || 
-      t.assignedTo.id === user?._id ||
-      t.assignedTo === user?._id
-    );
+    const assignedToId = t.assignedTo?._id || t.assignedTo?.id || t.assignedTo;
+    const isAssignedToMe = assignedToId === userId;
     return isAssignedToMe && t.status !== 'CLOSED' && t.status !== 'Closed';
   });
 

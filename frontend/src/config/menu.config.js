@@ -1,5 +1,5 @@
 import {
-    Home, Users, Tickets, Settings, LucideChartSpline, NotepadText
+    Home, Users, Tickets, Settings, LucideChartSpline, NotepadText, Crown
 } from "lucide-react";
 
 /**
@@ -12,7 +12,10 @@ export const MENU_CONFIG = {
             {
                 name: "Users",
                 icon: Users,
-                submenu: [{ name: "All Users", path: "/admin-dashboard/users" }],
+                submenu: [
+                    { name: "All Users", path: "/admin-dashboard/users" },
+                    { name: "Plan Tier", path: "/admin-dashboard/plan-tier" },
+                ],
             },
             {
                 name: "Tickets",

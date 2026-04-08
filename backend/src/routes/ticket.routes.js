@@ -8,7 +8,8 @@ import { createTicket, getTickets,
     hideFeedback, unhideFeedback, 
     viewHiddenFeedback, approveHiddenForManager, 
     managerIntervention, triggerAIResponse, 
-    uploadMiddleware, uploadAttachment, deleteTicket 
+    uploadMiddleware, uploadAttachment, deleteTicket,
+    getAIUsage 
 } from "../controllers/ticket.controllers.js";
 
 const router = express.Router();
@@ -60,6 +61,9 @@ router.post("/:ticketId/comment/:commentId/manager-intervention", protect, manag
 
 // AI-triggered reply (for automation)
 router.post("/:ticketId/comment/:commentId/ai-response", protect, triggerAIResponse);
+
+// Get AI usage for current user
+router.get("/ai-usage", protect, getAIUsage);
 
 // Upload attachment to ticket
 router.post("/:id/attachment", protect, uploadMiddleware, uploadAttachment);

@@ -37,6 +37,7 @@ export async function createDefaultManager() {
         isVerified: true,
         verificationToken: null,
         verificationTokenExpiresAt: null,
+        planTier: "ENTERPRISE"
       }
     });
 

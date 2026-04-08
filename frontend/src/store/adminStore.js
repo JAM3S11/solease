@@ -94,12 +94,50 @@ const useAdminStore = create((set) => ({
     }
   },
 
-  // Mark user as offline
+// Mark user as offline
   markOffline: async () => {
     try {
       await api.post("/admin/offline");
     } catch (err) {
       console.error("Error marking offline:", err);
+    }
+  },
+
+  // Plan tier management
+  planUsers: [],
+  planUsersLoading: false,
+
+  // Fetch all users plan usage
+  fetchPlanUsers: async () => {
+    set({ planUsersLoading: true, error: null });
+    try {
+      const res = await api.get("/admin/users/plan-usage");
+      set({ planUsers: res.data.users, planUsersLoading: false });
+    } catch (err) {
+      console.error("Error fetching plan users:", err);
+      set({ planUsersLoading: false });
+    }
+  },
+
+  // Update user plan tier
+  updateUserPlanTier: async (username, planTier) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await api.put(`/admin/users/${username}/plan-tier`, { planTier });
+      set((state) => ({
+        planUsers: state.planUsers.map((u) =>
+          u.username === username ? res.data.user : u
+        ),
+        users: state.users.map((u) =>
+          u.username === username ? res.data.user : u
+        ),
+        loading: false
+      }));
+      return res.data;
+    } catch (err) {
+      console.error("Error updating plan tier:", err);
+      set({ error: "Failed to update plan tier", loading: false });
+      throw err;
     }
   }
 }));

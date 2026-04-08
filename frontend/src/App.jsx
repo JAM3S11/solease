@@ -25,6 +25,7 @@ import AdminPendingTickets from "./components/admin/AdminPendingTickets";
 import AdminNewTicketPage from "./components/admin/AdminNewTicketPage";
 import AdminReportPage from "./components/admin/AdminReportPage";
 import AdminSettingPage from "./components/admin/AdminSettingPage";
+import AdminPlanTierPage from "./components/admin/AdminPlanTierPage";
 
 //REVIEWER DASHBOARD
 import ReviewerDashbord from "./components/reviewer/ReviewerDashbord";
@@ -347,6 +348,13 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
               <AdminSettingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/admin-dashboard/plan-tier"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AdminPlanTierPage />
             </ProtectedRoute>
           }
         />

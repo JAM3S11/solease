@@ -261,3 +261,100 @@ export const markUserOffline = async (req, res) => {
     });
   }
 };
+
+export const updateUserPlanTier = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { planTier } = req.body;
+
+    const validTiers = ["BASIC", "PRO", "ENTERPRISE"];
+    if (!planTier || !validTiers.includes(planTier)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid plan tier. Must be BASIC, PRO, or ENTERPRISE"
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { username },
+      data: { 
+        planTier: planTier,
+        aiReplyCount: 0,
+        aiReplyResetAt: new Date()
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        planTier: true,
+        aiReplyCount: true,
+        aiReplyResetAt: true
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Plan tier updated to ${planTier}`,
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating plan tier:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating plan tier"
+    });
+  }
+};
+
+export const getAllUsersPlanUsage = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        planTier: true,
+        aiReplyCount: true,
+        aiReplyResetAt: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    const now = new Date();
+    const usersWithUsage = users.map(user => {
+      const resetAt = new Date(user.aiReplyResetAt);
+      resetAt.setHours(resetAt.getHours() + 12);
+      const hoursUntilReset = (resetAt - now) / (1000 * 60 * 60);
+      
+      return {
+        ...user,
+        hoursUntilReset: Math.max(0, hoursUntilReset),
+        resetAt: resetAt
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      users: usersWithUsage
+    });
+  } catch (error) {
+    console.error("Error getting users plan usage:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while getting plan usage"
+    });
+  }
+};

@@ -3,9 +3,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { createNotification } from "./notification.controllers.js";
 import { sendTicketStatusUpdateEmail, sendTicketAssignedEmail, sendTicketCommentEmail } from "../mailtrap/emails.js";
+import { generateAutoReply, generateOnDemandReply } from "../util/geminiService.js";
+import { checkAndConsumeAIReply, getAIUsageForUser } from "../util/rateLimiter.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+
+const AUTO_REPLY_KEYWORDS = ["help", "please", "?", "how", "need", "support", "urgent", "asap", "now", "fast", "problem", "issue", "error", "broken", "fix"];
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -504,6 +508,8 @@ export const submitFeedback = async (req, res) => {
             where: { id },
             data: { feedbackSubmitted: true }
         });
+
+        await triggerAutoReplyIfEligible(ticket, comment, req.user);
 
         const updatedTicket = await prisma.ticket.findUnique({
             where: { id },
@@ -1140,7 +1146,7 @@ export const managerIntervention = async (req, res) => {
 
 export const triggerAIResponse = async (req, res) => {
     const { ticketId, commentId } = req.params;
-    const { aiContent } = req.body;
+    const { customPrompt } = req.body;
 
     try {
         const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
@@ -1151,6 +1157,26 @@ export const triggerAIResponse = async (req, res) => {
                 message: "Ticket not found",
             });
         }
+
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+        if (!comment) {
+            return res.status(404).json({
+                success: false,
+                message: "Comment not found",
+            });
+        }
+
+        const rateLimitCheck = await checkAndConsumeAIReply(req.user.id, ticket.urgency === "CRITICAL");
+        
+        if (!rateLimitCheck.allowed) {
+            return res.status(429).json({
+                success: false,
+                message: "AI response limit exceeded",
+                resetAt: rateLimitCheck.resetAt,
+            });
+        }
+
+        const aiContent = await generateOnDemandReply(ticket, comment, customPrompt);
 
         const reply = await prisma.reply.create({
             data: {
@@ -1183,14 +1209,109 @@ export const triggerAIResponse = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "AI response triggered successfully",
+            message: "AI response generated successfully",
             reply: reply,
+            remaining: rateLimitCheck.remaining,
         });
     } catch (error) {
         console.log("Error triggering AI response", error);
         res.status(500).json({
             success: false,
             message: "Server error while triggering AI response"
+        });
+    }
+};
+
+async function triggerAutoReplyIfEligible(ticket, comment, user) {
+    try {
+        const existingReplies = await prisma.reply.findFirst({
+            where: { commentId: comment.id }
+        });
+
+        if (existingReplies) {
+            return null;
+        }
+
+        const commentLower = comment.content.toLowerCase();
+        const hasKeyword = AUTO_REPLY_KEYWORDS.some(keyword => commentLower.includes(keyword));
+
+        const userData = await prisma.user.findUnique({ where: { id: user.id } });
+        
+        if (userData.planTier === "BASIC" || userData.planTier === undefined) {
+            return null;
+        }
+
+        const rateLimitCheck = await checkAndConsumeAIReply(user.id, ticket.urgency === "CRITICAL");
+        
+        if (!rateLimitCheck.allowed) {
+            console.log("Auto-reply rate limit exceeded for user:", user.id);
+            return null;
+        }
+
+        if (!hasKeyword) {
+            return null;
+        }
+
+        const aiContent = await generateAutoReply(ticket, comment);
+
+        const reply = await prisma.reply.create({
+            data: {
+                commentId: comment.id,
+                userId: user.id,
+                content: aiContent,
+                aiGenerated: true
+            }
+        });
+
+        await prisma.comment.update({
+            where: { id: comment.id },
+            data: { commentCount: { increment: 1 } }
+        });
+
+        const existingHistory = ticket.automationHistory || [];
+        const newHistory = [
+            ...existingHistory,
+            {
+                action: "Auto-reply generated",
+                timestamp: new Date(),
+                details: `Auto-reply for comment ${comment.id}`
+            }
+        ];
+
+        await prisma.ticket.update({
+            where: { id: ticket.id },
+            data: { automationHistory: newHistory }
+        });
+
+        console.log("Auto-reply generated for ticket:", ticket.id);
+        return reply;
+        
+    } catch (error) {
+        console.error("Error in triggerAutoReplyIfEligible:", error);
+        return null;
+    }
+}
+
+export const getAIUsage = async (req, res) => {
+    try {
+        const usage = await getAIUsageForUser(req.user.id);
+        
+        if (!usage) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            usage: usage
+        });
+    } catch (error) {
+        console.log("Error getting AI usage", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while getting AI usage"
         });
     }
 };

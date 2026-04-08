@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
-import { getAllUsers, updateUserRoleAndStatus, deleteUserById, getActiveUsers, updateUserActivity, markUserOffline } from "../controllers/admin.controllers.js";
+import { getAllUsers, updateUserRoleAndStatus, deleteUserById, getActiveUsers, updateUserActivity, markUserOffline, updateUserPlanTier, getAllUsersPlanUsage } from "../controllers/admin.controllers.js";
 
 const router = express.Router();
 
@@ -21,5 +21,11 @@ router.put("/users/:username", verifyToken, updateUserRoleAndStatus);
 
 // Admin deletes user by id
 router.delete("/users/:id", verifyToken, deleteUserById);
+
+// Update user plan tier by username
+router.put("/users/:username/plan-tier", verifyToken, updateUserPlanTier);
+
+// Get all users plan usage
+router.get("/users/plan-usage", verifyToken, getAllUsersPlanUsage);
 
 export default router;

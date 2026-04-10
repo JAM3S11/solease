@@ -2,6 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import crypto from "crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,9 +16,10 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, `profile-${req.userId}-${uniqueSuffix}${ext}`);
+        const uniqueSuffix = Date.now() + "-" + crypto.randomBytes(8).toString("hex");
+        const ext = path.extname(file.originalname).toLowerCase();
+        const userId = req.userId || "anonymous";
+        cb(null, `profile-${userId}-${uniqueSuffix}${ext}`);
     }
 });
 
@@ -39,7 +41,7 @@ const fileFilter = (req, file, cb) => {
 export const uploadProfilePhoto = multer({
     storage: storage,
     limits: {
-        fileSize: 2 * 1024 * 1024 // 2MB
+        fileSize: 5 * 1024 * 1024 // 5MB
     },
     fileFilter: fileFilter
 }).single("profilePhoto");

@@ -18,6 +18,10 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
         useNotificationStore();
     // Subscribe to auth store for real-time profile photo updates
     const authUser = useAuthenticationStore((state) => state.user);
+    
+    // Force re-render when authUser changes by using it in a way React can track
+    const authPhoto = authUser?.profilePhoto;
+    
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const isUseMobile = useIsMobile();
@@ -46,11 +50,17 @@ export const UserCard = memo(({ user, isCollapsed, onLogout, userRole }) => {
 
     if (!user) return null;
 
-    // Use auth store for real-time updates, fallback to prop
+    // PRIORITY: Use authUser from authStore (fresh) first, then fallback to prop user
+    // This ensures we always get the latest profile photo after upload
     const profilePhoto = authUser?.profilePhoto || user?.profilePhoto;
+    
     const currentAvatar = profilePhoto
-        ? `${import.meta.env.VITE_API_URL}${profilePhoto}`
+        ? profilePhoto.startsWith("http")
+            ? profilePhoto
+            : `${import.meta.env.VITE_API_URL}${profilePhoto}`
         : undefined;
+        
+    console.log("[UserCard] authUser:", authUser?.profilePhoto, "user prop:", user?.profilePhoto, "final:", currentAvatar);
 
     const getSettingsPath = (role) => {
         switch(role.toLowerCase()){

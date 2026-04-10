@@ -8,8 +8,8 @@ import useTicketStore from '../../store/ticketStore'
 import WelcomeMessage from '../ui/WelcomeMessage'
 import { NumberTicker } from '../ui/number-ticker'
 
-// Profile Avatar Helper
-const getProfileAvatar = (user, size = "md") => {
+// Profile Avatar Helper - accepts optional profilePhoto param for real-time updates
+const getProfileAvatar = (user, size = "md", profilePhotoOverride = null) => {
   const sizes = { sm: "w-8 h-8 text-xs", md: "w-10 h-10 text-sm", lg: "w-12 h-12 text-base" };
   const role = user?.role?.toUpperCase();
   const gradientClass = role === "MANAGER" || role === "ADMIN"
@@ -19,10 +19,13 @@ const getProfileAvatar = (user, size = "md") => {
       : "bg-gradient-to-br from-blue-500 to-blue-600";
   const initials = user?.name?.charAt(0) || user?.username?.charAt(0) || "?";
 
-  if (user?.profilePhoto) {
-    const photoUrl = user.profilePhoto.startsWith("http")
-      ? user.profilePhoto
-      : `${import.meta.env.VITE_API_URL}${user.profilePhoto}`;
+  // Use override if provided (from authStore), otherwise use user.profilePhoto
+  const profilePhoto = profilePhotoOverride || user?.profilePhoto;
+
+  if (profilePhoto) {
+    const photoUrl = profilePhoto.startsWith("http")
+      ? profilePhoto
+      : `${import.meta.env.VITE_API_URL}${profilePhoto}`;
     return (
       <img
         src={photoUrl}
@@ -41,6 +44,8 @@ const getProfileAvatar = (user, size = "md") => {
 
 const ReviewerDashbord = () => {
   const { user } = useAuthenticationStore()
+  // Real-time profile photo from authStore for instant updates
+  const profilePhoto = user?.profilePhoto
   const { tickets, fetchTickets, loading, error } = useTicketStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })

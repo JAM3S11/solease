@@ -128,28 +128,53 @@ export const putProfile = async (req, res) => {
 
 export const uploadProfilePhoto = async (req, res) => {
   try {
+    console.log("Upload request received, userId:", req.userId);
+    console.log("Request file:", req.file);
+    console.log("Request body:", req.body);
+
     if (!req.file) {
+      console.log("No file in request");
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) {
+      console.log("User not found for userId:", req.userId);
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    console.log("User found:", user.id, "Current profilePhoto:", user.profilePhoto);
+
+    // Delete old photo if exists
     if (user.profilePhoto) {
-      const oldPhotoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
-      if (fs.existsSync(oldPhotoPath)) {
-        fs.unlinkSync(oldPhotoPath);
+      try {
+        let oldPhotoPath = user.profilePhoto;
+        if (!oldPhotoPath.startsWith("/uploads/")) {
+          oldPhotoPath = `/uploads/profile-photos/${oldPhotoPath}`;
+        }
+        const fullOldPhotoPath = path.join(process.cwd(), oldPhotoPath);
+        console.log("Deleting old photo at:", fullOldPhotoPath);
+        if (fs.existsSync(fullOldPhotoPath)) {
+          fs.unlinkSync(fullOldPhotoPath);
+          console.log("Old photo deleted successfully");
+        } else {
+          console.log("Old photo file not found on disk");
+        }
+      } catch (err) {
+        console.warn("Could not delete old photo:", err.message);
       }
     }
 
+    // Store relative path (works with both PostgreSQL and other DBs)
     const profilePhotoPath = `/uploads/profile-photos/${req.file.filename}`;
+    console.log("New photo path to save:", profilePhotoPath);
     
     const updatedUser = await prisma.user.update({
       where: { id: req.userId },
       data: { profilePhoto: profilePhotoPath }
     });
+
+    console.log("Database updated, new profilePhoto:", updatedUser.profilePhoto);
 
     return res.status(200).json({
       success: true,
@@ -158,7 +183,7 @@ export const uploadProfilePhoto = async (req, res) => {
     });
   } catch (error) {
     console.error("Error uploading profile photo:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error: " + error.message });
   }
 };
 
@@ -170,9 +195,18 @@ export const deleteProfilePhoto = async (req, res) => {
     }
 
     if (user.profilePhoto) {
-      const photoPath = path.join(process.cwd(), "uploads", "profile-photos", path.basename(user.profilePhoto));
-      if (fs.existsSync(photoPath)) {
-        fs.unlinkSync(photoPath);
+      try {
+        // Handle both old format (just filename) and new format (full path)
+        let photoPath = user.profilePhoto;
+        if (!photoPath.startsWith("/uploads/")) {
+          photoPath = `/uploads/profile-photos/${photoPath}`;
+        }
+        const fullPhotoPath = path.join(process.cwd(), photoPath);
+        if (fs.existsSync(fullPhotoPath)) {
+          fs.unlinkSync(fullPhotoPath);
+        }
+      } catch (err) {
+        console.warn("Could not delete photo file:", err.message);
       }
 
       await prisma.user.update({

@@ -6,8 +6,11 @@ import { useAuthenticationStore } from "../store/authStore.js";
 const getFullPhotoUrl = (photoPath) => {
     if (!photoPath) return null;
     if (photoPath.startsWith('http')) return photoPath;
-    // Default to localhost:5001 for development
-    return `http://localhost:5001${photoPath}`;
+    // Use environment variable for API URL
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    // Remove trailing slash if present
+    const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    return `${baseUrl}${photoPath}`;
 };
 
 export const useProfileStore = create((set, get) => ({
@@ -70,8 +73,16 @@ export const useProfileStore = create((set, get) => ({
     uploadProfilePhoto: async (file) => {
         set({ profilePhotoLoading: true, error: null });
         try {
+            console.log("[ProfileStore] uploadProfilePhoto called with:", file?.name, file?.type, file?.size);
+            
+            if (!file) {
+                throw new Error("No file provided");
+            }
+            
             const formData = new FormData();
             formData.append("profilePhoto", file);
+            
+            console.log("[ProfileStore] Sending request to /profile/upload-photo");
             
             const res = await api.post("/profile/upload-photo", formData, {
                 headers: {
@@ -79,8 +90,15 @@ export const useProfileStore = create((set, get) => ({
                 },
             });
             
+            console.log("[ProfileStore] Upload response status:", res.status);
+            console.log("[ProfileStore] Upload response data:", res.data);
+            
+            if (!res.data.success) {
+                throw new Error(res.data.message || "Upload failed");
+            }
+            
             const fullPhotoUrl = getFullPhotoUrl(res.data.profilePhoto);
-            console.log("Uploaded photo URL:", fullPhotoUrl);
+            console.log("[ProfileStore] Full photo URL:", fullPhotoUrl);
             
             // Update both profilePhoto and personal with the full URL
             set((state) => ({
@@ -96,12 +114,14 @@ export const useProfileStore = create((set, get) => ({
             
             return { ...res.data, profilePhoto: fullPhotoUrl };
         } catch (error) {
-            console.error("Error uploading profile photo:", error);
+            console.error("[ProfileStore] Error uploading profile photo:", error);
+            console.error("[ProfileStore] Error response:", error.response?.data);
+            const errorMessage = error.response?.data?.message || error.message || "Failed to upload photo";
             set({
                 profilePhotoLoading: false,
-                error: error.response?.data?.message || "Failed to upload photo",
+                error: errorMessage,
             });
-            throw error;
+            throw new Error(errorMessage);
         }
     },
     deleteProfilePhoto: async () => {

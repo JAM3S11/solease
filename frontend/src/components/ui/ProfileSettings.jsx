@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, MapPin, Phone, Globe, ShieldCheck, Fingerprint, Save, Lock, CheckCircle, AlertCircle, Eye, EyeOff, Upload, X, LogOut, Shield, Bell, BellOff, Calendar, Clock, BadgeCheck, Award, Edit3, ExternalLink, Camera, XCircle } from "lucide-react";
 import { Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from "./drawer"
+import ComboboxInput, { COUNTRIES, getStatesByCountry } from "./ComboboxInput"
 import toast from 'react-hot-toast';
 import useNotificationStore from "../../store/notificationStore";
 
@@ -285,7 +286,9 @@ const ProfileSettings = ({
 
   const handlePhotoSelect = (e) => {
     const file = e.target.files?.[0];
+    console.log("ProfileSettings: File input changed", file);
     if (file) {
+      console.log("ProfileSettings: Selected file:", file.name, file.type, file.size);
       if (file.size > 2 * 1024 * 1024) {
         toast.error('File size must be less than 2MB', toastConfig);
         e.target.value = '';
@@ -293,18 +296,25 @@ const ProfileSettings = ({
       }
       setSelectedPhoto(file);
       setPhotoPreview(URL.createObjectURL(file));
+      console.log("ProfileSettings: Photo selected, preview set");
       e.target.value = '';
     }
   };
 
   const handlePhotoUpload = async () => {
-    if (!selectedPhoto) return;
+    console.log("ProfileSettings: handlePhotoUpload called, selectedPhoto:", selectedPhoto);
+    if (!selectedPhoto) {
+      console.log("ProfileSettings: No photo selected, returning");
+      return;
+    }
+    console.log("ProfileSettings: Uploading photo:", selectedPhoto.name, selectedPhoto.type, selectedPhoto.size);
     try {
       await onUploadProfilePhoto(selectedPhoto);
       toast.success('Profile photo updated successfully!', toastConfig);
       setSelectedPhoto(null);
       setPhotoPreview(null);
     } catch (error) {
+      console.error("ProfileSettings: Upload error:", error);
       toast.error(error.message || 'Failed to upload photo', toastConfig);
     }
   };
@@ -375,6 +385,19 @@ const ProfileSettings = ({
     const { name, value } = e.target;
     setIsDirty(true);
     onContactChange(e);
+
+    if (name === 'country') {
+      const states = getStatesByCountry(value)
+      if (states.length > 0) {
+        const countyEvent = {
+          target: {
+            name: 'county',
+            value: states[0]
+          }
+        }
+        onContactChange(countyEvent)
+      }
+    }
 
     const validationType = name === 'telephoneNumber' ? 'phone' : null;
     handleValidation(name, value, validationType);
@@ -689,8 +712,9 @@ const ProfileSettings = ({
 
               {/* Phase: PERSONAL */}
               {activePhase === 'personal' && (
-                <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  {/* Editable Section */}
+                  <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <ProfileInput
                       label='Legal Full Name'
                       icon={User}
@@ -704,25 +728,82 @@ const ProfileSettings = ({
                       validationType="name"
                       helpText="This name will appear on official documents and invoices."
                     />
-                    <ProfileInput
-                      label='Primary Email'
-                      icon={Mail}
-                      disabled
-                      value={personalData.email || ""}
-                      helpText="Emails are managed by your administrator for security."
-                    />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ProfileInput label='Organization Role' disabled value={personalData.role || ""} />
-                    <ProfileInput label='Account Status' disabled value={personalData.status || ""} />
+
+                  {/* Read-Only System Section */}
+                  <div className="bg-slate-50/50 dark:bg-slate-900/30 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ShieldCheck size={18} className="text-blue-600 dark:text-blue-400" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">System Identity Metadata</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {/* Email with Verified Badge */}
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Primary Network ID</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{personalData.email}</span>
+                          {verified && (
+                            <div className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md flex items-center gap-1 flex-shrink-0">
+                              <BadgeCheck size={10} />
+                              <span className="text-[9px] font-black">VERIFIED</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Role */}
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Organization Role</p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                            <Award size={14} className="text-blue-500" />
+                          </div>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200 capitalize">{personalData.role || 'Member'}</span>
+                        </div>
+                      </div>
+
+                      {/* Status Pill */}
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Account Status</p>
+                        <div>
+                          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border shadow-sm ${
+                            personalData.status?.toLowerCase() === 'active'
+                              ? 'bg-green-100/50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50'
+                              : 'bg-amber-100/50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
+                          }`}>
+                            <div className={`w-1.5 h-1.5 rounded-full mr-2 animate-pulse ${
+                              personalData.status?.toLowerCase() === 'active' ? 'bg-green-500' : 'bg-amber-500'
+                            }`} />
+                            {personalData.status || 'Unknown'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 italic flex items-center gap-2">
+                        <Lock size={12} className="text-slate-400" />
+                        System-managed identity traits. Request modifications through your organization administrator.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Phase: CONTACT */}
               {activePhase === 'contact' && (
-                <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
-                   <div className="space-y-6">
+                <div className="space-y-6">
+                  {/* Geographic Location Card */}
+                  <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <MapPin size={16} className="text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Geographic Location</h4>
+                    </div>
+
+                    <div className="space-y-6">
                       <ProfileInput
                         label='Physical Street Address'
                         icon={MapPin}
@@ -736,36 +817,75 @@ const ProfileSettings = ({
                         helpText="Required for service delivery and regional tax compliance."
                       />
                       <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
-                        <ProfileInput
+                        <ComboboxInput
                           label="Country / Region"
                           icon={Globe}
                           name="country"
                           value={contactData.country || ""}
                           onChange={handleContactChange}
-                          helpText="Select your primary residence."
+                          options={COUNTRIES}
+                          placeholder="Select or type country..."
+                          allowCustom
+                          onEnterPress={(value) => {
+                            const states = getStatesByCountry(value)
+                            if (states.length > 0) {
+                              const countyEvent = {
+                                target: {
+                                  name: 'county',
+                                  value: states[0]
+                                }
+                              }
+                              onContactChange(countyEvent)
+                            }
+                          }}
+                          helpText="Select your primary residence. Press Enter to add custom."
                         />
-                        <ProfileInput
+                        <ComboboxInput
                           label="State / County"
                           name="county"
                           value={contactData.county || ""}
                           onChange={handleContactChange}
-                          helpText="Local administrative division."
+                          options={contactData.country ? getStatesByCountry(contactData.country) : []}
+                          placeholder="Select or type state/county..."
+                          allowCustom
+                          onEnterPress={(value) => {
+                            const event = {
+                              target: {
+                                name: 'county',
+                                value: value
+                              }
+                            }
+                            onContactChange(event)
+                          }}
+                          helpText="Auto-filled based on Country/Region."
                         />
                       </div>
-                      <ProfileInput
-                        label='Telephone Contact'
-                        icon={Phone}
-                        name="telephoneNumber"
-                        placeholder="+254 --- --- ---"
-                        type="tel"
-                        value={contactData.telephoneNumber ?? ""}
-                        onChange={handleContactChange}
-                        error={validationErrors.telephoneNumber}
-                        success={validationSuccess.telephoneNumber}
-                        validationType="phone"
-                        helpText="Used for urgent account recovery and security verification."
-                      />
-                   </div>
+                    </div>
+                  </div>
+
+                  {/* Direct Contact Card */}
+                  <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                        <Phone size={16} className="text-green-600 dark:text-green-400" />
+                      </div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Direct Contact</h4>
+                    </div>
+
+                    <ProfileInput
+                      label='Telephone Contact'
+                      icon={Phone}
+                      name="telephoneNumber"
+                      placeholder="+254 --- --- ---"
+                      type="tel"
+                      value={contactData.telephoneNumber ?? ""}
+                      onChange={handleContactChange}
+                      error={validationErrors.telephoneNumber}
+                      success={validationSuccess.telephoneNumber}
+                      validationType="phone"
+                      helpText="Used for urgent account recovery and security verification."
+                    />
+                  </div>
                 </div>
               )}
 

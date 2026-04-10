@@ -14,13 +14,16 @@ import { useAuthenticationStore } from "../../store/authStore"
 import { toast } from "sonner"
 
 export function ProfileDropdown({ showChevron = true }) {
+  // Subscribe to authStore for real-time profile photo updates
   const { user, logout } = useAuthenticationStore()
   const navigate = useNavigate()
 
+  // Real-time profile photo - automatically updates when changed
   const currentAvatar = user?.profilePhoto
-    ? `${import.meta.env.VITE_API_URL}${user?.profilePhoto}`
+    ? user.profilePhoto.startsWith("http")
+      ? user.profilePhoto
+      : `${import.meta.env.VITE_API_URL}${user.profilePhoto}`
     : undefined;
-  console.log("currentAvatar:", currentAvatar, "user:", user)
 
   const getInitials = (name) => {
     if (!name) return "U"

@@ -27,6 +27,24 @@ export const getStatesByCountry = (country) => {
   return COUNTRIES_DATA[country] || []
 }
 
+const AREAS_DATA = {
+  'Nairobi': ['Central Business District', 'Westlands', 'Kilimani', 'Kasarani', 'Kakamega', 'Kisumu', 'Mombasa', 'Eldoret', 'Nakuru', 'Malindi'],
+  'Mombasa': ['Old Town', 'Mombasa CBD', 'Likoni', 'Kisauni', 'Nyali', 'Mombasa', 'Kilifi', 'Malindi', 'Diani', 'Lamu'],
+  'Kisumu': ['Kisumu CBD', 'Milimani', 'Kisumu', 'Nyamasaria', 'Suna', 'Migori', 'Homa Bay', 'Kakamega', 'Siaya', 'Busia'],
+  'Nakuru': ['Nakuru CBD', 'Gilgil', 'Naivasha', 'Mai Mahiu', 'Molo', 'Londiani', 'Kuresoi', 'Nakuru', 'Baringo', 'Kericho'],
+  'Eldoret': ['Eldoret CBD', 'Kipkaren', 'Langas', 'Kimumu', 'Iten', 'Kitale', 'Lodwar', 'Kapengur', 'Eldoret', 'Uasin Gishu'],
+  'Lagos': ['Victoria Island', 'Ikoyi', 'Lekki', 'Apapa', 'Yaba', 'Ikeja', 'Lagos Island', 'Surulere', 'Ajah', 'Badagry'],
+  'Abuja': ['Central Business District', 'Wuse 2', 'Gwagwalada', 'Kuje', 'Bwari', 'Karu', 'Abaji', 'Municipal', 'AMAC'],
+  'Kampala': ['Kampala Central', 'Nansana', 'Kibuye', 'Makerere', 'Kawempe', 'Rubaga', 'Nagguru', 'Nsambya', 'Bugolobi', 'Port Bell'],
+  'Dar es Salaam': ['CBD', 'Oysterbay', 'Msasani', 'Kinondoni', 'Ilala', 'Temeke', 'Mwananyamala', 'Buguruni', 'Kibaha', 'Bagamoyo'],
+}
+
+export const getAreasByState = (country, state) => {
+  if (!state) return []
+  const key = `${state}`
+  return AREAS_DATA[key] || []
+}
+
 const ComboboxInput = React.memo(({
   label,
   icon: Icon,

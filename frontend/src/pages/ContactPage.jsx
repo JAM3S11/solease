@@ -3,7 +3,7 @@ import api from "../lib/axios.js";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion"; 
-import { MapPin, Phone, Mail, Clock, ShieldCheck, Activity, Send, MessageCircle, Twitter, Linkedin, Instagram, Facebook, HelpCircle, CheckCircle2, ArrowRight, Zap, Users, Calendar } from "lucide-react"; 
+import { MapPin, Phone, Mail, Clock, ShieldCheck, Activity, Send, MessageCircle, Twitter, Linkedin, Instagram, Facebook, HelpCircle, CheckCircle2, ArrowRight, Zap, Users, Calendar, LifeBuoy, Briefcase, CreditCard, Wrench } from "lucide-react"; 
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -57,17 +57,11 @@ const ContactPage = () => {
     transition: { duration: 0.6, ease: "easeOut" }
   };
 
-  const officeImages = [
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400&h=300&fit=crop"
-  ];
-
   const socialLinks = [
-    { icon: Twitter, name: "Twitter", href: "#" },
-    { icon: Linkedin, name: "LinkedIn", href: "#" },
-    { icon: Instagram, name: "Instagram", href: "#" },
-    { icon: Facebook, name: "Facebook", href: "#" }
+    { icon: Twitter, name: "Twitter", href: "https://x.com" },
+    { icon: Linkedin, name: "LinkedIn", href: "https://www.linkedin.com" },
+    { icon: Instagram, name: "Instagram", href: "https://www.instagram.com" },
+    { icon: Facebook, name: "Facebook", href: "https://www.facebook.com" }
   ];
 
   const supportChannels = [
@@ -89,6 +83,48 @@ const ContactPage = () => {
     { title: "Resolution Time", basic: "48 hours", pro: "24 hours", enterprise: "4 hours" },
     { title: "Support Channel", basic: "Email", pro: "Email + Chat", enterprise: "24/7 Priority" },
     { title: "Dedicated Manager", basic: false, pro: false, enterprise: true }
+  ];
+
+  const contactDirectory = [
+    {
+      icon: LifeBuoy,
+      team: "Technical Support",
+      email: "support@solease.com",
+      bestFor: "System issues, ticket workflow errors, access blockers",
+      response: "< 4 hours",
+      availability: "24/7 (Enterprise), business hours (Standard)"
+    },
+    {
+      icon: Briefcase,
+      team: "Sales & Demos",
+      email: "sales@solease.com",
+      bestFor: "Product walkthroughs, plan selection, enterprise onboarding",
+      response: "Same business day",
+      availability: "Mon-Fri, 8:00 AM - 6:00 PM"
+    },
+    {
+      icon: CreditCard,
+      team: "Billing & Plans",
+      email: "billing@solease.com",
+      bestFor: "Invoices, subscriptions, payment and renewal requests",
+      response: "< 24 hours",
+      availability: "Mon-Fri, 9:00 AM - 5:00 PM"
+    },
+    {
+      icon: Wrench,
+      team: "Integrations Desk",
+      email: "integrations@solease.com",
+      bestFor: "API setup, webhooks, migration and custom integrations",
+      response: "< 8 hours",
+      availability: "Mon-Fri, 8:00 AM - 6:00 PM"
+    }
+  ];
+
+  const responseProcess = [
+    { step: "1", title: "Request Logged", desc: "Your inquiry is captured and assigned a tracking reference immediately." },
+    { step: "2", title: "Routing", desc: "SOLEASE routes your message to the right team based on issue type and urgency." },
+    { step: "3", title: "First Reply", desc: "You receive an initial response with next steps and ownership confirmation." },
+    { step: "4", title: "Resolution Follow-up", desc: "We close the loop with outcomes, action items, or escalation if needed." }
   ];
 
   return (
@@ -120,12 +156,27 @@ const ContactPage = () => {
             <motion.div 
               {...fadeInUp}
               transition={{ delay: 0.2 }}
-              className="shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100 h-3/4"
+              className="shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100 h-4/4"
             >
               <h2 className="text-sm sm:text-base font-medium text-gray-900 mb-2 flex items-center gap-3">
                 Send us a Message
               </h2>
               <p className="text-gray-500 text-xs mb-6">Fill out the form below and we'll respond within 24 hours.</p>
+              <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <p className="text-xs font-medium text-blue-700 mb-2">To help us respond faster, include:</p>
+                <ul className="space-y-1">
+                  {[
+                    "Your organization name and role",
+                    "A clear issue summary or inquiry type",
+                    "Relevant ticket IDs, screenshots, or error messages",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-xs text-blue-700">
+                      <CheckCircle2 size={12} className="mt-0.5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -278,6 +329,91 @@ const ContactPage = () => {
                 </div>
               </motion.div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Directory Section */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Contact Directory</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Reach the Right Team Faster</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-3xl mx-auto">
+              Choose the best contact path for your request type to get faster and more accurate support.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            {contactDirectory.map((item, index) => (
+              <motion.div
+                key={item.team}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="bg-gray-50 rounded-xl p-6 border border-gray-100"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <item.icon size={18} />
+                  </div>
+                  <h3 className="text-sm md:text-base font-medium text-gray-900">{item.team}</h3>
+                </div>
+                <p className="text-gray-700 text-sm mb-2">
+                  <span className="font-medium">Email:</span> {item.email}
+                </p>
+                <p className="text-gray-600 text-sm mb-2 leading-relaxed">
+                  <span className="font-medium text-gray-700">Best for:</span> {item.bestFor}
+                </p>
+                <p className="text-gray-600 text-sm">
+                  <span className="font-medium text-gray-700">Expected response:</span> {item.response}
+                </p>
+                <p className="text-gray-500 text-xs mt-2">{item.availability}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Process Section */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">How We Handle Requests</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">What Happens After You Contact Us</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">
+              Every inquiry follows a structured support process to ensure quick ownership and clear communication.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {responseProcess.map((item, index) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="bg-white rounded-xl p-5 border border-gray-100"
+              >
+                <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-medium text-sm mb-3">
+                  {item.step}
+                </div>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -482,14 +618,16 @@ const ContactPage = () => {
       </section>
 
       {/* Social Links Section */}
-      {/* <section className="py-12 bg-gray-50 border-t border-gray-100">
+      <section className="py-12 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-gray-500 font-medium mb-6">Follow us on social media for updates and tips</p>
+          <p className="text-gray-500 font-medium mb-6 text-sm">Follow us for product updates, release notes, and support tips</p>
           <div className="flex justify-center gap-4">
             {socialLinks.map((social, index) => (
               <a
                 key={social.name}
                 href={social.href}
+                target="_blank"
+                rel="noreferrer"
                 className="w-12 h-12 bg-white hover:bg-blue-600 hover:text-white border border-gray-200 rounded-full flex items-center justify-center text-gray-600 transition-all duration-300"
               >
                 <social.icon size={20} />
@@ -497,7 +635,7 @@ const ContactPage = () => {
             ))}
           </div>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 };

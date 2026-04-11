@@ -1,117 +1,281 @@
-import React, { useState } from 'react'
-import { Users, LayoutDashboard, ShieldCheck, Users2, TicketCheck, BarChart3, Bot, Sparkles, ArrowRight, Loader, Lock, Server, CheckCircle2, TrendingUp, Zap, Globe, Award, Star, FileText, Settings, Clock, Layers, Workflow, Smartphone, Database, Webhook, UserCheck, UserCog } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  Clock3,
+  Database,
+  Layers,
+  Lock,
+  ShieldCheck,
+  TicketCheck,
+  UserCheck,
+  UserCog,
+  Users,
+  Webhook,
+} from "lucide-react";
+import { Link } from "react-router";
+
+const stats = [
+  { value: "10,000+", label: "Daily Active Users" },
+  { value: "500,000+", label: "Tickets Resolved" },
+  { value: "99.9%", label: "Uptime SLA" },
+  { value: "24/7", label: "Enterprise Support" },
+];
+
+const currentOperations = [
+  {
+    icon: TicketCheck,
+    title: "Multi-channel ticket intake",
+    description:
+      "SOLEASE is currently receiving tickets through web forms, email pipelines, and API requests into one operational queue.",
+  },
+  {
+    icon: Bot,
+    title: "AI-driven triage",
+    description:
+      "Incoming requests are analyzed for category, urgency, and sentiment to speed up assignment and reduce manual sorting.",
+  },
+  {
+    icon: Clock3,
+    title: "SLA monitoring and escalation",
+    description:
+      "Live SLA timers track first-response and resolution targets, with escalation rules triggered automatically when thresholds are at risk.",
+  },
+  {
+    icon: Layers,
+    title: "Workflow automation",
+    description:
+      "Status transitions, queue movement, and ownership updates are automated with rules that keep ticket flow consistent.",
+  },
+  {
+    icon: Webhook,
+    title: "Integration sync",
+    description:
+      "Connected tools sync ticket events in real time, helping teams collaborate without losing context across platforms.",
+  },
+  {
+    icon: Database,
+    title: "Analytics and reporting",
+    description:
+      "Support leaders track backlog health, response speed, and resolution patterns through active operational dashboards.",
+  },
+];
+
+const systemCoverage = [
+  {
+    title: "Ticket Management Lifecycle",
+    items: [
+      "Ticket creation from web, email, and API",
+      "Priority and category assignment",
+      "Status tracking from open to resolved",
+      "Ownership handoff between teams",
+      "Resolution notes and closure flow",
+      "Client feedback capture after resolution",
+    ],
+  },
+  {
+    title: "AI Intelligence Layer",
+    items: [
+      "Intent and sentiment analysis on incoming tickets",
+      "Urgency detection for smarter prioritization",
+      "Suggested routing for faster assignment",
+      "AI-assisted response and resolution support",
+      "Pattern recognition for recurring issue types",
+      "Decision support for high-risk ticket queues",
+    ],
+  },
+  {
+    title: "Workflow and Automation",
+    items: [
+      "Rule-based assignment and queue movement",
+      "Automatic SLA tracking and breach detection",
+      "Escalation triggers for delayed tickets",
+      "Status transition automation by policy",
+      "Notification workflows for key lifecycle events",
+      "Repeatable process enforcement across teams",
+    ],
+  },
+  {
+    title: "Roles and Team Operations",
+    items: [
+      "Manager oversight of queues and team performance",
+      "Reviewer execution of investigation and resolution",
+      "Client self-service submission and ticket tracking",
+      "Role-based visibility into ticket data",
+      "Permission-based controls on actions",
+      "Cross-team collaboration under one platform",
+    ],
+  },
+  {
+    title: "Analytics and Reporting",
+    items: [
+      "Real-time dashboards for ticket health",
+      "Response and resolution time monitoring",
+      "Backlog trend and workload analysis",
+      "Team productivity and throughput metrics",
+      "Service quality visibility for managers",
+      "Operational insights for process optimization",
+    ],
+  },
+  {
+    title: "Security, Compliance, and Reliability",
+    items: [
+      "Role-based access and permission control",
+      "Audit logs for ticket and user activity",
+      "Data encryption and secure handling",
+      "Operational continuity and backup safeguards",
+      "Compliance-ready process controls",
+      "Service availability monitoring and uptime focus",
+    ],
+  },
+  {
+    title: "Integrations and Extensibility",
+    items: [
+      "Webhook support for external system sync",
+      "API-driven ticket ingestion and updates",
+      "Integration with communication/collaboration tools",
+      "Connection with issue tracking ecosystems",
+      "Workflow continuity across third-party platforms",
+      "Flexible architecture for custom integration needs",
+    ],
+  },
+  {
+    title: "Support Experience Delivery",
+    items: [
+      "Consistent communication across ticket lifecycle",
+      "Client visibility into progress and status changes",
+      "Faster routing to the right resolver",
+      "Reduced manual delays in triage and assignment",
+      "Structured closure and feedback collection",
+      "Continuous service improvement from operational data",
+    ],
+  },
+];
+
+const operationalSnapshot = [
+  {
+    metric: "Average first response",
+    value: "< 4 hours",
+    note: "Measured against SLA rules and queue activity.",
+  },
+  {
+    metric: "Prioritization model",
+    value: "AI-assisted",
+    note: "Urgency and sentiment influence queue order.",
+  },
+  {
+    metric: "Assignment engine",
+    value: "Rules + workload",
+    note: "Routes by expertise, load, and SLA risk.",
+  },
+  {
+    metric: "Escalation behavior",
+    value: "Automated",
+    note: "High-risk or overdue tickets escalate by policy.",
+  },
+];
+
+const workflowStages = [
+  {
+    stage: "1. Intake",
+    detail: "Clients submit issues through web, email, or API. Every request is logged with traceable metadata.",
+  },
+  {
+    stage: "2. Analyze",
+    detail: "AI triage identifies ticket type, urgency, and sentiment to support fast and accurate handling.",
+  },
+  {
+    stage: "3. Route",
+    detail: "Rules assign cases to reviewers based on specialization, queue load, and service commitments.",
+  },
+  {
+    stage: "4. Resolve",
+    detail: "Reviewers investigate, update status, communicate with clients, and document final outcomes.",
+  },
+  {
+    stage: "5. Optimize",
+    detail: "Managers review trends and feedback to improve workflow rules and reduce repeated incidents.",
+  },
+];
+
+const roleModel = [
+  {
+    icon: UserCog,
+    title: "Managers",
+    description:
+      "Configure automations, monitor SLA performance, manage users and permissions, and review operational reports.",
+  },
+  {
+    icon: UserCheck,
+    title: "Reviewers",
+    description:
+      "Handle assigned queues, investigate incidents, apply solutions, escalate blockers, and close tickets with context.",
+  },
+  {
+    icon: Users,
+    title: "Clients",
+    description:
+      "Submit support requests, track progress in real time, receive updates, and provide resolution feedback.",
+  },
+];
+
+const securityAndTrust = [
+  "Role-based access control",
+  "Audit logs for ticket actions",
+  "Data protection and encryption",
+  "Operational backup safeguards",
+  "Compliance-ready controls",
+  "Availability monitoring",
+];
 
 const Aboutpage = () => {
-  const navigate = useNavigate();
-  const [buttonLoading, setButtonLoading] = useState(false);
-  
-  const handleJoinMovement = async () => {
-    setButtonLoading(true);
-    setTimeout(() => {
-      navigate('/signup');
-      setButtonLoading(false);
-    }, 300);
-  };
-
-  const capabilities = [
-    { icon: TicketCheck, title: "Smart Ticketing", desc: "AI-powered ticket creation, categorization, and routing with NLP" },
-    { icon: Bot, title: "Intelligent Automation", desc: "Auto-assignment, SLA tracking, and escalation rules" },
-    { icon: BarChart3, title: "Advanced Analytics", desc: "Real-time dashboards, custom reports, and predictive insights" },
-    { icon: Users, title: "Role Management", desc: "Flexible roles: Clients, Reviewers, Managers with permissions" },
-    { icon: ShieldCheck, title: "Enterprise Security", desc: "AES-256 encryption, SOC 2, GDPR, and audit logs" },
-    { icon: Webhook, title: "Integrations", desc: "Connect with Slack, Teams, Jira, Zendesk, and custom APIs" }
-  ];
-
-  const roles = [
-    { icon: UserCog, title: "Managers", desc: "Oversee all tickets, manage users, generate reports, configure system settings" },
-    { icon: UserCheck, title: "Reviewers", desc: "Assign, resolve, and escalate tickets; provide feedback on resolutions" },
-    { icon: Users, title: "Clients", desc: "Submit tickets, track progress, rate support experience, view history" }
-  ];
-
-  const features = [
-    { title: "Ticket Lifecycle", items: ["Create via web/email/API", "Auto-categorization", "Priority levels & SLA", "Status tracking", "Resolution workflow", "Feedback collection"] },
-    { title: "AI & Automation", items: ["NLP ticket analysis", "Smart routing", "Sentiment detection", "Auto-responses", "Escalation rules", "Predictive insights"] },
-    { title: "Analytics", items: ["Real-time dashboards", "Response time metrics", "Team performance", "Trend analysis", "Custom reports", "Export to CSV/PDF"] },
-    { title: "Security", items: ["End-to-end encryption", "Role-based access", "Audit logging", "GDPR compliance", "SSO integration", "Data backup"] }
-  ];
-
-  const integrations = [
-    { name: "Slack", icon: "S", desc: "Team notifications" },
-    { name: "Microsoft Teams", icon: "T", desc: "Enterprise chat" },
-    { name: "Jira", icon: "J", desc: "Issue tracking" },
-    { name: "Zendesk", icon: "Z", desc: "Support migration" },
-    { name: "Webhook", icon: "W", desc: "Custom integrations" },
-    { name: "API", icon: "A", desc: "Full access" }
-  ];
-
-  const stats = [
-    { value: "10,000", suffix: "+", label: "Daily Active Users" },
-    { value: "500,000", suffix: "+", label: "Tickets Resolved" },
-    { value: "99", suffix: "%", label: "Uptime SLA" },
-    { value: "24/7", label: "Support" }
-  ];
-
-  const testimonials = [
-    { name: "Sarah Mitchell", role: "IT Director", company: "TechCorp", avatar: "SM", content: "SOLEASE transformed our support workflow. Response times improved by 60% within the first month.", rating: 5 },
-    { name: "James Rodriguez", role: "Operations Manager", company: "Global Systems", avatar: "JR", content: "The analytics dashboard gives us insights we never had before. Data-driven decisions saved us thousands.", rating: 5 },
-    { name: "Emily Chen", role: "Support Lead", company: "InnovateTech", avatar: "EC", content: "Our team loves the intuitive interface. We focus on solving problems, not managing tickets.", rating: 5 }
-  ];
-  
   return (
     <main className="w-full bg-white font-sans">
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 bg-white overflow-hidden">
+      <section className="relative pt-24 pb-14 md:pt-32 md:pb-20 bg-white overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] bg-gray-300/10 rounded-full blur-[200px]" />
           <div className="absolute -bottom-1/2 -right-1/4 w-[600px] h-[600px] bg-gray-400/10 rounded-full blur-[180px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-gray-500/5 rounded-full blur-[250px]" />
         </div>
-        
-        <div className="relative z-10 px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <motion.span 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-4 py-2 rounded-full mb-8"
-            >
-              <Sparkles size={14} />
-              About SOLEASE
-            </motion.span>
-            
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-4 tracking-tight leading-[1.1]">
-              The intelligent<br />
-              <span className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
-                support platform
-              </span>
-            </h1>
-            
-            <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-              SOLEASE is an AI-powered ticketing platform that streamlines support operations—from ticket creation to resolution—with intelligent automation and actionable insights.
-            </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-4xl mx-auto"
+          >
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              About SOLEASE
+            </span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-4 tracking-tight leading-[1.1]">
+              Built for modern support operations
+            </h1>
+            <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8">
+              SOLEASE combines AI triage, workflow automation, role-based collaboration, and analytics
+              to run support operations with speed, control, and accountability across the full ticket lifecycle.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                to="/auth/signup"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2 transition-all text-sm"
+              >
                 Start Free Trial <ArrowRight size={16} />
               </Link>
-              <Link to="/services" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
-                View Features
+              <Link
+                to="/services"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm"
+              >
+                View Services
               </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Stats */}
       <section className="py-8 bg-white border-b border-gray-100">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
               <motion.div
@@ -119,118 +283,127 @@ const Aboutpage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.08 }}
                 className="text-center"
               >
-                <span className="text-base md:text-lg font-medium text-gray-900">
-                  {stat.value}{stat.suffix}
-                </span>
-                <p className="text-gray-500 text-sm font-normal mt-1">{stat.label}</p>
+                <span className="text-base md:text-lg font-medium text-gray-900">{stat.value}</span>
+                <p className="text-gray-500 text-sm mt-1">{stat.label}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Platform Capabilities */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Platform</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Everything you need</h2>
-            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">A complete ticketing solution built for modern support teams</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              Current System Operations
+            </span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
+              What SOLEASE is currently doing
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-3xl mx-auto leading-relaxed">
+              The platform is actively handling production support workloads with AI assistance and policy-driven automation.
+            </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {capabilities.map((cap, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {currentOperations.map((item, index) => (
               <motion.div
-                key={cap.title}
+                key={item.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors"
+                transition={{ delay: index * 0.08 }}
+                className="bg-gray-50 rounded-xl p-5 md:p-6 hover:bg-blue-50 transition-colors"
               >
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-sm mb-3">
-                  <cap.icon size={20} />
+                <div className="w-11 h-11 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-sm mb-4">
+                  <item.icon size={20} />
                 </div>
-                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-1">{cap.title}</h3>
-                <p className="text-gray-600 text-sm">{cap.desc}</p>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Role-Based Access */}
       <section className="py-16 md:py-24 bg-gray-50">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">User Roles</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Built for every team</h2>
-            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">Three distinct roles tailored to your organization structure</p>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              Operational Snapshot
+            </span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
+              Live platform behavior
+            </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {roles.map((role, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+            {operationalSnapshot.map((row, index) => (
               <motion.div
-                key={role.title}
+                key={row.metric}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-sm"
+                transition={{ delay: index * 0.08 }}
+                className="bg-white rounded-xl p-5 md:p-6 border border-gray-100"
               >
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
-                  <role.icon size={22} />
-                </div>
-                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{role.title}</h3>
-                <p className="text-gray-600 text-sm">{role.desc}</p>
+                <p className="text-[11px] uppercase tracking-[0.14em] text-gray-500 mb-2">{row.metric}</p>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{row.value}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{row.note}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Features</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Platform capabilities</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              Full System Scope
+            </span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
+              Everything SOLEASE is currently doing
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-3xl mx-auto leading-relaxed">
+              This section details the complete operational coverage of the SOLEASE system across support execution, control, and service delivery.
+            </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {features.map((feature, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {systemCoverage.map((area, index) => (
               <motion.div
-                key={feature.title}
+                key={area.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gray-50 rounded-xl p-4"
+                transition={{ delay: index * 0.05 }}
+                className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-100"
               >
-                <h3 className="text-sm font-medium text-gray-900 mb-3">{feature.title}</h3>
-                <ul className="space-y-1.5">
-                  {feature.items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-gray-600 text-xs md:text-sm">
-                      <CheckCircle2 size={12} className="text-blue-600" />
-                      {item}
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3">{area.title}</h3>
+                <ul className="space-y-2">
+                  {area.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-gray-600 text-sm leading-relaxed">
+                      <CheckCircle2 size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -240,167 +413,167 @@ const Aboutpage = () => {
         </div>
       </section>
 
-      {/* Integrations */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-8"
-          >
-            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Integrations</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Connect your tools</h2>
-          </motion.div>
-
-          <div className="flex flex-wrap justify-center gap-3">
-            {integrations.map((item, index) => (
-              <motion.div
-                key={item.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-white px-4 py-3 rounded-lg shadow-sm flex items-center gap-2 hover:shadow-md transition-shadow"
-              >
-                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center font-medium text-gray-700 text-sm">
-                  {item.icon}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">{item.name}</p>
-                  <p className="text-[10px] text-gray-500">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Security */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Security</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">Enterprise-grade protection</h2>
-              <p className="text-gray-600 text-sm mb-6">
-                Your data security is our top priority. SOLEASE implements industry-leading security measures to protect your information.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { icon: Lock, label: "AES-256 Encryption" },
-                  { icon: ShieldCheck, label: "SOC 2 Compliant" },
-                  { icon: Database, label: "GDPR Ready" },
-                  { icon: Server, label: "99.9% Uptime" }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <item.icon className="text-blue-600" size={16} />
-                    <span className="font-medium text-gray-900 text-xs">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6"
-            >
-              <div className="bg-white rounded-xl p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium text-gray-900 text-sm">Security Features</span>
-                  <ShieldCheck className="text-green-500" size={16} />
-                </div>
-                <div className="space-y-2">
-                  {["End-to-end encryption", "Role-based access control", "Audit logging", "SSO integration", "Data backup & recovery", "Penetration testing"].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 text-gray-600 text-xs">
-                      <CheckCircle2 size={12} className="text-green-500" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="px-6 md:px-12 w-full max-w-6xl mx-auto">
-          <motion.div 
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">Testimonials</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">Trusted by teams</h2>
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              Live Workflow
+            </span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
+              End-to-end lifecycle in production
+            </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {workflowStages.map((item, index) => (
               <motion.div
-                key={testimonial.name}
+                key={item.stage}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-sm"
+                transition={{ delay: index * 0.08 }}
+                className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-100"
               >
-                <div className="flex gap-1 mb-3">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-600 text-sm mb-4">"{testimonial.content}"</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 text-xs">{testimonial.name}</h4>
-                    <p className="text-gray-500 text-[10px]">{testimonial.role}</p>
-                  </div>
-                </div>
+                <h3 className="text-sm font-medium text-blue-600 mb-2">{item.stage}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.detail}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+              Role Alignment
+            </span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
+              Responsibilities in the system
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto">
+              Each role operates from the same source of truth with clear accountability across every ticket stage.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+            {roleModel.map((role, index) => (
+              <motion.div
+                key={role.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl p-6 border border-gray-100"
+              >
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
+                  <role.icon size={22} />
+                </div>
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-2">{role.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{role.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 md:py-24 bg-white">
-        <div className="px-6 md:px-12 w-full max-w-4xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">
+                Security and Reliability
+              </span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mb-4">
+                Built for controlled operations
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                Security and reliability controls are built into daily support execution to protect data and keep service delivery stable.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-gray-50 rounded-xl p-6 border border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm md:text-base font-medium text-gray-900">Control Measures</h3>
+                <ShieldCheck size={18} className="text-green-600" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {securityAndTrust.map((item) => (
+                  <div key={item} className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-100">
+                    <Lock size={14} className="text-blue-600 flex-shrink-0" />
+                    <span className="text-xs md:text-sm text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-900 mb-4">
-              Ready to transform<br />
-              <span className="text-blue-600">your support?</span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-900 mb-4">
+              Ready to run support with more control?
             </h2>
-            <p className="text-gray-600 text-sm md:text-base mb-8 max-w-xl mx-auto">
-              Join thousands of organizations delivering exceptional support with SOLEASE.
+            <p className="text-gray-600 text-sm md:text-base mb-8 max-w-2xl mx-auto leading-relaxed">
+              Start with SOLEASE to manage tickets, enforce SLAs, automate decisions, and keep your support teams aligned.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm">
+              <Link
+                to="/auth/signup"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all text-sm"
+              >
                 Start Free Trial <ArrowRight size={16} />
               </Link>
-              <Link to="/contact" className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm">
+              <Link
+                to="/contact"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-medium transition-all text-sm"
+              >
                 Contact Sales
               </Link>
+            </div>
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              {["No credit card required", "Quick onboarding", "Production-ready workflows"].map(
+                (item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full"
+                  >
+                    <CheckCircle2 size={12} className="text-green-600" />
+                    {item}
+                  </span>
+                )
+              )}
             </div>
           </motion.div>
         </div>
       </section>
     </main>
-  )
-}
+  );
+};
 
 export default Aboutpage;

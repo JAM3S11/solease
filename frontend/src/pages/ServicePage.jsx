@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sparkles, ChevronRight, Zap, Shield, Brain, ArrowRight, Check, Clock, Users, BarChart3, Building2, Lock, Database, HeadphonesIcon, Globe, Mail, MessageSquare, Bell, FileText, Settings, Workflow, Bot, Ticket, ShieldCheck, UserCheck, UserCog } from 'lucide-react'; 
+import { Search, Sparkles, ChevronRight, Zap, Shield, Brain, ArrowRight, Check, CheckCircle2, Clock, Users, BarChart3, Building2, Lock, Database, HeadphonesIcon, Globe, Mail, MessageSquare, Bell, FileText, Settings, Workflow, Bot, Ticket, ShieldCheck, UserCheck, UserCog } from 'lucide-react'; 
 import { Link } from 'react-router';
 
 const services = [
@@ -124,6 +124,99 @@ const comparison = [
   { feature: "Dedicated Account Manager", basic: false, pro: false, enterprise: true },
   { feature: "SLA Guarantees", basic: false, pro: "Standard", enterprise: "Custom" },
   { feature: "On-Premise Deployment", basic: false, pro: false, enterprise: true }
+];
+
+const serviceExecutionDetails = [
+  {
+    service: "Ticket Management",
+    operations: [
+      "Creates tickets from web forms, email parsing, and API payloads.",
+      "Applies category, priority, and SLA policy at intake.",
+      "Tracks lifecycle states from Open to Resolved with full status history.",
+      "Supports reassignment, linking, and merge flows for duplicate incidents.",
+      "Captures closure notes and post-resolution feedback for quality monitoring.",
+    ],
+  },
+  {
+    service: "AI-Powered Triage",
+    operations: [
+      "Analyzes ticket text for intent, urgency, and sentiment signals.",
+      "Recommends queue placement and assignee selection using routing logic.",
+      "Flags high-risk tickets likely to breach SLA.",
+      "Suggests response direction for reviewers handling complex requests.",
+      "Improves triage precision over time from historical outcomes.",
+    ],
+  },
+  {
+    service: "Analytics & Reporting",
+    operations: [
+      "Aggregates live metrics for response time, resolution time, and backlog load.",
+      "Surfaces team throughput and workload distribution in real-time dashboards.",
+      "Shows recurring issue patterns and root-cause trend indicators.",
+      "Supports export-ready reporting for management and audit review.",
+      "Enables data-driven process tuning from operational insights.",
+    ],
+  },
+  {
+    service: "User Management",
+    operations: [
+      "Defines role-based access for Managers, Reviewers, and Clients.",
+      "Controls ticket visibility and action permissions by user role.",
+      "Logs user actions and access events for accountability.",
+      "Supports structured onboarding and role assignment across teams.",
+      "Keeps operational control aligned with governance requirements.",
+    ],
+  },
+  {
+    service: "Automation & Workflows",
+    operations: [
+      "Runs assignment rules based on category, priority, and queue load.",
+      "Triggers escalation workflows for aging or overdue tickets.",
+      "Automates status transitions when required conditions are met.",
+      "Dispatches notifications to relevant stakeholders at lifecycle milestones.",
+      "Standardizes repeatable support procedures across departments.",
+    ],
+  },
+  {
+    service: "Predictive Analytics",
+    operations: [
+      "Forecasts support demand spikes using historical incident patterns.",
+      "Highlights anomaly signals before they become service-impacting events.",
+      "Supports capacity planning for teams and shift schedules.",
+      "Identifies potential SLA risk windows ahead of time.",
+      "Guides proactive interventions before backlog pressure increases.",
+    ],
+  },
+  {
+    service: "Security & Compliance",
+    operations: [
+      "Protects ticket and user data with encryption controls.",
+      "Maintains audit trails for operational and administrative actions.",
+      "Supports compliance-ready process evidence across workflows.",
+      "Applies access boundaries to sensitive service data.",
+      "Strengthens reliability with backup and recovery safeguards.",
+    ],
+  },
+  {
+    service: "Integrations & API",
+    operations: [
+      "Synchronizes ticket events to external systems through webhooks.",
+      "Supports inbound/outbound automation via API endpoints.",
+      "Connects collaboration tools for cross-team visibility.",
+      "Enables issue tracker integration for technical workflow continuity.",
+      "Extends platform behavior with custom enterprise integrations.",
+    ],
+  },
+  {
+    service: "Omnichannel Support",
+    operations: [
+      "Unifies inbound requests from email, chat, web, and social channels.",
+      "Preserves a single conversation and activity timeline per issue.",
+      "Provides clients with consistent progress updates across channels.",
+      "Prevents channel fragmentation by centralizing service context.",
+      "Improves experience quality through one consolidated support view.",
+    ],
+  },
 ];
 
 const ServicePage = () => {
@@ -331,6 +424,47 @@ const ServicePage = () => {
               ))}
             </AnimatePresence>
           </motion.div>
+        </div>
+      </section>
+
+      {/* System Execution by Service */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-blue-600 text-xs font-medium uppercase tracking-[0.2em] mb-3 block">System Execution</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">What SOLEASE Is Doing by Service</h2>
+            <p className="text-gray-600 text-sm md:text-base mt-3 max-w-3xl mx-auto">
+              The sections below show how each offered service is actively executed inside the SOLEASE system in day-to-day operations.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            {serviceExecutionDetails.map((item, index) => (
+              <motion.div
+                key={item.service}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-white rounded-xl p-6 border border-gray-100"
+              >
+                <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3">{item.service}</h3>
+                <ul className="space-y-2">
+                  {item.operations.map((op) => (
+                    <li key={op} className="flex items-start gap-2 text-gray-600 text-sm leading-relaxed">
+                      <CheckCircle2 size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span>{op}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 

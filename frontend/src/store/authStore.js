@@ -52,10 +52,10 @@ export const useAuthenticationStore = create((set) => ({
             throw error;
         }
     },
-    login: async (username, password) => {
+login: async (username, password, rememberMe = false) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post("/auth/login", { username, password });
+            const response = await api.post("/auth/login", { username, password, rememberMe });
             const { passwordUpdateRequired, passwordUpdateDeadline, user } = response.data;
             
             set({
@@ -138,10 +138,10 @@ export const useAuthenticationStore = create((set) => ({
         }
     },
 
-    resetPassword: async (token, password, oldPassword) => {
+    resetPassword: async (token, password, otp) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await api.post(`/auth/reset-password/${token}`, { password, oldPassword });
+            const response = await api.post(`/auth/reset-password/${token}`, { password, otp });
             set({
                 message: response.data.message,
                 isLoading: false,

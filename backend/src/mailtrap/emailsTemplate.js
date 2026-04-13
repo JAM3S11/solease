@@ -1,51 +1,52 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  SolEase · Email Templates
-//  Design: dark-mode, certificates.dev–inspired aesthetic
-//  Accent: #00DC82 (emerald green) on deep navy #0e1117 backgrounds
+//  Design: Dark Tech / SaaS Minimalism - matching frontend
+//  Accent: #2563eb (blue) on #060b18 backgrounds
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COLORS = {
   // backgrounds
-  bg:            '#0e1117',
-  bgDeep:        '#080c11',
-  bgCard:        '#131820',
-  bgTopbar:      '#1a1f2b',
+  bg:            '#060b18',
+  bgDeep:        '#040810',
+  bgCard:        '#080e1e',
+  bgTopbar:      '#0a0f1c',
 
   // borders
-  border:        '#1e2533',
-  borderMid:     '#2a2f3a',
-  borderAccent:  '#1e3d2a',
+  border:        'rgba(255,255,255,0.06)',
+  borderMid:     'rgba(255,255,255,0.12)',
+  borderAccent:  'rgba(37,99,235,0.3)',
 
   // text
-  textPrimary:   '#f0f4ff',
-  textSecondary: '#d4dbe8',
-  textMuted:     '#8892a4',
-  textSubtle:    '#5a6478',
-  textDim:       '#3a4555',
-  textDimmer:    '#2a3545',
+  textPrimary:   '#ffffff',
+  textSecondary: 'rgba(255,255,255,0.8)',
+  textMuted:     'rgba(255,255,255,0.6)',
+  textSubtle:    'rgba(255,255,255,0.4)',
+  textDim:       'rgba(255,255,255,0.25)',
+  textDimmer:    'rgba(255,255,255,0.15)',
 
   // accent
-  accent:        '#00DC82',
-  accentBg:      '#0a2016',
+  accent:        '#2563eb',
+  accentBg:      'rgba(37,99,235,0.15)',
+  accentLight:   '#3b82f6',
 
   // semantic
-  warnBg:        '#1a1500',
-  warnBorder:    '#3d2d0a',
-  warnText:      '#a07020',
-  dangerText:    '#f87171',
-  dangerBg:      '#2d0a0a',
-  dangerBorder:  '#5a1a1a',
-  infoBg:        '#0f1f3d',
-  infoBorder:    '#1e3566',
-  infoText:      '#60a5fa',
+  warnBg:        'rgba(234,179,8,0.1)',
+  warnBorder:    'rgba(234,179,8,0.3)',
+  warnText:      '#eab308',
+  dangerText:    '#ef4444',
+  dangerBg:      'rgba(239,68,68,0.1)',
+  dangerBorder:  'rgba(239,68,68,0.3)',
+  infoBg:        'rgba(37,99,235,0.1)',
+  infoBorder:    'rgba(37,99,235,0.3)',
+  infoText:      '#3b82f6',
 
   // button
-  btnText:       '#0a0e14',
+  btnText:       '#ffffff',
 
   // footer
-  footerBg:      '#080c11',
-  footerText:    '#2a3545',
-  footerTld:     '#1a4030',
+  footerBg:      '#040810',
+  footerText:    'rgba(255,255,255,0.25)',
+  footerTld:     '#2563eb',
 };
 
 // ─── Shared partials ──────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ const emailHeader = () => `
             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
               <tr>
                 <td style="vertical-align:middle;">
-                  <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,${COLORS.accent},#36e4da);display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;">
+                  <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,${COLORS.accent},${COLORS.accentLight});display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;">
                     ${LOGO_SVG}
                   </div>
                 </td>
@@ -149,10 +150,16 @@ const emailFooter = (links = ['Help Center', 'Privacy']) => `
   </tr>
 </table>`;
 
-// Shared CTA button
+// Shared CTA button with hover effect
 const emailButton = (text, url, ghost = false) => ghost
   ? `<a href="${url}" style="display:inline-block;background:transparent;color:${COLORS.accent};font-size:14px;font-weight:700;padding:11px 24px;border-radius:8px;text-decoration:none;border:1px solid ${COLORS.borderMid};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${text}</a>`
-  : `<a href="${url}" style="display:inline-block;background-color:${COLORS.accent};color:${COLORS.btnText};font-size:14px;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${text}</a>`;
+  : `<a href="${url}" style="display:inline-block;background-color:${COLORS.accent};color:${COLORS.btnText};font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;box-shadow:0 4px 14px rgba(37,99,235,0.25);">${text}</a>`;
+
+// Verification code display - individual boxes
+const verificationCodeBox = (code) => {
+  const digits = code.split('');
+  return digits.map(d => `<span style="display:inline-block;width:44px;height:56px;background-color:${COLORS.bgCard};border:1px solid ${COLORS.borderMid};border-radius:10px;font-family:'Courier New',Courier,monospace;font-size:28px;font-weight:700;color:${COLORS.accent};line-height:56px;text-align:center;margin:0 4px;">${d}</span>`).join('');
+};
 
 // ─── 1. WELCOME EMAIL ─────────────────────────────────────────────────────────
 
@@ -163,13 +170,20 @@ export const WELCOME_EMAIL_TEMPLATE = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Welcome to SolEase</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:32px 0;">
     <tr>
       <td>
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};" class="email-container">
           <tr><td>${emailHeader()}</td></tr>
 
           <tr><td>${emailHero({
@@ -230,6 +244,13 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Verify Your Email — SolEase</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -254,8 +275,8 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
                 <tr>
                   <td style="padding:28px;text-align:center;">
                     <p style="font-size:12px;color:${COLORS.textSubtle};margin:0 0 14px 0;">Your one-time verification code</p>
-                    <div style="font-family:'Courier New',Courier,monospace;font-size:38px;font-weight:700;letter-spacing:12px;color:${COLORS.accent};">
-                      {verificationCode}
+                    <div style="letter-spacing:8px;">
+                      ${verificationCodeBox('{verificationCode}')}
                     </div>
                     <div style="display:inline-block;border:1px solid ${COLORS.border};border-radius:20px;padding:4px 12px;margin-top:14px;">
                       <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:${COLORS.accent};vertical-align:middle;margin-right:6px;"></span>
@@ -295,7 +316,7 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
 </html>
 `;
 
-// ─── 3. PASSWORD RESET REQUEST ────────────────────────────────────────────────
+// ─── 3. PASSWORD RESET REQUEST (OTP) ─────────────────────────────────────────
 
 export const PASSWORD_RESET_REQUEST_TEMPLATE = `
 <!DOCTYPE html>
@@ -304,6 +325,13 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Reset Your Password — SolEase</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -316,28 +344,33 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
           <tr><td>${emailHero({
             eyebrow: 'Password Reset',
             title: `Reset your<br><span style="color:${COLORS.accent}">password</span>`,
-            subtitle: 'We received a request to reset your SolEase password. Click the button below to set a new one.'
+            subtitle: 'Enter the code below on the reset password page to create a new password. This code expires in 5 minutes.'
           })}</td></tr>
 
-          <!-- CTA card -->
+          <!-- OTP block -->
           <tr>
             <td style="background-color:${COLORS.bg};padding:32px;">
 
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:10px;margin-bottom:16px;">
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.border};border-radius:10px;margin-bottom:20px;">
                 <tr>
                   <td style="padding:28px;text-align:center;">
-                    <p style="font-size:13px;color:${COLORS.textSubtle};line-height:1.6;margin:0 0 18px 0;">
-                      This link is single-use and expires in
-                      <span style="color:${COLORS.textSecondary};font-weight:600;">1 hour</span>.
-                    </p>
-                    ${emailButton('Set new password &rarr;', '{resetURL}')}
-                    <p style="font-size:11px;color:${COLORS.textDimmer};margin:14px 0 0 0;">
-                      Or copy the link: {resetURL}
-                    </p>
+                    <p style="font-size:12px;color:${COLORS.textSubtle};margin:0 0 14px 0;">Your one-time verification code</p>
+                    <div style="font-family:'Courier New',Courier,monospace;font-size:38px;font-weight:700;letter-spacing:12px;color:${COLORS.accent};">
+                      {verificationCode}
+                    </div>
+                    <div style="display:inline-block;border:1px solid ${COLORS.border};border-radius:20px;padding:4px 12px;margin-top:14px;">
+                      <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:${COLORS.accent};vertical-align:middle;margin-right:6px;"></span>
+                      <span style="font-size:11px;color:${COLORS.textSubtle};">Expires in 5 minutes</span>
+                    </div>
                   </td>
                 </tr>
               </table>
+
+              <!-- CTA Button with token in URL -->
+              <div style="text-align:center;margin-bottom:16px;">
+                ${emailButton('Reset Password →', '{resetPasswordURL}')}
+              </div>
 
               <!-- Warning notice -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
@@ -378,6 +411,13 @@ export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Password Changed — SolEase</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -463,6 +503,13 @@ export const TICKET_STATUS_UPDATE_TEMPLATE = `
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Ticket Updated — SolEase</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 

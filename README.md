@@ -1,6 +1,6 @@
 # SOLEASE - IT Service Management Platform
 
-![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-01-13%20183119.png) <!-- Placeholder image -->
+![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-04-13%20220839.png) <!-- Placeholder image -->
 
 **SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with Google Gemini AI-powered workflow automation fully integrated for enhanced ticket processing efficiency, intelligent categorization, and AI-assisted resolution workflows.
 

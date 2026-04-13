@@ -122,7 +122,7 @@ const EmailVerificationPage = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>
+    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#060b18] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>
 
       {/* Background Decorations */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -156,11 +156,14 @@ const EmailVerificationPage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[440px] backdrop-blur-xl px-6 md:px-8 py-8 md:py-9 rounded-[32px] border border-gray-300/5 shadow-xl"
+        className="relative z-10 w-full max-w-[440px] bg-[#080e1e]/90 backdrop-blur-2xl px-6 md:px-8 py-8 md:py-9 rounded-[32px] shadow-2xl shadow-blue-500/10 ring-1 ring-white/10"
       >
+        {/* Subtle top light highlight */}
+        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent mx-12" />
+
         <div className="text-center mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Verify Your Email</h2>
-          <p className="text-gray-600 text-sm">Enter the 6-digit code sent to your email</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Verify Your Email</h2>
+          <p className="text-white/60 text-sm">Enter the 6-digit code sent to your email</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -174,7 +177,7 @@ const EmailVerificationPage = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-14 md:w-14 md:h-14 text-center text-lg font-semibold bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all"
+                className="w-12 h-14 md:w-14 md:h-14 text-center text-lg font-semibold bg-white/5 border-2 border-white/10 rounded-xl text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all"
               />
             ))}
           </div>
@@ -183,7 +186,7 @@ const EmailVerificationPage = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 bg-red-500/10 text-red-600 rounded-lg text-sm font-medium text-center border border-red-500/20"
+              className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm font-medium text-center border border-red-500/20"
             >
               {error}
             </motion.div>
@@ -209,7 +212,7 @@ const EmailVerificationPage = () => {
 
         {/* Footer Link */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
+          <p className="text-white/60 text-sm">
             Didn't receive code?{" "}
             <button className="text-blue-500 font-semibold hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 transition-colors">
               Resend

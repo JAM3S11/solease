@@ -4,7 +4,7 @@ import pg from "pg";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { generateTokenAndSetCookie } from "../util/generateTokenAndSetCookie.js";
+import { generateTokenAndSetCookie, generateRememberTokenAndCookie, clearRememberTokenAndCookie, validateRememberToken } from "../util/generateTokenAndSetCookie.js";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendResetSuccessEmail, sendPasswordUpdateRequiredEmail } from "../mailtrap/emails.js";
 import { calculatePasswordStrength } from "../util/passwordStrength.js";
 import bcryptjs from "bcryptjs";
@@ -149,7 +149,7 @@ export const verifyEmail = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, rememberMe } = req.body;
 
     try {
         const user = await prisma.user.findUnique({ where: { username } });
@@ -173,6 +173,16 @@ export const login = async (req, res) => {
                 success: false, 
                 message: "Invalid credentials, please try again." 
             });
+        }
+
+        // Handle Remember Me
+        if (rememberMe) {
+            await generateRememberTokenAndCookie(res, prisma, user.id);
+        } else {
+            // Clear any existing remember token if rememberMe is not checked
+            if (user.rememberToken) {
+                await clearRememberTokenAndCookie(res, prisma, user.id);
+            }
         }
 
         generateTokenAndSetCookie(res, user.id);
@@ -239,6 +249,11 @@ export const login = async (req, res) => {
 }
 
 export const logout = async (req, res) => {
+    // Clear remember token from database if it exists
+    if (req.userId) {
+        await clearRememberTokenAndCookie(res, prisma, req.userId);
+    }
+    
     res.clearCookie("token");
     res.status(200).json({ 
         success: true, 
@@ -249,6 +264,11 @@ export const logout = async (req, res) => {
 export const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
+    // Generate 6-digit OTP
+    const generateOTP = () => {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    };
+
     try {
         const user = await prisma.user.findUnique({ where: { email } });
         if(!user){
@@ -258,25 +278,32 @@ export const forgotPassword = async (req, res) => {
             });
         }
 
-        const resetToken = crypto.randomBytes(20).toString("hex");
-        const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000);
+        // Generate 6-digit OTP (also used as session token in URL)
+        const resetOTP = generateOTP();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
         await prisma.user.update({
             where: { id: user.id },
             data: {
-                resetPasswordToken: resetToken,
+                resetPasswordToken: resetOTP,
                 resetPasswordExpiresAt: expiresAt
             }
         });
 
+        // Generate reset password URL using OTP as token
+        const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
+        const resetPasswordURL = `${frontendURL}/auth/reset-password/${resetOTP}`;
+
+        // Send OTP via email with reset URL
         await sendPasswordResetEmail(
             user.email, 
-            `${process.env.CLIENT_URL}/auth/reset-password/${resetToken}`
+            resetOTP,
+            resetPasswordURL
         );
         
         res.status(200).json({ 
             success: true, 
-            message: "Password reset link sent to your email" 
+            message: "Verification code sent to your email" 
         });
     } catch (error) {
         console.log("Error in the process of forgot password", error);
@@ -287,11 +314,18 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
     try {
         const { token } = req.params;
-        const { password } = req.body;
+        const { password, otp } = req.body;
+
+        if (!otp || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Verification code and new password are required" 
+            });
+        }
 
         const user = await prisma.user.findFirst({
             where: {
-                resetPasswordToken: token,
+                resetPasswordToken: otp,
                 resetPasswordExpiresAt: { gt: new Date() }
             }
         });
@@ -299,7 +333,7 @@ export const resetPassword = async (req, res) => {
         if(!user){
             return res.status(400).json({ 
                 success: false, 
-                message: "Invalid or expired reset token" 
+                message: "Invalid or expired verification code" 
             });
         }
 
@@ -367,6 +401,7 @@ export const createReviewer = async (req, res) => {
 
         await sendPasswordResetEmail(
             user.email,
+            resetToken,
             `${process.env.CLIENT_URL}/auth/reset-password/${resetToken}`
         );
 
@@ -390,22 +425,54 @@ export const createReviewer = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.userId },
-            select: {
-                id: true,
-                username: true,
-                name: true,
-                email: true,
-                role: true,
-                status: true,
-                isVerified: true,
-                profilePhoto: true,
-                notificationsEnabled: true,
-                createdAt: true,
-                updatedAt: true
+        let user = null;
+        
+        // First, try to get user from regular JWT token
+        if (req.userId) {
+            user = await prisma.user.findUnique({
+                where: { id: req.userId },
+                select: {
+                    id: true,
+                    username: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    status: true,
+                    isVerified: true,
+                    profilePhoto: true,
+                    notificationsEnabled: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            });
+        }
+        
+        // If no user from JWT, try rememberMe cookie
+        if (!user && req.cookies.rememberMe) {
+            const rememberUser = await validateRememberToken(prisma, req.cookies.rememberMe);
+            if (rememberUser) {
+                // Regenerate JWT token for the user
+                generateTokenAndSetCookie(res, rememberUser.id);
+                
+                user = await prisma.user.findUnique({
+                    where: { id: rememberUser.id },
+                    select: {
+                        id: true,
+                        username: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                        status: true,
+                        isVerified: true,
+                        profilePhoto: true,
+                        notificationsEnabled: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                });
             }
-        });
+        }
+        
         if (!user) {
             return res.status(401).json({ 
                 success: false, 

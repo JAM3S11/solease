@@ -161,13 +161,15 @@ export const sendWelcomeEmail = async (email, name) => {
   };
 
 //Reset password email form in the email view
-export const sendPasswordResetEmail = async (email, resetURL) => {
+export const sendPasswordResetEmail = async (email, otpCode, resetPasswordURL) => {
     try {
       const info = await transporter.sendMail({
         from: `"${sender.name}" <${sender.email}>`,
         to: email,
-        subject: "Reset your password",
-        html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
+        subject: "Reset your password - Verification Code",
+        html: PASSWORD_RESET_REQUEST_TEMPLATE
+          .replace("{verificationCode}", otpCode)
+          .replace("{resetPasswordURL}", resetPasswordURL),
       });
   
       console.log("✅ Password reset email sent successfully:", info.messageId);

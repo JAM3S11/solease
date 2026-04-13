@@ -25,6 +25,8 @@ model User {
   passwordStrength           PasswordStrength?
   passwordUpdateDeadline     DateTime?
   hasUpdatedWeakPassword     Boolean           @default(false)
+  rememberToken            String?
+  rememberTokenExpiresAt  DateTime?
   isOnline                   Boolean           @default(false)
   lastActivity               DateTime?
   onlineAt                   DateTime?

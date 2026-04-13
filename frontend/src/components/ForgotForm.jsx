@@ -102,7 +102,7 @@ const ForgotPassForm = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6">
+    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#060b18] overflow-hidden px-4 font-sans gap-2 py-6">
 
       {/* --- BACKGROUND DECORATIONS --- */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -138,8 +138,10 @@ const ForgotPassForm = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[440px] backdrop-blur-xl px-8 md:px-10 py-7 rounded-[32px] border border-gray-300/5 shadow-2xl"
+        className="relative z-10 w-full max-w-[440px] bg-[#080e1e]/90 backdrop-blur-2xl px-8 md:px-10 py-7 rounded-[32px] shadow-2xl shadow-blue-500/10 ring-1 ring-white/10"
       >
+        {/* Subtle top light highlight */}
+        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent mx-12" />
         <AnimatePresence mode="wait">
           {!isSending ? (
             <motion.div
@@ -150,48 +152,48 @@ const ForgotPassForm = () => {
               transition={{ duration: 0.3 }}
             >
                <div className="text-center mb-8">
-                 <h2 className="text-xl font-semibold text-gray-900 mb-2">Reset Password</h2>
-                 <p className="text-gray-600 text-sm">Enter your email to receive a reset link</p>
-               </div>
-
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-600 ml-1">Email Address</label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-blue-500 transition-colors">
-                      <Mail size={18} />
-                    </div>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="e.g. user@example.com"
-                      className="w-full bg-gray-100 border border-gray-300/5 rounded-xl py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-                      required
-                    />
-                  </div>
+                  <h2 className="text-xl font-semibold text-white mb-2">Reset Password</h2>
+                  <p className="text-white/60 text-sm">Enter your email to receive a reset link</p>
                 </div>
 
-                {/* Send Reset Button */}
-                <motion.button
-                  type="submit"
-                  disabled={isLoading}
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-blue-500 hover:bg-blue-400 text-[#0a0a0a] rounded-xl font-medium shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span className="uppercase tracking-widest text-xs">Send Reset Link</span>
-                      <Send size={18} className="group-hover:translate-x-1 transition-transform opacity-70" />
-                    </>
-                  )}
-                </motion.button>
-              </form>
+               <form className="space-y-6" onSubmit={handleSubmit}>
+                 {/* Email Field */}
+                 <div className="space-y-2">
+                   <label className="text-sm font-medium text-white/80 ml-1">Email Address</label>
+                   <div className="relative group">
+                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-blue-500 transition-colors">
+                       <Mail size={18} />
+                     </div>
+                     <input
+                       type="email"
+                       name="email"
+                       value={formData.email}
+                       onChange={handleChange}
+                       placeholder="e.g. user@example.com"
+                       className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                       required
+                     />
+                   </div>
+                 </div>
+
+                 {/* Send Reset Button */}
+                 <motion.button
+                   type="submit"
+                   disabled={isLoading}
+                   whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(6, 182, 212, 0.3)" }}
+                   whileTap={{ scale: 0.98 }}
+                   className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
+                 >
+                   {isLoading ? (
+                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                   ) : (
+                     <>
+                       <span className="uppercase tracking-widest text-xs">Send Reset Link</span>
+                       <Send size={18} className="group-hover:translate-x-1 transition-transform opacity-70" />
+                     </>
+                   )}
+                 </motion.button>
+               </form>
             </motion.div>
           ) : (
             <motion.div
@@ -200,29 +202,29 @@ const ForgotPassForm = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-6"
             >
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-300/5">
-                <CheckCircle2 size={32} className="text-blue-500" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Check your inbox</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                If an account exists for <span className="text-blue-500 font-semibold">{formData.email}</span>, you will receive a password reset link shortly.
-              </p>
+               <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                 <CheckCircle2 size={32} className="text-blue-500" />
+               </div>
+               <h3 className="text-xl font-bold text-white mb-2">Check your inbox</h3>
+               <p className="text-white/60 text-sm leading-relaxed">
+                 If an account exists for <span className="text-blue-500 font-semibold">{formData.email}</span>, you will receive a password reset link shortly.
+               </p>
 
-              <motion.button
-                onClick={() => setIsSending(false)}
-                className="mt-8 text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors uppercase tracking-widest"
-              >
-                Didn't get the email? Try again
-              </motion.button>
+               <motion.button
+                 onClick={() => setIsSending(false)}
+                 className="mt-8 text-xs font-bold text-white/60 hover:text-white transition-colors uppercase tracking-widest"
+               >
+                 Didn't get the email? Try again
+               </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Footer Link */}
         <div className="mt-10 text-center">
-          <p className="text-gray-600 text-sm">
+          <p className="text-white/60 text-sm">
             Back to Login?{" "}
-            <Link to="/auth/login" className="text-blue-500 font-semibold hover:underline underline-offset-4">
+            <Link to="/auth/login" className="text-blue-500 font-semibold hover:text-blue-400">
               Sign In
             </Link>
           </p>

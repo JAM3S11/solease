@@ -245,7 +245,7 @@ const SignUpForm = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#fafbfc] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>
+    <section className="relative min-h-screen flex flex-col items-center justify-center bg-[#060b18] overflow-hidden px-4 font-sans gap-2 py-6" aria-busy={isLoading}>
 
       {/* Background Decorations */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -279,11 +279,14 @@ const SignUpForm = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[440px] backdrop-blur-xl px-6 md:px-8 py-8 md:py-9 rounded-[32px] border border-gray-300/5 shadow-xl"
+        className="relative z-10 w-full max-w-[440px] bg-[#080e1e]/90 backdrop-blur-2xl px-6 md:px-8 py-8 md:py-9 rounded-[32px] shadow-2xl shadow-blue-500/10 ring-1 ring-white/10"
       >
+        {/* Subtle top light highlight */}
+        <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent mx-12" />
+
         <div className="text-center mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Create Account</h2>
-          <p className="text-gray-600 text-sm">Join SOLEASE and get started today</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Create Account</h2>
+          <p className="text-white/60 text-sm">Join SOLEASE and get started today</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -296,11 +299,11 @@ const SignUpForm = () => {
             transition={{ delay: 0.1 }}
           >
             <div className="flex items-center justify-between">
-              <label htmlFor="username" className="text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="text-sm font-medium text-white/80">
                 Username <span className="text-red-500">*</span>
               </label>
               {validationSuccess.username && !validationErrors.username && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-600 flex items-center gap-1">
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-500 flex items-center gap-1">
                   <Check size={14} /> Valid
                 </motion.span>
               )}
@@ -309,7 +312,7 @@ const SignUpForm = () => {
               <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
                 validationErrors.username ? 'text-red-500' : 
                 validationSuccess.username ? 'text-green-500' : 
-                'text-gray-600 group-focus-within:text-blue-500'
+                'text-white/40 group-focus-within:text-blue-500'
               }`}>
                 <User size={18} />
               </div>
@@ -326,12 +329,12 @@ const SignUpForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.username}
                 aria-describedby={validationErrors.username ? "username-error" : undefined}
-                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full bg-white/5 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-white placeholder:text-white/30 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
                   validationErrors.username 
-                    ? 'border-red-300 focus:border-red-500' 
+                    ? 'border-red-500/50 focus:border-red-500' 
                     : validationSuccess.username
-                    ? 'border-green-300 focus:border-green-500'
-                    : 'border-gray-200 focus:border-blue-500/50'
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-white/10 focus:border-blue-500/50'
                 }`}
                 disabled={isLoading}
                 required
@@ -343,13 +346,13 @@ const SignUpForm = () => {
                 role="status"
                 initial={{ opacity: 0, y: -5 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+                className="flex items-center gap-1 text-xs text-red-500 ml-1"
               >
                 <AlertCircle size={14} /> {validationErrors.username}
               </motion.div>
             )}
             {!validationErrors.username && (
-              <p className="text-xs text-gray-500 ml-1">3+ characters (letters, numbers, _, -)</p>
+              <p className="text-xs text-white/30 ml-1">3+ characters (letters, numbers, _, -)</p>
             )}
           </motion.div>
 
@@ -361,11 +364,11 @@ const SignUpForm = () => {
             transition={{ delay: 0.15 }}
           >
             <div className="flex items-center justify-between">
-              <label htmlFor="name" className="text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="text-sm font-medium text-white/80">
                 Full Name <span className="text-red-500">*</span>
               </label>
               {validationSuccess.name && !validationErrors.name && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-600 flex items-center gap-1">
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-500 flex items-center gap-1">
                   <Check size={14} /> Valid
                 </motion.span>
               )}
@@ -374,7 +377,7 @@ const SignUpForm = () => {
               <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
                 validationErrors.name ? 'text-red-500' : 
                 validationSuccess.name ? 'text-green-500' : 
-                'text-gray-600 group-focus-within:text-blue-500'
+                'text-white/40 group-focus-within:text-blue-500'
               }`}>
                 <CircleUser size={18} />
               </div>
@@ -391,12 +394,12 @@ const SignUpForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.name}
                 aria-describedby={validationErrors.name ? "name-error" : undefined}
-                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full bg-white/5 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-white placeholder:text-white/30 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
                   validationErrors.name 
-                    ? 'border-red-300 focus:border-red-500' 
+                    ? 'border-red-500/50 focus:border-red-500' 
                     : validationSuccess.name
-                    ? 'border-green-300 focus:border-green-500'
-                    : 'border-gray-200 focus:border-blue-500/50'
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-white/10 focus:border-blue-500/50'
                 }`}
                 disabled={isLoading}
                 required
@@ -408,13 +411,13 @@ const SignUpForm = () => {
                 role="status"
                 initial={{ opacity: 0, y: -5 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+                className="flex items-center gap-1 text-xs text-red-500 ml-1"
               >
                 <AlertCircle size={14} /> {validationErrors.name}
               </motion.div>
             )}
             {!validationErrors.name && (
-              <p className="text-xs text-gray-500 ml-1">Minimum 2 characters</p>
+              <p className="text-xs text-white/30 ml-1">Minimum 2 characters</p>
             )}
           </motion.div>
 
@@ -426,11 +429,11 @@ const SignUpForm = () => {
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="text-sm font-medium text-white/80">
                 Email Address <span className="text-red-500">*</span>
               </label>
               {validationSuccess.email && !validationErrors.email && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-600 flex items-center gap-1">
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xs text-green-500 flex items-center gap-1">
                   <Check size={14} /> Valid
                 </motion.span>
               )}
@@ -439,7 +442,7 @@ const SignUpForm = () => {
               <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
                 validationErrors.email ? 'text-red-500' : 
                 validationSuccess.email ? 'text-green-500' : 
-                'text-gray-600 group-focus-within:text-blue-500'
+                'text-white/40 group-focus-within:text-blue-500'
               }`}>
                 <Mail size={18} />
               </div>
@@ -456,12 +459,12 @@ const SignUpForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.email}
                 aria-describedby={validationErrors.email ? "email-error" : undefined}
-                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full bg-white/5 border-2 rounded-xl py-3 md:py-4 pl-12 pr-4 text-white placeholder:text-white/30 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
                   validationErrors.email 
-                    ? 'border-red-300 focus:border-red-500' 
+                    ? 'border-red-500/50 focus:border-red-500' 
                     : validationSuccess.email
-                    ? 'border-green-300 focus:border-green-500'
-                    : 'border-gray-200 focus:border-blue-500/50'
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-white/10 focus:border-blue-500/50'
                 }`}
                 disabled={isLoading}
                 required
@@ -473,13 +476,13 @@ const SignUpForm = () => {
                 role="status"
                 initial={{ opacity: 0, y: -5 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+                className="flex items-center gap-1 text-xs text-red-500 ml-1"
               >
                 <AlertCircle size={14} /> {validationErrors.email}
               </motion.div>
             )}
             {!validationErrors.email && (
-              <p className="text-xs text-gray-500 ml-1">We'll send a verification link to this email</p>
+              <p className="text-xs text-white/30 ml-1">We'll send a verification link to this email</p>
             )}
           </motion.div>
 
@@ -491,7 +494,7 @@ const SignUpForm = () => {
             transition={{ delay: 0.25 }}
           >
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="text-sm font-medium text-white/80">
                 Password <span className="text-red-500">*</span>
               </label>
               {passwordStrength.level !== 'none' && (
@@ -508,7 +511,7 @@ const SignUpForm = () => {
               <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
                 validationErrors.password ? 'text-red-500' : 
                 validationSuccess.password ? 'text-green-500' : 
-                'text-gray-600 group-focus-within:text-blue-500'
+                'text-white/40 group-focus-within:text-blue-500'
               }`}>
                 <KeyRound size={18} />
               </div>
@@ -525,12 +528,12 @@ const SignUpForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.password}
                 aria-describedby={validationErrors.password ? "password-error" : undefined}
-                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full bg-white/5 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-white placeholder:text-white/30 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
                   validationErrors.password 
-                    ? 'border-red-300 focus:border-red-500' 
+                    ? 'border-red-500/50 focus:border-red-500' 
                     : validationSuccess.password
-                    ? 'border-green-300 focus:border-green-500'
-                    : 'border-gray-200 focus:border-blue-500/50'
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-white/10 focus:border-blue-500/50'
                 }`}
                 disabled={isLoading}
                 required
@@ -538,10 +541,8 @@ const SignUpForm = () => {
               <motion.button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                // whileHover={{ scale: 1.05 }}
-                // whileTap={{ scale: 0.95 }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                 disabled={isLoading}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -553,13 +554,13 @@ const SignUpForm = () => {
                 role="status"
                 initial={{ opacity: 0, y: -5 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+                className="flex items-center gap-1 text-xs text-red-500 ml-1"
               >
                 <AlertCircle size={14} /> {validationErrors.password}
               </motion.div>
             )}
             {!validationErrors.password && (
-              <p className="text-xs text-gray-500 ml-1">Use 6+ characters with 4+ lowercase letters, 1+ uppercase, 1+ number, 1+ symbol</p>
+              <p className="text-xs text-white/30 ml-1">Use 6+ characters with 4+ lowercase letters, 1+ uppercase, 1+ number, 1+ symbol</p>
             )}
             {formData.password && (
               <motion.div 
@@ -567,38 +568,38 @@ const SignUpForm = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-2"
               >
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${passwordStrength.percent}%` }}
                     transition={{ duration: 0.3 }}
-                    className={`h-2 rounded-full transition-colors ${strengthColor[passwordStrength.level] || 'bg-gray-300'}`}
+                    className={`h-2 rounded-full transition-colors ${strengthColor[passwordStrength.level] || 'bg-white/20'}`}
                   />
                 </div>
 
                 {/* Password Requirements */}
                 <div className="flex items-start flex-col text-xs">
-                  <div className={`flex items-center gap-1 ${formData.password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-1 ${formData.password.length >= 6 ? 'text-green-500' : 'text-white/30'}`}>
                     <Check size={12} className={formData.password.length >= 6 ? 'opacity-100' : 'opacity-30'} />
                     Use at least 6 characters to protect against brute-force attacks
                   </div>
-                  <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-500' : 'text-white/30'}`}>
                     <Check size={12} className={/[A-Z]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
                     At least one capital letter <span className="font-bold">(A–Z)</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-1 ${(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'text-green-500' : 'text-white/30'}`}>
                     <Check size={12} className={(formData.password.match(/[a-z]/g) || []).length >= 4 ? 'opacity-100' : 'opacity-30'} />
                     At least 4 small letters <span className="font-bold">(a–z)</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-500' : 'text-white/30'}`}>
                     <Check size={12} className={/[0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
                     At least one numerical digit <span className="font-bold">(0–9)</span>
                   </div>
-                  <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-1 ${/[^A-Za-z0-9]/.test(formData.password) ? 'text-green-500' : 'text-white/30'}`}>
                     <Check size={12} className={/[^A-Za-z0-9]/.test(formData.password) ? 'opacity-100' : 'opacity-30'} />
                     At least one symbol <span className="font-bold">(e.g., **! @ # $ % ^ & ***)</span>
                   </div>
-                  <div className="flex items-center gap-1 text-gray-500 text-xs mt-2 font-bold">
+                  <div className="flex items-center gap-1 text-white/30 text-xs mt-2 font-bold">
                     Restrictions against easily guessable strings like password123 or sequences like 12345
                   </div>
                 </div>
@@ -614,7 +615,7 @@ const SignUpForm = () => {
             transition={{ delay: 0.3 }}
           >
             <div className="flex items-center justify-between">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-white/80">
                 Confirm Password <span className="text-red-500">*</span>
               </label>
               {validationSuccess.confirmPassword && !validationErrors.confirmPassword
@@ -622,7 +623,7 @@ const SignUpForm = () => {
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="text-xs text-green-600 flex items-center gap-1"
+                  className="text-xs text-green-500 flex items-center gap-1"
                 >
                   <Check size={14} />
                 </motion.span>
@@ -633,7 +634,7 @@ const SignUpForm = () => {
                 className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
                   validationErrors.confirmPassword ? 'text-red-500' :
                   validationSuccess.confirmPassword ? 'text-green-500':
-                  'text-gray-600 group-focus-within:text-blue-500'
+                  'text-white/40 group-focus-within:text-blue-500'
                 }`}
               >
                 <KeyRound size={18} />
@@ -651,13 +652,13 @@ const SignUpForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.confirmPassword}
                 aria-describedby={validationErrors.confirmPassword ? "Confirm-Password Error": undefined}
-                className={`w-full bg-gray-50 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-gray-900
-                  placeholder:text-gray-500 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full bg-white/5 border-2 rounded-xl py-3 md:py-4 pl-12 pr-12 text-white
+                  placeholder:text-white/30 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 ${
                     validationErrors.confirmPassword
-                    ? "border-red-300 focus:border-red-500"
+                    ? "border-red-500/50 focus:border-red-500"
                     : validationSuccess.confirmPassword
-                    ? "border-green-300 focus:border-green-500"
-                    : "border-gray-200 focus:border-blue-500/50"
+                    ? "border-green-500/50 focus:border-green-500"
+                    : "border-white/10 focus:border-blue-500/50"
                   }`}
                 disabled={isLoading}
                 required
@@ -665,10 +666,8 @@ const SignUpForm = () => {
               <motion.button
                 type="button"
                 onClick={() => setConfirmPassword(!confirmPasword)}
-                // whileHover={{ scale: 1.05 }}
-                // whileTap={{ scale: 0.95 }}
                 aria-label={confirmPasword ? "Hide Confirm Password" : "Show Confirm Password"}
-                className="absolute top-1/2 right-4 -translate-y-1/2 text-gray-600 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
+                className="absolute top-1/2 right-4 -translate-y-1/2 text-white/40 hover:text-blue-500 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded"
                 disabled={isLoading}
               >
                 {confirmPasword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -680,13 +679,13 @@ const SignUpForm = () => {
                 role="status"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1 text-xs text-red-600 ml-1"
+                className="flex items-center gap-1 text-xs text-red-500 ml-1"
               >
                 <AlertCircle size={18} /> {validationErrors.confirmPassword}
               </motion.div>
             )}
             {!validationErrors.confirmPassword && (
-              <p className="text-xs text-gray-500 ml-1">Re-enter your password to confirm</p>
+              <p className="text-xs text-white/30 ml-1">Re-enter your password to confirm</p>
             )}
           </motion.div>
 
@@ -694,7 +693,7 @@ const SignUpForm = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-3 bg-red-500/10 text-red-600 rounded-lg text-sm font-medium text-center border border-red-500/20"
+              className="p-3 bg-red-500/10 text-red-500 rounded-lg text-sm font-medium text-center border border-red-500/20"
             >
               {error}
             </motion.div>
@@ -706,7 +705,7 @@ const SignUpForm = () => {
             disabled={isLoading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full py-3 md:py-4 bg-blue-500 hover:bg-blue-400 disabled:bg-blue-300 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group disabled:cursor-not-allowed"
+            className="w-full py-3 md:py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -721,7 +720,7 @@ const SignUpForm = () => {
 
         {/* Footer Link */}
         <div className="mt-8 text-center">
-          <p className="text-gray-600 text-sm">
+          <p className="text-white/60 text-sm">
             Already have an account?{" "}
             <Link to="/auth/login" className="text-blue-500 font-semibold hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 transition-colors">
               Sign In

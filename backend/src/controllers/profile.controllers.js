@@ -196,7 +196,6 @@ export const deleteProfilePhoto = async (req, res) => {
 
     if (user.profilePhoto) {
       try {
-        // Handle both old format (just filename) and new format (full path)
         let photoPath = user.profilePhoto;
         if (!photoPath.startsWith("/uploads/")) {
           photoPath = `/uploads/profile-photos/${photoPath}`;
@@ -226,6 +225,147 @@ export const deleteProfilePhoto = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting profile photo:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getAvailability = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        timezone: true,
+        workingHoursStart: true,
+        workingHoursEnd: true,
+        workingDays: true,
+        preferredContactTime: true,
+        autoResponseEnabled: true,
+        responseDelayMinutes: true,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const availability = {
+      timezone: user.timezone || "UTC",
+      workingHoursStart: user.workingHoursStart || "09:00",
+      workingHoursEnd: user.workingHoursEnd || "17:00",
+      workingDays: user.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      preferredContactTime: user.preferredContactTime || "business-hours",
+      autoResponseEnabled: user.autoResponseEnabled !== false,
+      responseDelayMinutes: user.responseDelayMinutes || 0,
+    };
+
+    return res.status(200).json({
+      success: true,
+      availability
+    });
+  } catch (error) {
+    console.error("Error fetching availability:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const putAvailability = async (req, res) => {
+  try {
+    const {
+      timezone,
+      workingHoursStart,
+      workingHoursEnd,
+      workingDays,
+      preferredContactTime,
+      autoResponseEnabled,
+      responseDelayMinutes
+    } = req.body;
+
+    const updatedFields = {};
+
+    if (timezone !== undefined) updatedFields.timezone = timezone;
+    if (workingHoursStart !== undefined) updatedFields.workingHoursStart = workingHoursStart;
+    if (workingHoursEnd !== undefined) updatedFields.workingHoursEnd = workingHoursEnd;
+    if (workingDays !== undefined) updatedFields.workingDays = workingDays;
+    if (preferredContactTime !== undefined) updatedFields.preferredContactTime = preferredContactTime;
+    if (autoResponseEnabled !== undefined) updatedFields.autoResponseEnabled = autoResponseEnabled;
+    if (responseDelayMinutes !== undefined) updatedFields.responseDelayMinutes = responseDelayMinutes;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data: updatedFields,
+      select: {
+        timezone: true,
+        workingHoursStart: true,
+        workingHoursEnd: true,
+        workingDays: true,
+        preferredContactTime: true,
+        autoResponseEnabled: true,
+        responseDelayMinutes: true,
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Availability settings updated successfully",
+      availability: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const checkAvailabilityStatus = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        timezone: true,
+        workingHoursStart: true,
+        workingHoursEnd: true,
+        workingDays: true,
+        preferredContactTime: true,
+        isOnline: true,
+        onlineAt: true,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const timezone = user.timezone || "UTC";
+    const now = new Date();
+    const userTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDay = dayNames[userTime.getDay()];
+    const currentTime = `${String(userTime.getHours()).padStart(2, '0')}:${String(userTime.getMinutes()).padStart(2, '0')}`;
+
+    const workingDays = user.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const isWorkingDay = workingDays.includes(currentDay);
+
+    const startTime = user.workingHoursStart || "09:00";
+    const endTime = user.workingHoursEnd || "17:00";
+    const isWithinWorkingHours = currentTime >= startTime && currentTime <= endTime;
+
+    const status = {
+      isAvailable: isWorkingDay && isWithinWorkingHours,
+      isWorkingDay,
+      isWithinWorkingHours,
+      currentDay,
+      currentTime,
+      userTimezone: timezone,
+      isOnline: user.isOnline,
+      preferredContactTime: user.preferredContactTime || "business-hours",
+    };
+
+    return res.status(200).json({
+      success: true,
+      status
+    });
+  } catch (error) {
+    console.error("Error checking availability status:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };

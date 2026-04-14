@@ -8,17 +8,33 @@ import { Listbox } from '@headlessui/react';
 import html2pdf from 'html2pdf.js';
 import useTicketStore from "../../store/ticketStore";
 import { useAuthenticationStore } from "../../store/authStore";
+import { useProfileStore } from "../../store/profileStore";
 import { NumberTicker } from "../ui/number-ticker";
 import { 
     Clock, CheckCircle, Check, TrendingUp, TrendingDown, Activity, MessageCircle, Star, 
     AlertTriangle, Zap, BarChart3, 
     Search, ChevronDown, X, RefreshCw, Eye,
     ArrowRight, ArrowUpDown, Target, Flame, Timer, ThumbsUp, Phone, Gauge,
-    Tickets, FileDown, Ticket, Calendar, Send, User
+    Tickets, FileDown, Ticket, Calendar, Send, User,
+    Settings, Clock4, Globe, Moon, Sun
 } from "lucide-react"; 
 import { Link } from "react-router";
 import NoReport from "../ui/NoReport";
 import NoRecordsFound from "../ui/NoRecordsFound";
+
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const TIMEZONES = [
+    { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+    { value: "America/New_York", label: "EST/EDT (New York)" },
+    { value: "America/Los_Angeles", label: "PST/PDT (Los Angeles)" },
+    { value: "America/Chicago", label: "CST/CDT (Chicago)" },
+    { value: "Europe/London", label: "GMT/BST (London)" },
+    { value: "Europe/Paris", label: "CET/CEST (Paris)" },
+    { value: "Asia/Tokyo", label: "JST (Tokyo)" },
+    { value: "Asia/Shanghai", label: "CST (Shanghai)" },
+    { value: "Asia/Kolkata", label: "IST (India)" },
+    { value: "Australia/Sydney", label: "AEST/AEDT (Sydney)" },
+];
 
 const ISSUE_TYPES = ["Hardware issue", "Software issue", "Network Connectivity", "Account Access", "Other"];
 const SUCCESS_STATUSES = ['Closed', 'Resolved', 'CLOSED', 'RESOLVED'];
@@ -513,23 +529,26 @@ const calculateResolutionPerformance = (tickets) => {
 
 const getStatusColor = (status) => {
     const colors = {
-        'Open': 'bg-blue-500',
-        'In Progress': 'bg-yellow-500',
-        'Resolved': 'bg-purple-500',
-        'Closed': 'bg-green-500',
+        'Open': 'bg-blue-500',         'OPEN': 'bg-blue-500',
+        'In Progress': 'bg-yellow-500', 'IN_PROGRESS': 'bg-yellow-500',
+        'Resolved': 'bg-purple-500',   'RESOLVED': 'bg-purple-500',
+        'Closed': 'bg-green-500',       'CLOSED': 'bg-green-500',
     };
     return colors[status] || 'bg-gray-500';
 };
 
 const getUrgencyColor = (urgency) => {
     const colors = {
-        'Critical': 'bg-red-500',
-        'High': 'bg-orange-500',
-        'Medium': 'bg-yellow-500',
-        'Low': 'bg-green-500',
+        'Critical': 'bg-red-500',   'CRITICAL': 'bg-red-500',
+        'High': 'bg-orange-500',    'HIGH': 'bg-orange-500',
+        'Medium': 'bg-yellow-500',  'MEDIUM': 'bg-yellow-500',
+        'Low': 'bg-green-500',      'LOW': 'bg-green-500',
     };
     return colors[urgency] || 'bg-gray-500';
 };
+
+// Safe days parser — avoids NaN when dateRange is 'all'
+const parseDays = (range) => (range === 'all' ? 365 : parseInt(range, 10));
 
 const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
     <button
@@ -550,8 +569,12 @@ const TabButton = ({ active, onClick, icon: Icon, label, count }) => (
     </button>
 );
 
-const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge }) => (
-    <motion.div 
+const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge }) => {
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    const shouldAnimateValue = Number.isFinite(numericValue) && String(value).trim() !== '';
+
+    return (
+    <motion.div
         whileHover={{ y: -2 }}
         className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all relative overflow-hidden"
     >
@@ -572,19 +595,27 @@ const MetricCard = ({ title, value, icon, color, trend, trendUp, children, badge
             )}
         </div>
         <div className="space-y-0.5 sm:space-y-1">
-            <NumberTicker 
-                value={typeof value === 'number' ? value : 0} 
-                className="text-sm font-medium text-gray-900 dark:text-white"
-            />
+            {shouldAnimateValue ? (
+                <NumberTicker
+                    value={numericValue}
+                    className="text-sm font-medium text-gray-900 dark:text-white"
+                />
+            ) : (
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {value ?? '-'}
+                </p>
+            )}
             <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
         </div>
         {children && <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-700">{children}</div>}
     </motion.div>
-);
+    );
+};
 
 const ClientReportPage = () => {
     const { user } = useAuthenticationStore();
-    const { tickets, fetchTickets, loading, error } = useTicketStore(); 
+    const { tickets, fetchTickets, loading, error } = useTicketStore();
+    const { availability, availabilityStatus, getAvailability, putAvailability, checkAvailabilityStatus } = useProfileStore(); 
     const [isDark, setIsDark] = useState(() => {
         if (typeof window === 'undefined') return false;
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -635,6 +666,75 @@ const ClientReportPage = () => {
     const [dateRange, setDateRange] = useState('30');
     const [selectedDateRange, setSelectedDateRange] = useState(DATE_RANGES[1]);
     const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
+    const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+    const [availabilitySettings, setAvailabilitySettings] = useState({
+        timezone: 'UTC',
+        workingHoursStart: '09:00',
+        workingHoursEnd: '17:00',
+        workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        preferredContactTime: 'business-hours',
+        autoResponseEnabled: true,
+        responseDelayMinutes: 0,
+    });
+    const [isSavingAvailability, setIsSavingAvailability] = useState(false);
+
+    useEffect(() => {
+        getAvailability();
+        checkAvailabilityStatus();
+    }, [getAvailability, checkAvailabilityStatus]);
+
+    useEffect(() => {
+        if (availability && Object.keys(availability).length > 0) {
+            setAvailabilitySettings({
+                timezone: availability.timezone || 'UTC',
+                workingHoursStart: availability.workingHoursStart || '09:00',
+                workingHoursEnd: availability.workingHoursEnd || '17:00',
+                workingDays: availability.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                preferredContactTime: availability.preferredContactTime || 'business-hours',
+                autoResponseEnabled: availability.autoResponseEnabled !== false,
+                responseDelayMinutes: availability.responseDelayMinutes || 0,
+            });
+        }
+    }, [availability]);
+
+    const handleSaveAvailability = async () => {
+        setIsSavingAvailability(true);
+        try {
+            await putAvailability(availabilitySettings);
+            await checkAvailabilityStatus();
+            setIsAvailabilityModalOpen(false);
+        } catch (error) {
+            console.error('Error saving availability:', error);
+        } finally {
+            setIsSavingAvailability(false);
+        }
+    };
+
+    const toggleWorkingDay = (day) => {
+        setAvailabilitySettings(prev => ({
+            ...prev,
+            workingDays: prev.workingDays.includes(day)
+                ? prev.workingDays.filter(d => d !== day)
+                : [...prev.workingDays, day]
+        }));
+    };
+
+    const getAvailabilityDisplayStatus = () => {
+        if (!availabilityStatus) return null;
+        return {
+            isCurrentlyAvailable: availabilityStatus.isAvailable,
+            currentTime: availabilityStatus.currentTime,
+            currentDay: availabilityStatus.currentDay,
+            timezone: availabilityStatus.userTimezone,
+            isOnline: availabilityStatus.isOnline,
+            statusText: availabilityStatus.isAvailable 
+                ? 'Currently Available' 
+                : 'Outside Working Hours',
+            statusColor: availabilityStatus.isAvailable 
+                ? 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30' 
+                : 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
+        };
+    };
 
     const handleSyncData = async () => {
         setIsSyncing(true);
@@ -784,15 +884,11 @@ const ClientReportPage = () => {
     };
 
     const STATUS_OPTIONS = [
-        { value: 'all', label: 'All Status' },
-        { value: 'Open', label: 'Open' },
-        { value: 'OPEN', label: 'Open' },
+        { value: 'all',         label: 'All Status'  },
+        { value: 'Open',        label: 'Open'        },
         { value: 'In Progress', label: 'In Progress' },
-        { value: 'IN_PROGRESS', label: 'In Progress' },
-        { value: 'Resolved', label: 'Resolved' },
-        { value: 'RESOLVED', label: 'Resolved' },
-        { value: 'Closed', label: 'Closed' },
-        { value: 'CLOSED', label: 'Closed' },
+        { value: 'Resolved',    label: 'Resolved'    },
+        { value: 'Closed',      label: 'Closed'      },
     ];
 
     const ITEMS_PER_PAGE_OPTIONS = [5, 10, 15, 20, 25];
@@ -844,58 +940,70 @@ const ClientReportPage = () => {
     // Has tickets but none in selected date range
     const hasNoRecordsInRange = userHasAnyTickets && clientTickets.length === 0;
 
-    const stats = useMemo(() => ({
-        total: clientTickets.length,
-        resolved: clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length,
-        open: clientTickets.filter(t => t.status === 'Open' || t.status === 'OPEN').length,
-        inProgress: clientTickets.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
-        avgRes: calculateAverageResolutionTime(clientTickets),
-        sat: calculateUserSatisfaction(clientTickets),
-        categories: calculateOpenTicketsByCategory(clientTickets),
-        chart: calculateMonthlyResolutionTimeData(clientTickets),
-        feedback: calculateFeedbackAnalytics(clientTickets),
-        recentFeedback: getRecentFeedbackActivity(clientTickets),
-        critical: calculateCriticalTickets(clientTickets),
-        avgResponse: calculateAverageResponseTime(clientTickets),
-        firstResponseRate: calculateFirstResponseRate(clientTickets),
-        autoResolved: calculateAutoResolved(clientTickets),
-        reopened: calculateReopenedTickets(clientTickets),
-        activeDiscussions: calculateActiveDiscussions(clientTickets),
-        byStatus: calculateTicketsByStatus(clientTickets),
-        byUrgency: calculateTicketsByUrgency(clientTickets),
-        reviewerActivity: calculateReviewerActivity(clientTickets),
-        monthlyVolume: calculateMonthlyTicketVolume(clientTickets),
-        ticketMetrics: calculatePerTicketMetrics(clientTickets),
-        resolutionPerf: calculateResolutionPerformance(clientTickets),
-        responseRateOverTime: calculateResponseRateOverTime(clientTickets),
-        resolutionRateOverTime: calculateResolutionRateOverTime(clientTickets),
-        avgResponseTimeOverTime: calculateAvgResponseTimeOverTime(clientTickets),
-        firstResponseData: calculateTicketsWithFirstResponse(clientTickets),
-        slaCompliance: calculateSLACompliance(clientTickets),
-        healthScore: calculateTicketHealthScore(clientTickets),
-        comparative: calculateComparativeStats(clientTickets, parseInt(dateRange)),
-        feedbackDetailed: calculateDetailedFeedbackAnalytics(clientTickets),
-        // Computed trends
-        trends: {
-            totalChange: calculateComparativeStats(clientTickets, parseInt(dateRange)).change,
-            resolvedChange: calculateComparativeStats(clientTickets, parseInt(dateRange)).resolvedChange,
-            resolutionRate: clientTickets.length > 0 ? ((clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length / clientTickets.length) * 100).toFixed(1) : 0,
-        }
-    }), [clientTickets, dateRange]);
+    const stats = useMemo(() => {
+        // Single computation of comparative stats to avoid triple recalculation
+        const comparative = calculateComparativeStats(clientTickets, parseDays(dateRange));
+        const feedbackDetailed = calculateDetailedFeedbackAnalytics(clientTickets);
+        const resolvedCount = clientTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length;
+
+        return {
+            total: clientTickets.length,
+            resolved: resolvedCount,
+            open: clientTickets.filter(t => t.status === 'Open' || t.status === 'OPEN').length,
+            inProgress: clientTickets.filter(t => t.status === 'In Progress' || t.status === 'IN_PROGRESS').length,
+            avgRes: calculateAverageResolutionTime(clientTickets),
+            sat: calculateUserSatisfaction(clientTickets),
+            categories: calculateOpenTicketsByCategory(clientTickets),
+            chart: calculateMonthlyResolutionTimeData(clientTickets),
+            feedback: calculateFeedbackAnalytics(clientTickets),
+            recentFeedback: getRecentFeedbackActivity(clientTickets),
+            critical: calculateCriticalTickets(clientTickets),
+            avgResponse: calculateAverageResponseTime(clientTickets),
+            firstResponseRate: calculateFirstResponseRate(clientTickets),
+            autoResolved: calculateAutoResolved(clientTickets),
+            reopened: calculateReopenedTickets(clientTickets),
+            activeDiscussions: calculateActiveDiscussions(clientTickets),
+            byStatus: calculateTicketsByStatus(clientTickets),
+            byUrgency: calculateTicketsByUrgency(clientTickets),
+            reviewerActivity: calculateReviewerActivity(clientTickets),
+            monthlyVolume: calculateMonthlyTicketVolume(clientTickets),
+            ticketMetrics: calculatePerTicketMetrics(clientTickets),
+            resolutionPerf: calculateResolutionPerformance(clientTickets),
+            responseRateOverTime: calculateResponseRateOverTime(clientTickets),
+            resolutionRateOverTime: calculateResolutionRateOverTime(clientTickets),
+            avgResponseTimeOverTime: calculateAvgResponseTimeOverTime(clientTickets),
+            firstResponseData: calculateTicketsWithFirstResponse(clientTickets),
+            slaCompliance: calculateSLACompliance(clientTickets),
+            healthScore: calculateTicketHealthScore(clientTickets),
+            comparative,
+            feedbackDetailed,
+            // Computed trends (reuse already-computed values)
+            trends: {
+                totalChange: comparative.change,
+                resolvedChange: comparative.resolvedChange,
+                resolutionRate: clientTickets.length > 0
+                    ? ((resolvedCount / clientTickets.length) * 100).toFixed(1)
+                    : 0,
+            },
+        };
+    }, [clientTickets, dateRange]);
 
     const filteredTickets = useMemo(() => {
         let filtered = [...stats.ticketMetrics];
         
         if (searchQuery) {
-            filtered = filtered.filter(t => 
-                t.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.handledBy.toLowerCase().includes(searchQuery.toLowerCase())
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter(t =>
+                (t.subject || '').toLowerCase().includes(q) ||
+                (t.category || '').toLowerCase().includes(q) ||
+                (t.handledBy || '').toLowerCase().includes(q)
             );
         }
         
         if (statusFilter !== 'all') {
-            filtered = filtered.filter(t => t.status === statusFilter || t.status === statusFilter.toUpperCase() || t.status === statusFilter.toLowerCase());
+            // Normalize both sides for case-insensitive / underscore-insensitive comparison
+            const normalize = (s) => s?.replace('_', ' ').toLowerCase();
+            filtered = filtered.filter(t => normalize(t.status) === normalize(statusFilter));
         }
         
         filtered.sort((a, b) => {
@@ -955,6 +1063,18 @@ const ClientReportPage = () => {
                                         <Activity size={14} className="text-green-500" />
                                         <span className="text-green-600 dark:text-green-400 font-semibold">Live Data</span>
                                     </p>
+                                    {getAvailabilityDisplayStatus() && (
+                                        <p className={`flex items-center gap-2 text-xs px-2 py-1 rounded-full ${getAvailabilityDisplayStatus().statusColor}`}>
+                                            {getAvailabilityDisplayStatus().isCurrentlyAvailable ? (
+                                                <Sun size={12} />
+                                            ) : (
+                                                <Moon size={12} />
+                                            )}
+                                            <span className="font-medium">
+                                                {getAvailabilityDisplayStatus().currentTime} - {getAvailabilityDisplayStatus().statusText}
+                                            </span>
+                                        </p>
+                                    )}
                                     {isSyncing && (
                                         <motion.div 
                                             initial={{ opacity: 0, scale: 0.8 }}
@@ -1028,6 +1148,16 @@ const ClientReportPage = () => {
                                     <Eye size={16} />
                                     <span className="hidden sm:inline">View All</span>
                                 </Link>
+
+                                {/* Availability Settings Button */}
+                                <button 
+                                    onClick={() => setIsAvailabilityModalOpen(true)}
+                                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                                    title="Availability Settings"
+                                >
+                                    <Settings size={16} />
+                                    <span className="hidden sm:inline">Availability</span>
+                                </button>
                             </div>
                         </div>
                         {lastSynced && (
@@ -1121,10 +1251,10 @@ const ClientReportPage = () => {
                                         />
                                         <MetricCard 
                                             title="Active Tickets" 
-                                            value={stats.inProgress} 
+                                            value={stats.open + stats.inProgress} 
                                             icon={<Clock size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-amber-500 to-orange-500"
-                                            trend="Currently Open"
+                                            trend={`${stats.open} Open · ${stats.inProgress} In Progress`}
                                         />
                                     </div>
 
@@ -1149,14 +1279,22 @@ const ClientReportPage = () => {
                                             value={`${stats.slaCompliance.compliance}%`}
                                             icon={<Gauge size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            badge={{ label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total}`, bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', text: 'text-green-700 dark:text-green-400' }}
+                                            badge={{ 
+                                                label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total}`, 
+                                                bg: 'bg-green-100 dark:bg-green-900/30', 
+                                                text: 'text-green-700 dark:text-green-400' 
+                                            }}
                                         />
                                         <MetricCard 
                                             title="Critical/High" 
                                             value={stats.critical} 
                                             icon={<AlertTriangle size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-red-500 to-rose-600"
-                                            badge={stats.critical > 0 ? { label: '!', bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', text: 'text-red-700 dark:text-red-400' } : null}
+                                            badge={stats.critical > 0 ? { 
+                                                label: '!', 
+                                                bg: 'bg-red-100 dark:bg-red-900/30', 
+                                                text: 'text-red-700 dark:text-red-400' 
+                                            } : null}
                                         />
                                     </div>
 
@@ -1567,8 +1705,55 @@ const ClientReportPage = () => {
                                                                     {formatTimeDisplay(ticket.resolutionDays)}
                                                                 </span>
                                                             )}
+                                                            {/* Expand/collapse chevron indicator */}
+                                                            <ChevronDown
+                                                                size={14}
+                                                                className={`ml-auto text-gray-400 transition-transform duration-200 ${
+                                                                    expandedTicket === ticket.id ? 'rotate-180' : ''
+                                                                }`}
+                                                            />
                                                         </div>
                                                     </div>
+
+                                                    {/* Expanded detail panel */}
+                                                    <AnimatePresence>
+                                                        {expandedTicket === ticket.id && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: 'auto', opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.2 }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="px-4 pb-4 pt-2 bg-gray-50 dark:bg-gray-900/40 border-t border-gray-100 dark:border-gray-700 space-y-2">
+                                                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                                                        <div>
+                                                                            <p className="text-gray-400 mb-0.5">Created</p>
+                                                                            <p className="font-medium text-gray-700 dark:text-gray-300">{formatFullDate(ticket.createdAt)}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-gray-400 mb-0.5">Last Updated</p>
+                                                                            <p className="font-medium text-gray-700 dark:text-gray-300">{formatFullDate(ticket.updatedAt)}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-gray-400 mb-0.5">Handled By</p>
+                                                                            <p className="font-medium text-gray-700 dark:text-gray-300">{ticket.handledBy || 'Unassigned'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-gray-400 mb-0.5">Resolution Time</p>
+                                                                            <p className="font-medium text-gray-700 dark:text-gray-300">{formatTimeDisplay(ticket.resolutionDays)}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    {ticket.responseTime !== null && (
+                                                                        <div className="text-xs">
+                                                                            <p className="text-gray-400 mb-0.5">First Response Time</p>
+                                                                            <p className="font-medium text-gray-700 dark:text-gray-300">{formatTimeDisplay(ticket.responseTime)}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </motion.div>
                                             ))}
                                     </div>
@@ -2040,6 +2225,50 @@ const ClientReportPage = () => {
                                             </div>
                                         </div>
                                     </motion.div>
+
+                                    {/* Availability Analytics */}
+                                    <motion.div 
+                                        whileHover={{ y: -2 }}
+                                        className="bg-gradient-to-br from-purple-600 to-violet-700 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg text-white"
+                                    >
+                                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                                            <Clock4 size={18} className="text-white/80" />
+                                            <h3 className="font-bold text-sm sm:text-base">Availability Settings</h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4">
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-lg sm:text-2xl font-bold">
+                                                    {availability?.workingHoursStart || '09:00'}
+                                                </p>
+                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Start Time</p>
+                                            </div>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-lg sm:text-2xl font-bold">
+                                                    {availability?.workingHoursEnd || '17:00'}
+                                                </p>
+                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">End Time</p>
+                                            </div>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-lg sm:text-2xl font-bold">
+                                                    {availability?.workingDays?.length || 5}
+                                                </p>
+                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Working Days</p>
+                                            </div>
+                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
+                                                <p className="text-lg sm:text-2xl font-bold">
+                                                    {availability?.responseDelayMinutes || 0}m
+                                                </p>
+                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Delay</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setIsAvailabilityModalOpen(true)}
+                                            className="w-full py-2 px-4 bg-white/20 hover:bg-white/30 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <Settings size={16} />
+                                            Configure Availability
+                                        </button>
+                                    </motion.div>
                                 </motion.div>
                             )}
 
@@ -2077,7 +2306,7 @@ const ClientReportPage = () => {
                                         />
                                         <MetricCard 
                                             title="Engagement Rate" 
-                                            value={`${stats.feedback.engagementRate}%`}
+                                            value={`${stats.feedbackDetailed.engagementRate}%`}
                                             icon={<TrendingUp size={18} className="text-white" />}
                                             color="bg-gradient-to-br from-orange-500 to-amber-600"
                                             trend="Active %"
@@ -2302,6 +2531,205 @@ const ClientReportPage = () => {
                     </>
                 )}
             </div>
+
+            {/* Availability Settings Modal */}
+            <AnimatePresence>
+                {isAvailabilityModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setIsAvailabilityModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                                            <Clock4 size={24} className="text-purple-600 dark:text-purple-400" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Availability Settings</h2>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">Configure your response preferences</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsAvailabilityModalOpen(false)}
+                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    >
+                                        <X size={20} className="text-gray-500" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {/* Timezone */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <Globe size={16} />
+                                            Timezone
+                                        </label>
+                                        <select
+                                            value={availabilitySettings.timezone}
+                                            onChange={(e) => setAvailabilitySettings(prev => ({ ...prev, timezone: e.target.value }))}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        >
+                                            {TIMEZONES.map((tz) => (
+                                                <option key={tz.value} value={tz.value}>{tz.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Working Hours */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <Clock size={16} />
+                                            Working Hours
+                                        </label>
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="time"
+                                                value={availabilitySettings.workingHoursStart}
+                                                onChange={(e) => setAvailabilitySettings(prev => ({ ...prev, workingHoursStart: e.target.value }))}
+                                                className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            />
+                                            <span className="text-gray-500">to</span>
+                                            <input
+                                                type="time"
+                                                value={availabilitySettings.workingHoursEnd}
+                                                onChange={(e) => setAvailabilitySettings(prev => ({ ...prev, workingHoursEnd: e.target.value }))}
+                                                className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Working Days */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                            <Calendar size={16} />
+                                            Working Days
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {DAYS_OF_WEEK.map((day) => (
+                                                <button
+                                                    key={day}
+                                                    onClick={() => toggleWorkingDay(day)}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                                        availabilitySettings.workingDays.includes(day)
+                                                            ? 'bg-purple-600 text-white'
+                                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                    }`}
+                                                >
+                                                    {day.slice(0, 3)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Preferred Contact Time */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <Moon size={16} />
+                                            Preferred Contact Time
+                                        </label>
+                                        <select
+                                            value={availabilitySettings.preferredContactTime}
+                                            onChange={(e) => setAvailabilitySettings(prev => ({ ...prev, preferredContactTime: e.target.value }))}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        >
+                                            <option value="business-hours">Business Hours Only</option>
+                                            <option value="anytime">Anytime</option>
+                                            <option value="mornings">Mornings (8AM - 12PM)</option>
+                                            <option value="afternoons">Afternoons (12PM - 5PM)</option>
+                                            <option value="evenings">Evenings (5PM - 9PM)</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Response Delay */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <Timer size={16} />
+                                            Response Delay (minutes)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="480"
+                                            value={availabilitySettings.responseDelayMinutes}
+                                            onChange={(e) => setAvailabilitySettings(prev => ({ ...prev, responseDelayMinutes: parseInt(e.target.value) || 0 }))}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            placeholder="0"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Delay AI-generated responses by this amount when outside working hours</p>
+                                    </div>
+
+                                    {/* Auto Response Toggle */}
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                        <div>
+                                            <p className="font-medium text-gray-900 dark:text-white">Auto-Response</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Receive automatic responses based on your availability</p>
+                                        </div>
+                                        <button
+                                            onClick={() => setAvailabilitySettings(prev => ({ ...prev, autoResponseEnabled: !prev.autoResponseEnabled }))}
+                                            className={`relative w-12 h-6 rounded-full transition-colors ${
+                                                availabilitySettings.autoResponseEnabled ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                                                availabilitySettings.autoResponseEnabled ? 'translate-x-6' : ''
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* Current Status */}
+                                    {getAvailabilityDisplayStatus() && (
+                                        <div className={`p-4 rounded-xl ${getAvailabilityDisplayStatus().isCurrentlyAvailable ? 'bg-green-50 dark:bg-green-900/20' : 'bg-amber-50 dark:bg-amber-900/20'}`}>
+                                            <div className="flex items-center gap-3">
+                                                {getAvailabilityDisplayStatus().isCurrentlyAvailable ? (
+                                                    <Sun size={24} className="text-green-600 dark:text-green-400" />
+                                                ) : (
+                                                    <Moon size={24} className="text-amber-600 dark:text-amber-400" />
+                                                )}
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 dark:text-white">
+                                                        {getAvailabilityDisplayStatus().statusText}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        {getAvailabilityDisplayStatus().currentTime} ({getAvailabilityDisplayStatus().currentDay}) in {getAvailabilityDisplayStatus().timezone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3 mt-8">
+                                    <button
+                                        onClick={() => setIsAvailabilityModalOpen(false)}
+                                        className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSaveAvailability}
+                                        disabled={isSavingAvailability}
+                                        className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {isSavingAvailability && <RefreshCw size={16} className="animate-spin" />}
+                                        {isSavingAvailability ? 'Saving...' : 'Save Settings'}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </DashboardLayout>
     );
 };

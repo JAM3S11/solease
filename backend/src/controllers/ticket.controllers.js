@@ -1144,6 +1144,25 @@ export const managerIntervention = async (req, res) => {
     }
 };
 
+function checkUserAvailability(user) {
+    const timezone = user.timezone || "UTC";
+    const now = new Date();
+    const userTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+    
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDay = dayNames[userTime.getDay()];
+    const currentTime = `${String(userTime.getHours()).padStart(2, '0')}:${String(userTime.getMinutes()).padStart(2, '0')}`;
+    
+    const workingDays = user.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const isWorkingDay = workingDays.includes(currentDay);
+    
+    const startTime = user.workingHoursStart || "09:00";
+    const endTime = user.workingHoursEnd || "17:00";
+    const isWithinWorkingHours = currentTime >= startTime && currentTime <= endTime;
+    
+    return isWorkingDay && isWithinWorkingHours;
+}
+
 export const triggerAIResponse = async (req, res) => {
     const { ticketId, commentId } = req.params;
     const { customPrompt } = req.body;
@@ -1176,7 +1195,20 @@ export const triggerAIResponse = async (req, res) => {
             });
         }
 
-        const aiContent = await generateOnDemandReply(ticket, comment, customPrompt);
+        const ticketOwner = await prisma.user.findUnique({
+            where: { id: ticket.userId },
+            select: {
+                timezone: true,
+                workingHoursStart: true,
+                workingHoursEnd: true,
+                workingDays: true,
+                preferredContactTime: true,
+                autoResponseEnabled: true,
+                responseDelayMinutes: true,
+            }
+        });
+
+        const aiContent = await generateOnDemandReply(ticket, comment, customPrompt, ticketOwner);
 
         const reply = await prisma.reply.create({
             data: {
@@ -1198,7 +1230,11 @@ export const triggerAIResponse = async (req, res) => {
             {
                 action: "AI response generated",
                 timestamp: new Date(),
-                details: `AI reply for comment ${commentId} on ticket ${ticketId}`
+                details: `AI reply for comment ${commentId} on ticket ${ticketId}`,
+                userAvailability: ticketOwner ? {
+                    timezone: ticketOwner.timezone,
+                    isAvailable: checkUserAvailability(ticketOwner)
+                } : null
             }
         ];
 
@@ -1212,6 +1248,10 @@ export const triggerAIResponse = async (req, res) => {
             message: "AI response generated successfully",
             reply: reply,
             remaining: rateLimitCheck.remaining,
+            availabilityContext: ticketOwner ? {
+                timezone: ticketOwner.timezone,
+                isAvailable: checkUserAvailability(ticketOwner)
+            } : null
         });
     } catch (error) {
         console.log("Error triggering AI response", error);
@@ -1241,6 +1281,10 @@ async function triggerAutoReplyIfEligible(ticket, comment, user) {
             return null;
         }
 
+        if (userData.autoResponseEnabled === false) {
+            return null;
+        }
+
         const rateLimitCheck = await checkAndConsumeAIReply(user.id, ticket.urgency === "CRITICAL");
         
         if (!rateLimitCheck.allowed) {
@@ -1252,7 +1296,17 @@ async function triggerAutoReplyIfEligible(ticket, comment, user) {
             return null;
         }
 
-        const aiContent = await generateAutoReply(ticket, comment);
+        const userAvailability = {
+            timezone: userData.timezone,
+            workingHoursStart: userData.workingHoursStart,
+            workingHoursEnd: userData.workingHoursEnd,
+            workingDays: userData.workingDays,
+            preferredContactTime: userData.preferredContactTime,
+            autoResponseEnabled: userData.autoResponseEnabled,
+            responseDelayMinutes: userData.responseDelayMinutes,
+        };
+
+        const aiContent = await generateAutoReply(ticket, comment, userAvailability);
 
         const reply = await prisma.reply.create({
             data: {

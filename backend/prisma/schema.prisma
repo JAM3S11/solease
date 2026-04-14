@@ -34,6 +34,13 @@ model User {
   planTier                   PlanTier          @default(BASIC)
   aiReplyCount               Int              @default(0)
   aiReplyResetAt              DateTime          @default(now())
+  timezone                   String?           @default("UTC")
+  workingHoursStart          String?           @default("09:00")
+  workingHoursEnd            String?           @default("17:00")
+  workingDays                String[]           @default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+  preferredContactTime       String?           @default("business-hours")
+  autoResponseEnabled        Boolean           @default(true)
+  responseDelayMinutes       Int               @default(0)
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
 

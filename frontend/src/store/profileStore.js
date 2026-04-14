@@ -16,10 +16,29 @@ const getFullPhotoUrl = (photoPath) => {
 export const useProfileStore = create((set, get) => ({
     personal: {},
     contact: {},
+    availability: {
+        timezone: "UTC",
+        workingHoursStart: "09:00",
+        workingHoursEnd: "17:00",
+        workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        preferredContactTime: "business-hours",
+        autoResponseEnabled: true,
+        responseDelayMinutes: 0,
+    },
+    availabilityStatus: {
+        isAvailable: false,
+        isWorkingDay: false,
+        isWithinWorkingHours: false,
+        currentDay: "",
+        currentTime: "",
+        userTimezone: "UTC",
+        isOnline: false,
+    },
     loading: false,
     error: null,
     profilePhoto: null,
     profilePhotoLoading: false,
+    availabilityLoading: false,
     getProfile: async () => {
         set({ loading: true, error: null });
         try {
@@ -149,6 +168,54 @@ export const useProfileStore = create((set, get) => ({
                 error: error.response?.data?.message || "Failed to delete photo",
             });
             throw error;
+        }
+    },
+    getAvailability: async () => {
+        set({ availabilityLoading: true, error: null });
+        try {
+            const res = await api.get("/profile/availability");
+            set({
+                availability: res.data.availability,
+                availabilityLoading: false,
+            });
+            return res.data.availability;
+        } catch (error) {
+            console.error("Error fetching availability:", error);
+            set({
+                availabilityLoading: false,
+                error: error.response?.data?.message || "Failed to load availability settings",
+            });
+            return null;
+        }
+    },
+    putAvailability: async (data) => {
+        set({ availabilityLoading: true, error: null });
+        try {
+            const res = await api.put("/profile/availability", data);
+            set({
+                availability: res.data.availability,
+                availabilityLoading: false,
+            });
+            return res.data;
+        } catch (error) {
+            console.error("Error updating availability:", error);
+            set({
+                availabilityLoading: false,
+                error: error.response?.data?.message || "Failed to update availability",
+            });
+            throw error;
+        }
+    },
+    checkAvailabilityStatus: async () => {
+        try {
+            const res = await api.get("/profile/availability/status");
+            set({
+                availabilityStatus: res.data.status,
+            });
+            return res.data.status;
+        } catch (error) {
+            console.error("Error checking availability status:", error);
+            return null;
         }
     },
 }));

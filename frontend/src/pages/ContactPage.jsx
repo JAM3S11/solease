@@ -30,7 +30,7 @@ const ContactPage = () => {
 
   return (
     <div className="w-full bg-[#060b18] font-sans">
-      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden min-h-[60vh] flex items-center">
+      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden min-h-screen flex items-center">
         <div className="absolute inset-0 z-0" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.18) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 60%, rgba(6,182,212,0.1) 0%, transparent 60%)` }} />
         <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
         

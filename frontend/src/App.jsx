@@ -73,6 +73,17 @@ import IntegrationsPage from "./pages/IntegrationsPage";
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
 
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 // protect routes that require authentication + correct role
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthenticationStore();
@@ -194,6 +205,7 @@ const App = () => {
 
   return (
     <div>
+      <ScrollToTop />
       {!hideLayout && <Header />}
 
       <Routes>

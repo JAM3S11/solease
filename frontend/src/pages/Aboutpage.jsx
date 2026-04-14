@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Bot,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   Database,
   Layers,
@@ -171,18 +172,18 @@ const securityAndTrust = [
 const Aboutpage = () => {
   return (
     <main className="w-full bg-[#060b18] font-sans">
-      <section className="relative pt-24 pb-14 md:pt-32 md:pb-20 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0" style={{ background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.18) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 60%, rgba(6,182,212,0.1) 0%, transparent 60%), radial-gradient(ellipse 30% 30% at 20% 70%, rgba(139,92,246,0.1) 0%, transparent 60%)` }} />
-        <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+        <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`, backgroundSize: '60px 60px', maskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)', WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)' }} />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center max-w-4xl mx-auto">
+        <div className="relative z-10 max-w-5xl w-full px-4 sm:px-8 lg:px-10 py-20 sm:py-24 lg:py-32 flex flex-col items-center text-center">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} className="flex flex-col items-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-6 h-px bg-blue-600"></span>
               <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">About SOLEASE</span>
               <span className="w-6 h-px bg-blue-600"></span>
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4 tracking-tight" style={{ letterSpacing: '-0.02em' }}>Built for modern support operations</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium text-white mb-4 tracking-tight" style={{ letterSpacing: '-0.02em' }}>Built for modern support operations</h1>
             <p className="text-base md:text-lg text-white/[0.48] leading-relaxed max-w-3xl mx-auto mb-8">
               SOLEASE combines AI triage, workflow automation, role-based collaboration, and analytics to run support operations with speed, control, and accountability across the full ticket lifecycle.
             </p>
@@ -196,9 +197,24 @@ const Aboutpage = () => {
             </div>
           </motion.div>
         </div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
+        >
+          <button 
+            onClick={() => document.getElementById('operations')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex flex-col items-center gap-2 text-white/[0.48] hover:text-blue-400 transition-colors duration-300"
+          >
+            <span className="text-xs uppercase tracking-widest">Learn More</span>
+            <ChevronDown className="w-6 h-6 animate-bounce" />
+          </button>
+        </motion.div>
       </section>
 
-      <section className="py-8 bg-[#080e1e] border-y border-white/[0.06]">
+      <section id="operations" className="py-8 bg-[#080e1e] border-y border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-2xl overflow-hidden">
             {stats.map((stat, index) => (

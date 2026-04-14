@@ -45,11 +45,13 @@ export const CanvasLogo = ({ isBlurred }) => {
   );
 };
 
+const transparentOnPages = ["/", "/about", "/services", "/contact"];
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const isHomepage = location.pathname === "/";
+  const isTransparentPage = transparentOnPages.includes(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,7 +78,7 @@ const Header = () => {
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-sans ${
-        isHomepage
+        isTransparentPage
           ? isScrolled
             ? "bg-[rgba(6,11,24,0.92)] backdrop-blur-xl border-b border-white/[0.06] py-3"
             : "bg-transparent py-5"

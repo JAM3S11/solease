@@ -1,15 +1,60 @@
-import React, { useEffect, useState } from "react";
-import { ArrowRight, Sparkles, ChevronDown, Ticket, Users, BarChart3, Zap, CheckCircle2, Star, Shield, Clock, Bot, Target, TrendingUp, Lock, HeadphonesIcon } from "lucide-react";
-import { Link } from "react-router";
+import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router";
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  ChevronDown,
+  Clock3,
+  Sparkles,
+  Star,
+  Ticket,
+  TrendingUp,
+  Users,
+  Zap,
+  Shield,
+  BarChart3,
+  Target,
+  Lock,
+  HeadphonesIcon,
+  Activity,
+  Gauge,
+  MessageSquare,
+} from "lucide-react";
+
+const AnimatedBackground = () => {
+  return (
+    <>
+      <div className="absolute inset-0 z-0" style={{
+        background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.2) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 60%, rgba(6,182,212,0.15) 0%, transparent 60%), radial-gradient(ellipse 30% 30% at 20% 70%, rgba(139,92,246,0.12) 0%, transparent 60%)`,
+      }} />
+      <div className="absolute inset-0 z-0 opacity-[0.4]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+        backgroundSize: '40px 40px',
+        maskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)'
+      }} />
+      <div className="absolute inset-0 z-0" style={{
+        background: 'radial-gradient(circle at 50% 50%, transparent 50%, #060b18 100%)',
+        opacity: 0.5
+      }} />
+    </>
+  );
+};
+
+const FloatingElement = ({ delay, children, className }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.6 }}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
 const Homepage = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
-
   const stats = [
     { value: "10,000+", label: "Daily Active Users", icon: Users },
     { value: "500K+", label: "Tickets Resolved", icon: Ticket },
@@ -87,7 +132,7 @@ const Homepage = () => {
 
   const guarantees = [
     { icon: CheckCircle2, text: "14-day free trial" },
-    { icon: Clock, text: "No credit card required" },
+    { icon: Clock3, text: "No credit card required" },
     { icon: Zap, text: "Setup in minutes" },
     { icon: Shield, text: "Cancel anytime" }
   ];
@@ -96,78 +141,189 @@ const Homepage = () => {
     <div className="w-full font-sans bg-[#060b18]">
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Background Glows */}
-        <div 
-          className="absolute inset-0 z-0" 
-          style={{
-            background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.18) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 60%, rgba(6,182,212,0.1) 0%, transparent 60%), radial-gradient(ellipse 30% 30% at 20% 70%, rgba(139,92,246,0.1) 0%, transparent 60%)`,
-          }} 
-        />
+        <AnimatedBackground />
         
-        {/* Grid Overlay */}
-        <div 
-          className="absolute inset-0 z-0 opacity-30" 
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-            maskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 0%, black 20%, transparent 80%)'
-          }}
-        />
+        <div className="relative z-10 max-w-7xl w-full px-6 lg:px-10 py-20 sm:py-28 flex flex-col items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
+            {/* Left Content */}
+            <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.8, ease: "easeOut" }} 
+              >
+                <span className="inline-flex items-center gap-2 bg-blue-600/[0.12] backdrop-blur-sm text-blue-400 text-xs font-medium px-4 py-2 rounded-full uppercase tracking-[0.15em] mb-6 border border-blue-500/[0.2]">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Next-Gen Support Intelligence
+                </span>
+                
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-6 tracking-tight leading-[1.1]" style={{ letterSpacing: '-0.02em' }}>
+                  Support that<br />
+                  <span className="bg-gradient-to-b from-white to-white/[0.45] bg-clip-text text-transparent">
+                    Actually Works.
+                  </span>
+                </h1>
+                
+                <p className="text-sm md:text-base text-white/[0.48] mb-8 max-w-lg leading-relaxed" style={{ lineHeight: 1.65 }}>
+                  Experience a service desk that thinks. SOLEASE uses <span className="text-white font-medium">AI intelligence</span> to route tickets instantly, 
+                  automate workflows, and empower your team to focus on resolving issues faster.
+                </p>
 
-        <div className="relative z-10 max-w-5xl w-full px-4 sm:px-8 lg:px-10 py-20 sm:py-24 lg:py-32 flex flex-col items-center text-center">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="flex flex-col items-center"
-          >
-            <span className="inline-flex items-center gap-2 bg-blue-600/[0.12] backdrop-blur-sm text-blue-400 text-xs font-medium px-4 py-2 rounded-full uppercase tracking-[0.15em] mb-6 border border-blue-500/[0.2]">
-              <Sparkles className="w-3.5 h-3.5" />
-              AI-Powered Support Platform
-            </span>
-            
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-6 tracking-tight leading-[1.1]" style={{ letterSpacing: '-0.02em' }}>
-              Intelligent Support.<br />
-              <span className="bg-gradient-to-b from-white to-white/[0.45] bg-clip-text text-transparent">
-                Simplified Resolution.
-              </span>
-            </h1>
-            
-            <p className="text-sm md:text-base text-white/[0.48] mb-10 max-w-2xl leading-relaxed" style={{ lineHeight: 1.65 }}>
-              SOLEASE is an <span className="text-white font-medium">AI-powered ticketing platform</span> that automates support workflows, 
-              provides real-time insights, and connects users with the right support teams—faster.
-            </p>
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-10">
+                  <Link to="/auth/signup" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
+                      Start Free Trial 
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </Link>
+                  
+                  <Link to="/about" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
+                      Learn How It Works
+                    </button>
+                  </Link>
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
-              <Link to="/auth/signup" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
-                  Start Free Trial 
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </Link>
-              
-              <Link to="/contact" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
-                  Talk to Sales
-                </button>
-              </Link>
+                {/* Social Proof Pills */}
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-[#060b18] bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold">
+                        {String.fromCharCode(64 + i)}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-white/[0.5] text-sm ml-2">Trusted by <span className="text-white font-medium">10,000+</span> teams</span>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+
+            {/* Right - Advanced Dashboard Mockup */}
+            <div className="lg:col-span-5 relative">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 40 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                className="relative"
+              >
+                {/* Glowing orbs */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/30 rounded-full blur-[100px]" />
+                <div className="absolute top-1/3 right-0 w-40 h-40 bg-cyan-500/20 rounded-full blur-[80px]" />
+                
+                {/* Main Dashboard Card */}
+                <div className="relative bg-[#080e1e]/90 backdrop-blur-xl rounded-2xl border border-white/[0.1] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
+                  {/* Header */}
+                  <div className="h-12 bg-white/[0.03] border-b border-white/[0.06] flex items-center px-4 justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-md flex items-center justify-center">
+                        <Sparkles className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-white/80 text-xs font-medium">SOLEASE</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-white/[0.15]" />
+                      <div className="w-2 h-2 rounded-full bg-white/[0.15]" />
+                      <div className="w-2 h-2 rounded-full bg-white/[0.15]" />
+                    </div>
+                  </div>
+
+                  {/* Dashboard Content */}
+                  <div className="p-4 space-y-4">
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <FloatingElement delay={0.5} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+                        <Gauge className="w-4 h-4 text-blue-400 mb-1" />
+                        <span className="text-white text-lg font-bold">98%</span>
+                        <span className="text-white/[0.4] text-[10px] block">SLA Met</span>
+                      </FloatingElement>
+                      <FloatingElement delay={0.6} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+                        <Activity className="w-4 h-4 text-green-400 mb-1" />
+                        <span className="text-white text-lg font-bold">1.2k</span>
+                        <span className="text-white/[0.4] text-[10px] block">Active</span>
+                      </FloatingElement>
+                      <FloatingElement delay={0.7} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+                        <Clock3 className="w-4 h-4 text-purple-400 mb-1" />
+                        <span className="text-white text-lg font-bold">&lt;2h</span>
+                        <span className="text-white/[0.4] text-[10px] block">Response</span>
+                      </FloatingElement>
+                    </div>
+
+                    {/* AI Suggestion Card */}
+                    <FloatingElement delay={0.8} className="bg-gradient-to-r from-blue-900/30 to-cyan-900/20 rounded-xl p-4 border border-blue-500/[0.15]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Bot className="w-4 h-4 text-blue-400" />
+                        <span className="text-blue-400 text-xs font-medium">AI Suggestion</span>
+                      </div>
+                      <p className="text-white/[0.7] text-xs leading-relaxed">
+                        Auto-routing ticket #4829 to IT Security team based on keyword analysis. 
+                        <span className="text-blue-400"> 94% confidence</span>
+                      </p>
+                    </FloatingElement>
+
+                    {/* Live Ticket Feed */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[10px] text-white/[0.4] uppercase tracking-wider px-1">
+                        <span>Live Tickets</span>
+                        <span>Priority</span>
+                      </div>
+                      {[1, 2, 3].map((i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.9 + i * 0.1 }}
+                          className="flex items-center justify-between bg-white/[0.02] rounded-lg p-3 border border-white/[0.04] hover:bg-white/[0.04] transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-3.5 h-3.5 text-white/[0.3]" />
+                            <span className="text-white text-xs">Ticket #{4800 + i}</span>
+                          </div>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${i === 1 ? 'bg-red-500/20 text-red-400' : i === 2 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                            {i === 1 ? 'High' : i === 2 ? 'Medium' : 'Low'}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Scanning line effect */}
+                  <motion.div 
+                    initial={{ top: 0 }}
+                    animate={{ top: '100%' }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: "linear" }}
+                    className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-400/60 to-transparent"
+                  />
+                </div>
+
+                {/* Floating badge */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                  className="absolute -right-4 top-8 bg-white/[0.03] backdrop-blur-md px-4 py-2 rounded-xl border border-white/[0.08] shadow-lg hidden md:block"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-white/[0.6] text-xs font-medium">AI Active</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
         </div>
 
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
         >
           <button 
             onClick={() => document.getElementById('what-is')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex flex-col items-center gap-2 text-white/[0.48] hover:text-blue-400 transition-colors duration-300"
+            className="flex flex-col items-center gap-2 text-white/[0.4] hover:text-blue-400 transition-colors duration-300"
           >
             <span className="text-xs uppercase tracking-widest">Learn More</span>
-            <ChevronDown className="w-6 h-6 animate-bounce" />
+            <ChevronDown className="w-5 h-5 animate-bounce" />
           </button>
         </motion.div>
       </section>
@@ -402,7 +558,6 @@ const Homepage = () => {
 
       {/* CTA Section */}
       <section className="py-20 md:py-28 bg-[#060b18] relative overflow-hidden">
-        {/* Background Glow */}
         <div 
           className="absolute inset-0 z-0" 
           style={{

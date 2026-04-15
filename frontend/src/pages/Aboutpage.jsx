@@ -6,167 +6,106 @@ import {
   CheckCircle2,
   ChevronDown,
   Clock3,
+  Command,
   Database,
+  Globe,
   Layers,
   Lock,
+  Mic,
+  Phone,
   ShieldCheck,
+  Sparkles,
+  Terminal,
   TicketCheck,
-  UserCheck,
-  UserCog,
   Users,
   Webhook,
+  Workflow,
+  Zap,
 } from "lucide-react";
 import { Link } from "react-router";
 
-const stats = [
-  { value: "10,000+", label: "Daily Active Users" },
-  { value: "500,000+", label: "Tickets Resolved" },
-  { value: "99.9%", label: "Uptime SLA" },
-  { value: "24/7", label: "Enterprise Support" },
-];
-
-const currentOperations = [
+const coreCapabilities = [
   {
     icon: TicketCheck,
-    title: "Multi-channel ticket intake",
-    description: "SOLEASE is currently receiving tickets through web forms, email pipelines, and API requests into one operational queue.",
+    title: "Intelligent Helpdesk",
+    description: "Multi-channel ticket intake with AI-powered triage, categorization, and routing for seamless support operations.",
+  },
+  {
+    icon: Command,
+    title: "MCP Protocol Engine",
+    description: "Model Context Protocol integration enabling AI agents to execute complex workflows, query data, and automate decisions autonomously.",
   },
   {
     icon: Bot,
-    title: "AI-driven triage",
-    description: "Incoming requests are analyzed for category, urgency, and sentiment to speed up assignment and reduce manual sorting.",
+    title: "AI Autonomous Agents",
+    description: "Self-learning agents that handle repetitive tasks, suggest solutions, and escalate only when human intervention is needed.",
   },
   {
-    icon: Clock3,
-    title: "SLA monitoring and escalation",
-    description: "Live SLA timers track first-response and resolution targets, with escalation rules triggered automatically when thresholds are at risk.",
+    icon: Workflow,
+    title: "Workflow Automation",
+    description: "Drag-and-drop automation builder to create custom pipelines, escalation rules, and business logic without coding.",
   },
   {
-    icon: Layers,
-    title: "Workflow automation",
-    description: "Status transitions, queue movement, and ownership updates are automated with rules that keep ticket flow consistent.",
+    icon: Mic,
+    title: "Voice-to-Text Ready",
+    description: "Natural language processing pipeline for voice inputs. Dictate tickets, commands, and queries hands-free. (Coming Soon)",
   },
   {
-    icon: Webhook,
-    title: "Integration sync",
-    description: "Connected tools sync ticket events in real time, helping teams collaborate without losing context across platforms.",
-  },
-  {
-    icon: Database,
-    title: "Analytics and reporting",
-    description: "Support leaders track backlog health, response speed, and resolution patterns through active operational dashboards.",
+    icon: Globe,
+    iconColor: "text-cyan-400",
+    title: "Enterprise Scale",
+    description: "Built for organizations handling thousands of tickets daily with multi-tenant architecture and role-based access.",
   },
 ];
 
-const systemCoverage = [
+const mcpFeatures = [
   {
-    title: "Ticket Management Lifecycle",
-    items: [
-      "Ticket creation from web, email, and API",
-      "Priority and category assignment",
-      "Status tracking from open to resolved",
-      "Ownership handoff between teams",
-      "Resolution notes and closure flow",
-      "Client feedback capture after resolution",
-    ],
+    title: "Context-Aware Execution",
+    description: "AI agents understand conversation context and can execute multi-step operations across your entire helpdesk system.",
   },
   {
-    title: "AI Intelligence Layer",
-    items: [
-      "Intent and sentiment analysis on incoming tickets",
-      "Urgency detection for smarter prioritization",
-      "Suggested routing for faster assignment",
-      "AI-assisted response and resolution support",
-      "Pattern recognition for recurring issue types",
-      "Decision support for high-risk ticket queues",
-    ],
+    title: "Tool Calling Protocol",
+    description: "MCP-compatible tool definitions allow any AI client to invoke ticket creation, status updates, and data retrieval.",
   },
   {
-    title: "Workflow and Automation",
-    items: [
-      "Rule-based assignment and queue movement",
-      "Automatic SLA tracking and breach detection",
-      "Escalation triggers for delayed tickets",
-      "Status transition automation by policy",
-      "Notification workflows for key lifecycle events",
-      "Repeatable process enforcement across teams",
-    ],
+    title: "Streaming Responses",
+    description: "Real-time token-by-token responses for interactive troubleshooting and step-by-step resolution guidance.",
   },
   {
-    title: "Roles and Team Operations",
-    items: [
-      "Manager oversight of queues and team performance",
-      "Reviewer execution of investigation and resolution",
-      "Client self-service submission and ticket tracking",
-      "Role-based visibility into ticket data",
-      "Permission-based controls on actions",
-      "Cross-team collaboration under one platform",
-    ],
-  },
-  {
-    title: "Analytics and Reporting",
-    items: [
-      "Real-time dashboards for ticket health",
-      "Response and resolution time monitoring",
-      "Backlog trend and workload analysis",
-      "Team productivity and throughput metrics",
-      "Service quality visibility for managers",
-      "Operational insights for process optimization",
-    ],
-  },
-  {
-    title: "Security, Compliance, and Reliability",
-    items: [
-      "Role-based access and permission control",
-      "Audit logs for ticket and user activity",
-      "Data encryption and secure handling",
-      "Operational continuity and backup safeguards",
-      "Compliance-ready process controls",
-      "Service availability monitoring and uptime focus",
-    ],
+    title: "Persistent Sessions",
+    description: "Maintain conversation state across interactions, enabling complex investigations that span multiple sessions.",
   },
 ];
 
-const operationalSnapshot = [
-  { metric: "Average first response", value: "< 4 hours", note: "Measured against SLA rules and queue activity." },
-  { metric: "Prioritization model", value: "AI-assisted", note: "Urgency and sentiment influence queue order." },
-  { metric: "Assignment engine", value: "Rules + workload", note: "Routes by expertise, load, and SLA risk." },
-  { metric: "Escalation behavior", value: "Automated", note: "High-risk or overdue tickets escalate by policy." },
+const enterpriseFeatures = [
+  { icon: Globe, title: "Multi-tenant Architecture", description: "Isolated data environments for different departments, regions, or client organizations." },
+  { icon: Lock, title: "Enterprise Security", description: "SOC 2 compliant with role-based access, SSO/SAML, and comprehensive audit logging." },
+  { icon: Database, title: "Data Sovereignty", description: "Regional data residency options with encrypted storage and secure backup protocols." },
+  { icon: Zap, title: "High Availability", description: "99.9% SLA with auto-failover, load balancing, and zero-downtime deployments." },
+];
+
+const integrationOptions = [
+  { name: "Slack", description: "Create and update tickets directly from Slack channels" },
+  { name: "Microsoft Teams", description: "Seamless integration with Teams for enterprise workflows" },
+  { name: "Webhooks", description: "Connect any external system with custom webhook triggers" },
+  { name: "REST API", description: "Full CRUD operations withGraphQL support for custom integrations" },
+  { name: "Email Pipelines", description: "Convert emails to tickets automatically with AI parsing" },
+  { name: "CRM Sync", description: "Two-way sync with Salesforce, HubSpot, and other CRMs" },
 ];
 
 const workflowStages = [
-  { stage: "1. Intake", detail: "Clients submit issues through web, email, or API. Every request is logged with traceable metadata." },
-  { stage: "2. Analyze", detail: "AI triage identifies ticket type, urgency, and sentiment to support fast and accurate handling." },
-  { stage: "3. Route", detail: "Rules assign cases to reviewers based on specialization, queue load, and service commitments." },
-  { stage: "4. Resolve", detail: "Reviewers investigate, update status, communicate with clients, and document final outcomes." },
-  { stage: "5. Optimize", detail: "Managers review trends and feedback to improve workflow rules and reduce repeated incidents." },
+  { stage: "1. Submit", detail: "Create tickets via web, mobile, email, API, or voice input. AI auto-categorizes and extracts key details." },
+  { stage: "2. Analyze", detail: "MCP agents analyze intent, sentiment, and urgency. Pattern matching identifies recurring issues." },
+  { stage: "3. Execute", detail: "Autonomous agents apply AI-suggested solutions, update statuses, or escalate with full context preserved." },
+  { stage: "4. Resolve", detail: "Human reviewers handle complex cases while AI assists with knowledge base suggestions and automation." },
+  { stage: "5. Learn", detail: "Continuous feedback loop trains models on resolution patterns, improving auto-resolution rates over time." },
 ];
 
-const roleModel = [
-  {
-    icon: UserCog,
-    title: "Managers",
-    description: "Configure automations, monitor SLA performance, manage users and permissions, and review operational reports.",
-  },
-  {
-    icon: UserCheck,
-    title: "Reviewers",
-    description: "Handle assigned queues, investigate incidents, apply solutions, escalate blockers, and close tickets with context.",
-  },
-  {
-    icon: Users,
-    title: "Clients",
-    description: "Submit support requests, track progress in real time, receive updates, and provide resolution feedback.",
-  },
-];
-
-const securityAndTrust = [
-  "Role-based access control",
-  "Audit logs for ticket actions",
-  "Data protection and encryption",
-  "Operational backup safeguards",
-  "Compliance-ready controls",
-  "Availability monitoring",
+const voiceFeatures = [
+  { title: "Dictate Tickets", description: "Speak your issue naturally and have it converted to a structured ticket with auto-categorization." },
+  { title: "Voice Commands", description: "Use voice to check ticket status, assign to team members, or trigger workflow automations." },
+  { title: "Transcript History", description: "All voice interactions are transcribed and searchable for compliance and training purposes." },
+  { title: "Multi-language", description: "Support for 20+ languages with real-time translation for global enterprise teams." },
 ];
 
 const Aboutpage = () => {
@@ -178,21 +117,34 @@ const Aboutpage = () => {
         
         <div className="relative z-10 max-w-5xl w-full px-4 sm:px-8 lg:px-10 py-20 sm:py-24 lg:py-32 flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} className="flex flex-col items-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">About SOLEASE</span>
-              <span className="w-6 h-px bg-blue-600"></span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium text-white mb-4 tracking-tight" style={{ letterSpacing: '-0.02em' }}>Built for modern support operations</h1>
-            <p className="text-base md:text-lg text-white/[0.48] leading-relaxed max-w-3xl mx-auto mb-8">
-              SOLEASE combines AI triage, workflow automation, role-based collaboration, and analytics to run support operations with speed, control, and accountability across the full ticket lifecycle.
+            <span className="inline-flex items-center gap-2 bg-blue-600/[0.12] backdrop-blur-sm text-blue-400 text-xs font-medium px-4 py-2 rounded-full uppercase tracking-[0.15em] mb-6 border border-blue-500/[0.2]">
+              <Sparkles className="w-3.5 h-3.5" />
+              AI-Powered Enterprise Platform
+            </span>
+            
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-6 tracking-tight leading-[1.1]" style={{ letterSpacing: '-0.02em' }}>
+              Enterprise Helpdesk.<br />
+              <span className="bg-gradient-to-b from-white to-white/[0.45] bg-clip-text text-transparent">
+                Autonomous Agents.
+              </span>
+            </h1>
+            
+            <p className="text-sm md:text-base text-white/[0.48] mb-10 max-w-2xl leading-relaxed" style={{ lineHeight: 1.65 }}>
+              SOLEASE is an <span className="text-white font-medium">AI-native helpdesk platform</span> with native MCP (Model Context Protocol) integration—empowering autonomous agents to resolve tickets, execute workflows, and collaborate with your team like Opencode or Claude Code.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium inline-flex items-center justify-center gap-2 shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 transition-all text-sm">
-                Start Free Trial <ArrowRight size={16} />
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+              <Link to="/auth/signup" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
+                  Start Free Trial 
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </Link>
-              <Link to="/services" className="bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-6 py-3 rounded-full font-medium transition-all text-sm">
-                View Services
+              
+              <Link to="/contact" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
+                  Talk to Sales
+                </button>
               </Link>
             </div>
           </motion.div>
@@ -205,7 +157,7 @@ const Aboutpage = () => {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
         >
           <button 
-            onClick={() => document.getElementById('operations')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => document.getElementById('platform-capabilities')?.scrollIntoView({ behavior: 'smooth' })}
             className="flex flex-col items-center gap-2 text-white/[0.48] hover:text-blue-400 transition-colors duration-300"
           >
             <span className="text-xs uppercase tracking-widest">Learn More</span>
@@ -214,185 +166,288 @@ const Aboutpage = () => {
         </motion.div>
       </section>
 
-      <section id="operations" className="py-8 bg-[#080e1e] border-y border-white/[0.06]">
+      <section id="platform-capabilities" className="py-20 md:py-28 bg-[#060b18]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-2xl overflow-hidden">
-            {stats.map((stat, index) => (
-              <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="text-center py-6 px-4 bg-[#060b18]">
-                <span className="text-2xl md:text-3xl font-medium text-white bg-gradient-to-b from-white to-white/[0.7] bg-clip-text text-transparent">{stat.value}</span>
-                <p className="text-[11.5px] uppercase text-white/[0.35] mt-2 tracking-[0.08em]">{stat.label}</p>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-16">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-blue-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Platform Capabilities</span>
+              <span className="w-6 h-px bg-blue-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">One Platform, Infinite Possibilities</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-3xl mx-auto leading-relaxed">
+              SOLEASE combines the simplicity of a modern helpdesk with the power of autonomous AI agents—connected through the Model Context Protocol for enterprise-grade automation.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {coreCapabilities.map((cap, index) => (
+              <motion.div
+                key={cap.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 hover:translate-y-[-3px] hover:border-white/[0.14] transition-all duration-300 group"
+              >
+                <div className={`w-12 h-12 bg-blue-600/[0.12] rounded-xl flex items-center justify-center mb-4 ${cap.iconColor || 'text-blue-400'} group-hover:bg-blue-600 group-hover:text-white transition-all duration-300`}>
+                  <cap.icon size={24} />
+                </div>
+                <h3 className="font-medium text-white mb-2 text-sm">{cap.title}</h3>
+                <p className="text-white/[0.48] text-sm">{cap.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-[#060b18]">
+      <section className="py-20 md:py-28 bg-[#080e1e]">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Current System Operations</span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Model Context Protocol</span>
               <span className="w-6 h-px bg-blue-600"></span>
             </div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white mb-4">What SOLEASE is currently doing</h2>
-            <p className="text-white/[0.48] text-sm md:text-base max-w-3xl mx-auto">The platform is actively handling production support workloads with AI assistance and policy-driven automation.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">AI That Actually Works</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              Unlike basic chatbots, SOLEASE's MCP integration lets AI agents execute real operations—query databases, update tickets, trigger workflows, and more.
+            </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {currentOperations.map((item, index) => (
-              <motion.div key={item.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 hover:translate-y-[-3px] hover:border-white/[0.14] transition-all duration-300">
-                <div className="w-11 h-11 bg-blue-600/[0.12] rounded-xl flex items-center justify-center text-blue-400 mb-4"><item.icon size={20} /></div>
-                <h3 className="text-sm md:text-base font-medium text-white mb-2">{item.title}</h3>
-                <p className="text-white/[0.48] text-sm leading-relaxed">{item.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="py-16 md:py-24 bg-[#080e1e]">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Operational Snapshot</span>
-              <span className="w-6 h-px bg-blue-600"></span>
-            </div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white">Live platform behavior</h2>
-          </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-            {operationalSnapshot.map((row, index) => (
-              <motion.div key={row.metric} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-6 hover:border-white/[0.14] transition-all">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-white/[0.35] mb-2">{row.metric}</p>
-                <h3 className="text-sm md:text-base font-medium text-white mb-2">{row.value}</h3>
-                <p className="text-white/[0.48] text-sm leading-relaxed">{row.note}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 md:py-24 bg-[#060b18]">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Full System Scope</span>
-              <span className="w-6 h-px bg-blue-600"></span>
-            </div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white">Everything SOLEASE is currently doing</h2>
-            <p className="text-white/[0.48] text-sm md:text-base mt-3 max-w-3xl mx-auto">This section details the complete operational coverage of the SOLEASE system across support execution, control, and service delivery.</p>
-          </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {systemCoverage.map((area, index) => (
-              <motion.div key={area.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 md:p-6 hover:border-white/[0.14] transition-all">
-                <h3 className="text-sm md:text-base font-medium text-white mb-3">{area.title}</h3>
-                <ul className="space-y-2">
-                  {area.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-white/[0.48] text-sm leading-relaxed">
-                      <CheckCircle2 size={14} className="text-blue-400 mt-0.5 flex-shrink-0" /><span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 md:py-24 bg-[#080e1e]">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Live Workflow</span>
-              <span className="w-6 h-px bg-blue-600"></span>
-            </div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white">End-to-end lifecycle in production</h2>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {workflowStages.map((item, index) => (
-              <motion.div key={item.stage} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 md:p-6 hover:border-white/[0.14] transition-all">
-                <h3 className="text-sm font-medium text-blue-400 mb-2">{item.stage}</h3>
-                <p className="text-white/[0.48] text-sm leading-relaxed">{item.detail}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 md:py-24 bg-[#060b18]">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-6 h-px bg-blue-600"></span>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Role Alignment</span>
-              <span className="w-6 h-px bg-blue-600"></span>
-            </div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white mb-4">Responsibilities in the system</h2>
-            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">Each role operates from the same source of truth with clear accountability across every ticket stage.</p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-            {roleModel.map((role, index) => (
-              <motion.div key={role.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1 }} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-6 hover:border-white/[0.14] transition-all">
-                <div className="w-12 h-12 bg-blue-600/[0.12] rounded-xl flex items-center justify-center text-blue-400 mb-4"><role.icon size={22} /></div>
-                <h3 className="text-sm md:text-base font-medium text-white mb-2">{role.title}</h3>
-                <p className="text-white/[0.48] text-sm leading-relaxed">{role.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 md:py-24 bg-[#080e1e]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
-            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="w-6 h-px bg-blue-600"></span>
-                <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Security and Reliability</span>
-                <span className="w-6 h-px bg-blue-600"></span>
-              </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-white mb-4">Built for controlled operations</h2>
-              <p className="text-white/[0.48] text-sm md:text-base leading-relaxed">Security and reliability controls are built into daily support execution to protect data and keep service delivery stable.</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm md:text-base font-medium text-white">Control Measures</h3>
-                <ShieldCheck size={18} className="text-green-500" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {securityAndTrust.map((item) => (
-                  <div key={item} className="flex items-center gap-2 p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                    <Lock size={14} className="text-blue-400 flex-shrink-0" />
-                    <span className="text-xs md:text-sm text-white/[0.6]">{item}</span>
+            {mcpFeatures.map((feature, index) => (
+              <motion.div 
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-6 hover:border-white/[0.14] transition-all"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 bg-cyan-600/[0.15] rounded-lg flex items-center justify-center">
+                    <Terminal size={16} className="text-cyan-400" />
                   </div>
-                ))}
+                  <h3 className="text-sm font-medium text-white">{feature.title}</h3>
+                </div>
+                <p className="text-white/[0.48] text-sm leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border border-blue-500/[0.15] rounded-2xl p-6 md:p-8"
+          >
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-1">
+                <h3 className="text-lg font-medium text-white mb-2">Like Claude Code, But for Support</h3>
+                <p className="text-white/[0.48] text-sm leading-relaxed">
+                  Just as Opencode lets you agentically modify code, SOLEASE lets AI agents autonomously handle support tickets—applying fixes, updating statuses, and escalating only when needed.
+                </p>
               </div>
-            </motion.div>
+              <div className="flex-shrink-0">
+                <code className="text-xs md:text-sm text-cyan-300 bg-black/[0.3] px-4 py-2 rounded-lg font-mono">
+                  MCP: resolve_ticket(id, solution)
+                </code>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28 bg-[#060b18]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-blue-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Enterprise Ready</span>
+              <span className="w-6 h-px bg-blue-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">Built for the Enterprise</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              Security, scalability, and compliance baked into every layer of the platform.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {enterpriseFeatures.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 hover:border-white/[0.14] transition-all"
+              >
+                <feature.icon className="w-8 h-8 text-blue-400 mb-4" />
+                <h3 className="text-sm font-medium text-white mb-2">{feature.title}</h3>
+                <p className="text-white/[0.48] text-sm leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-[#060b18] relative overflow-hidden">
+      <section className="py-20 md:py-28 bg-[#080e1e]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-blue-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Integrations</span>
+              <span className="w-6 h-px bg-blue-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">Connect Everything</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              Seamlessly integrate with your existing enterprise tools and workflows.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {integrationOptions.map((item, index) => (
+              <motion.div key={item.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="flex items-center gap-3 p-4 bg-white/[0.03] border border-white/[0.07] rounded-xl hover:border-white/[0.14] transition-all">
+                <div className="w-10 h-10 bg-blue-600/[0.12] rounded-lg flex items-center justify-center">
+                  <Webhook size={18} className="text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white">{item.name}</h3>
+                  <p className="text-white/[0.48] text-xs">{item.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28 bg-[#060b18]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-blue-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">How It Works</span>
+              <span className="w-6 h-px bg-blue-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">From Ticket to Resolution</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              AI-powered workflow that learns and improves with every interaction.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {workflowStages.map((item, index) => (
+              <motion.div
+                key={item.stage}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="relative"
+              >
+                <div className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 h-full hover:border-white/[0.14] transition-all">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm mb-4">
+                    {index + 1}
+                  </div>
+                  <h3 className="text-sm font-medium text-white mb-2">{item.stage}</h3>
+                  <p className="text-white/[0.48] text-xs leading-relaxed">{item.detail}</p>
+                </div>
+                {index < workflowStages.length - 1 && (
+                  <div className="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
+                    <ArrowRight className="w-4 h-4 text-white/[0.2]" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28 bg-[#080e1e] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 100%, rgba(6,182,212,0.15) 0%, transparent 70%)' }} />
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-cyan-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-cyan-400">Coming Soon</span>
+              <span className="w-6 h-px bg-cyan-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">Voice-First Support</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              Speak naturally to create tickets, query status, and control your helpdesk—hands-free.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {voiceFeatures.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 hover:border-cyan-500/[0.3] transition-all group"
+              >
+                <div className="w-10 h-10 bg-cyan-600/[0.12] rounded-lg flex items-center justify-center mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-all">
+                  <Mic size={20} className="text-cyan-400 group-hover:text-white" />
+                </div>
+                <h3 className="text-sm font-medium text-white mb-2">{feature.title}</h3>
+                <p className="text-white/[0.48] text-xs leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-12 text-center"
+          >
+            <div className="inline-flex items-center gap-2 bg-cyan-600/[0.1] border border-cyan-500/[0.2] text-cyan-400 px-4 py-2 rounded-full text-sm">
+              <Phone size={16} />
+              <span>Join waitlist for voice features</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-20 md:py-28 bg-[#060b18] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 100%, rgba(37,99,235,0.15) 0%, transparent 70%)' }} />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-medium text-white mb-4">Ready to run support with more control?</h2>
-            <p className="text-white/[0.48] text-sm md:text-base mb-8 max-w-2xl mx-auto leading-relaxed">Start with SOLEASE to manage tickets, enforce SLAs, automate decisions, and keep your support teams aligned.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium flex items-center justify-center gap-2 shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:-translate-y-0.5 transition-all text-sm">
-                Start Free Trial <ArrowRight size={16} />
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">
+              Ready to Transform Your <span className="text-blue-400">Support?</span>
+            </h2>
+            <p className="text-white/[0.48] text-base md:text-lg mb-10 max-w-xl mx-auto">
+              Join forward-thinking enterprises using SOLEASE to automate support with AI agents.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link 
+                to="/auth/signup"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full font-medium flex items-center justify-center gap-2 shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 transition-all duration-300 text-sm"
+              >
+                Get Started Free <ArrowRight size={20} />
               </Link>
-              <Link to="/contact" className="bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-6 py-3 rounded-full font-medium hover:-translate-y-0.5 transition-all text-sm">
+              <Link 
+                to="/contact"
+                className="bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] px-7 py-3.5 rounded-full font-medium hover:-translate-y-0.5 transition-all duration-300 text-sm"
+              >
                 Contact Sales
               </Link>
             </div>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
-              {["No credit card required", "Quick onboarding", "Production-ready workflows"].map((item) => (
-                <span key={item} className="inline-flex items-center gap-1.5 text-xs text-white/[0.38] bg-white/[0.03] px-3 py-1.5 rounded-full border border-white/[0.06]">
-                  <CheckCircle2 size={12} className="text-green-500" />{item}
-                </span>
+            
+            <div className="flex flex-wrap justify-center gap-6 text-white/[0.38]">
+              {[
+                { icon: CheckCircle2, text: "14-day free trial" },
+                { icon: Zap, text: "No credit card required" },
+                { icon: Users, text: "Setup in minutes" },
+                { icon: ShieldCheck, text: "Enterprise security" },
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <item.icon size={16} className="text-green-500" />
+                  <span>{item.text}</span>
+                </div>
               ))}
             </div>
           </motion.div>

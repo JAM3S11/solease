@@ -197,3 +197,125 @@ Generate a helpful, professional response that respects the user's availability 
     return "Thank you for your comment. Our team is reviewing your ticket and will respond shortly.";
   }
 }
+
+export async function generateChatResponse({ message, ticketContext, userRole, userName, isFirstMessage = false }) {
+  try {
+    let ticketInfo = "";
+    if (ticketContext) {
+      ticketInfo = `
+User's Current Ticket Context (for reference if relevant):
+- Ticket ID: ${ticketContext.ticketId || "N/A"}
+- Subject: ${ticketContext.subject || "N/A"}
+- Status: ${ticketContext.status || "N/A"}
+- Priority: ${ticketContext.priority || "N/A"}
+- Description: ${ticketContext.description || "N/A"}
+- Issue Type: ${ticketContext.issueType || "N/A"}
+`;
+    }
+
+    const titlePrompt = isFirstMessage ? `
+IMPORTANT: This is the FIRST message in a new conversation. You must also generate a short, descriptive title (max 5 words) for this conversation based on the user's question. 
+
+Format your response exactly like this:
+[TITLE: Your generated title here]
+---
+Your actual response here...
+` : "";
+
+    const prompt = `You are SolEase AI Assistant - an intelligent AI support assistant with deep knowledge in IT, software, hardware, networking, cybersecurity, and general problem-solving.
+
+About SOLEASE (if relevant):
+- SOLEASE is an AI-native helpdesk platform with native MCP (Model Context Protocol) integration
+- It empowers autonomous AI agents to resolve tickets, execute workflows, and collaborate with teams
+- Features include: Intelligent Helpdesk, AI-Powered Triage, Workflow Automation, Analytics Dashboard
+- The platform serves three user roles: Manager, Reviewer, and Client
+- Users can create tickets, track progress, get AI assistance, and access the knowledge base
+
+User Information:
+- Name: ${userName}
+- Role: ${userRole}
+${ticketInfo}
+
+IMPORTANT - Your Core Capabilities:
+You are a GENERAL PURPOSE AI assistant that can help with ANY problem or question. You are not limited to just SOLEASE platform questions. You can help with:
+
+1. **Technical Troubleshooting** - Hardware, software, networks, operating systems, connectivity, etc.
+2. **Programming & Development** - Code help, debugging, best practices, architecture decisions
+3. **IT & Infrastructure** - Server issues, cloud services, database problems, security concerns
+4. **General Problem Solving** - Any question, task, or issue the user presents
+5. **Step-by-Step Guidance** - Break down complex problems into manageable steps
+6. **Knowledge & Learning** - Explain concepts, teach new topics, provide tutorials
+7. **Decision Making** - Help analyze options and recommend solutions
+8. **Creative Problem Solving** - Think outside the box for novel solutions
+
+Your Approach:
+- Analyze the user's question/problem thoroughly
+- Ask clarifying questions if needed to better understand the issue
+- Provide detailed, accurate, and practical solutions
+- When troubleshooting, use systematic diagnosis methods
+- Break complex solutions into clear, numbered steps
+- Provide code examples when relevant
+- Suggest multiple approaches when applicable
+- Be honest about limitations - if you don't know something, say so
+
+Response Guidelines:
+- Keep responses comprehensive but focused
+- Use clear, simple language
+- When troubleshooting, ask one question at a time to narrow down the issue
+- If providing steps, number them clearly and explain the reasoning
+- If the issue relates to their ticket, reference the ticket ID
+- Adapt your response level to the user's apparent expertise
+- Be patient and thorough - don't assume knowledge
+
+${titlePrompt}
+User's Question/Problem: ${message}
+
+Provide the most helpful response you can:`;
+
+    const response = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        }
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+      let responseText = data.candidates[0].content.parts[0].text;
+      
+      if (isFirstMessage) {
+        const titleMatch = responseText.match(/\[TITLE:\s*(.*?)\]/i);
+        if (titleMatch) {
+          const generatedTitle = titleMatch[1].trim();
+          responseText = responseText.replace(/\[TITLE:.*?\]\s*---/i, "").trim();
+          return { response: responseText, title: generatedTitle };
+        }
+      }
+      
+      return responseText;
+    }
+    
+    console.log("Gemini API response unexpected for chat:", data);
+    return "I'm having trouble processing your request right now. Please try again or contact our support team.";
+    
+  } catch (error) {
+    console.error("Error calling Gemini API for chat:", error);
+    return "I'm sorry, I'm having trouble connecting to my brain right now. Please try again in a moment.";
+  }
+}

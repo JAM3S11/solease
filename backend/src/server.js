@@ -13,6 +13,8 @@ import userRoutes from "./routes/user.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import personalNoteRoutes from "./routes/personalNote.routes.js";
+import subscriptionRoutes from "./routes/subscription.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 dotenv.config();
 
@@ -49,6 +51,10 @@ app.use("/sol/profile", profileRoutes);
 app.use("/sol/notifications", notificationRoutes);
 
 app.use("/sol/personal-notes", personalNoteRoutes);
+
+app.use("/sol/subscribe", subscriptionRoutes);
+
+app.use("/sol/ai", aiRoutes);
 
 connectDB().then(async () => {
     await createDefaultManager();

@@ -1,5 +1,5 @@
 import { transporter, sender } from "../mailtrap/mailtrap.config.js";
-import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, WELCOME_EMAIL_TEMPLATE, TICKET_STATUS_UPDATE_TEMPLATE } from "../mailtrap/emailsTemplate.js";
+import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, WELCOME_EMAIL_TEMPLATE, TICKET_STATUS_UPDATE_TEMPLATE, SUBSCRIPTION_CONFIRMATION_TEMPLATE } from "../mailtrap/emailsTemplate.js";
 
 const TICKET_ASSIGNED_TEMPLATE = `
 <!DOCTYPE html>
@@ -387,10 +387,27 @@ export const sendPasswordUpdateRequiredEmail = async (email, name, deadline) => 
         html: html,
       });
   
-      console.log("✅ Password update required email sent:", info.messageId);
+console.log("✅ Password update required email sent:", info.messageId);
       return info;
     } catch (error) {
       console.error("❌ Error sending password update required email:", error);
       throw new Error(`Error sending password update required email: ${error.message}`);
     }
+};
+
+export const sendSubscriptionConfirmationEmail = async (email) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"${sender.name}" <${sender.email}>`,
+      to: email,
+      subject: "You're Subscribed to SolEase! 🎉",
+      html: SUBSCRIPTION_CONFIRMATION_TEMPLATE,
+    });
+
+    console.log("✅ Subscription confirmation email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("❌ Error sending subscription confirmation email:", error);
+    throw new Error(`Error sending subscription confirmation email: ${error.message}`);
+  }
 };

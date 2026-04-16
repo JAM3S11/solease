@@ -1,5 +1,5 @@
 import {
-    Home, Users, Tickets, Settings, LucideChartSpline, NotepadText, Crown
+    Home, Users, Tickets, Settings, LucideChartSpline, NotepadText, Crown, Bot
 } from "lucide-react";
 
 /**
@@ -27,11 +27,13 @@ export const MENU_CONFIG = {
                     { name: "New Ticket", path: "/admin-dashboard/admin-new-ticket" },
                 ],
             },
+            {
+                name: "AI Assistant",
+                icon: Bot,
+                path: "/admin-dashboard/ai-chat",
+            },
             { name: "Reports", icon: NotepadText, path: "/admin-dashboard/admin-reports" },
         ],
-        // bottom: [
-        //     { name: "Settings", icon: Settings, path: "/admin-dashboard/admin-settings" },
-        // ],
     },
     Reviewer: {
         top: [
@@ -45,11 +47,13 @@ export const MENU_CONFIG = {
                     { name: "Assigned", path: "/reviewer-dashboard/assigned-ticket", badge: 8 },
                 ],
             },
+            {
+                name: "AI Assistant",
+                icon: Bot,
+                path: "/reviewer-dashboard/ai-chat",
+            },
             { name: "Reports", icon: NotepadText, path: "/reviewer-dashboard/report" },
         ],
-        // bottom: [
-        //     { name: "Settings", icon: Settings, path: "/reviewer-dashboard/settings" },
-        // ],
     },
     Client: {
         top: [
@@ -63,10 +67,12 @@ export const MENU_CONFIG = {
                     { name: "New Ticket", path: "/client-dashboard/new-ticket" },
                 ],
             },
+            {
+                name: "AI Assistant",
+                icon: Bot,
+                path: "/client-dashboard/ai-chat",
+            },
             { name: "Report", icon: NotepadText, path: "/client-dashboard/report" },
         ],
-        // bottom: [
-        //     { name: "Profile", icon: Users, path: "/client-dashboard/profile" },
-        // ],
     },
 };

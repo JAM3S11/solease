@@ -69,6 +69,7 @@ import BillingPaymentsPage from "./pages/BillingPaymentsPage";
 import TicketManagementPage from "./pages/TicketManagementPage";
 import WorkflowToolsPage from "./pages/WorkflowToolsPage";
 import IntegrationsPage from "./pages/IntegrationsPage";
+import AiChatPage from "./pages/AiChatPage";
 
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
@@ -377,6 +378,13 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin-dashboard/ai-chat"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AiChatPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* REVIEWER ROLES */}
         <Route path="/reviewer-dashboard"
@@ -439,6 +447,12 @@ const App = () => {
               <AllNotificationsPage />
             </ProtectedRoute>
           } />
+        <Route path="/reviewer-dashboard/ai-chat"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <AiChatPage />
+            </ProtectedRoute>
+          } />
 
         {/* CLIENT ROUTES */}
         <Route path="/client-dashboard/all-tickets"
@@ -481,6 +495,12 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client"]}>
               <AllNotificationsPage />
+            </ProtectedRoute>
+          } />
+        <Route path="/client-dashboard/ai-chat"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <AiChatPage />
             </ProtectedRoute>
           } />
 

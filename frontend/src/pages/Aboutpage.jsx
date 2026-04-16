@@ -15,12 +15,15 @@ import {
   Phone,
   ShieldCheck,
   Sparkles,
+  Target,
   Terminal,
   TicketCheck,
   Users,
   Webhook,
   Workflow,
   Zap,
+  Eye,
+  Rocket,
 } from "lucide-react";
 import { Link } from "react-router";
 
@@ -147,23 +150,96 @@ const Aboutpage = () => {
                 </button>
               </Link>
             </div>
-          </motion.div>
+</motion.div>
         </div>
+      </section>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-        >
-          <button 
-            onClick={() => document.getElementById('platform-capabilities')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex flex-col items-center gap-2 text-white/[0.48] hover:text-blue-400 transition-colors duration-300"
-          >
-            <span className="text-xs uppercase tracking-widest">Learn More</span>
-            <ChevronDown className="w-6 h-6 animate-bounce" />
-          </button>
-        </motion.div>
+      <section className="py-20 md:py-28 bg-[#080e1e]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-6 h-px bg-blue-600"></span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-blue-400">Our Story</span>
+              <span className="w-6 h-px bg-blue-600"></span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-4">Why We Built SOLEASE</h2>
+            <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
+              From frustration to innovation—the story behind the platform.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-600/[0.12] rounded-lg flex items-center justify-center">
+                    <Target size={20} className="text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white">Our Mission</h3>
+                </div>
+                <p className="text-white/[0.48] text-sm leading-relaxed">
+                  To eliminate the frustration of traditional helpdesk systems by creating an AI-native support platform where autonomous agents work alongside human experts—reducing response times, improving resolution quality, and empowering teams to focus on meaningful work instead of repetitive tasks.
+                </p>
+              </div>
+
+              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-cyan-600/[0.12] rounded-lg flex items-center justify-center">
+                    <Eye size={20} className="text-cyan-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white">Our Vision</h3>
+                </div>
+                <p className="text-white/[0.48] text-sm leading-relaxed">
+                  We envision a future where every organization—regardless of size—has access to enterprise-grade AI support infrastructure. A world where AI agents handle routine inquiries instantly, human agents tackle complex challenges with AI-powered insights, and customers receive faster, smarter, more personalized support than ever before.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-600/[0.12] rounded-lg flex items-center justify-center">
+                    <Rocket size={20} className="text-purple-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white">Our Journey</h3>
+                </div>
+                <p className="text-white/[0.48] text-sm leading-relaxed mb-4">
+                  SOLEASE was born from a simple observation: enterprise support teams were drowning in repetitive tickets while their most talented agents burned out on mundane tasks. We knew there had to be a better way.
+                </p>
+                <p className="text-white/[0.48] text-sm leading-relaxed">
+                  By combining cutting-edge AI research with deep enterprise expertise, we built a platform that doesn't just automate—but genuinely augments human capabilities. Today, we're proud to serve forward-thinking organizations across East Africa and beyond.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-600/[0.08] to-cyan-600/[0.08] border border-blue-500/[0.15] rounded-2xl p-6">
+                <h3 className="text-lg font-medium text-white mb-4">Our Core Values</h3>
+                <ul className="space-y-3">
+                  {[
+                    "AI as a collaborator, not a replacement",
+                    "Security first—always",
+                    "Continuous learning and improvement",
+                    "Transparent, honest partnerships",
+                  ].map((value, index) => (
+                    <li key={index} className="flex items-center gap-3 text-white/[0.6] text-sm">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      {value}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </section>
 
       <section id="platform-capabilities" className="py-20 md:py-28 bg-[#060b18]">

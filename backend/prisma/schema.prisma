@@ -157,6 +157,7 @@ model ChatMessage {
   session   ChatSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   role      MessageRole
   content   String
+  images    Json?        // Array of { base64, filename, mimeType, size }
   timestamp DateTime     @default(now())
 }
 

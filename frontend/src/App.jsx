@@ -6,6 +6,7 @@ import Aboutpage from "./pages/Aboutpage";
 import ServicePage from "./pages/ServicePage";
 import ContactPage from "./pages/ContactPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Header from "./common/Header";
 import Footer from "./common/Footer";
@@ -570,6 +571,7 @@ const App = () => {
 
         {/* Static Pages */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
 

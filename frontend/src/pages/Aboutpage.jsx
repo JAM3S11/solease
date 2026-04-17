@@ -136,6 +136,122 @@ const Aboutpage = () => {
               SOLEASE is an <span className="text-white font-medium">AI-native helpdesk platform</span> with native MCP (Model Context Protocol) integration—empowering autonomous agents to resolve tickets, execute workflows, and collaborate with your team like Opencode or Claude Code.
             </p>
 
+            {/* Dashboard Mockup */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="w-full max-w-4xl mx-auto mb-12"
+            >
+              <div className="bg-[#0a1428] border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/[0.08]">
+                {/* Mockup Header */}
+                <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.02] border-b border-white/[0.06]">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="px-4 py-1 rounded-lg bg-white/[0.03] text-white/[0.3] text-[10px] font-mono">
+                      solease.dashboard
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Mockup Content */}
+                <div className="p-4 grid grid-cols-4 gap-4">
+                  {/* Stats Panel */}
+                  <div className="col-span-1 space-y-3">
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                      <div className="text-[9px] text-white/[0.3] uppercase tracking-wider mb-2">Open Tickets</div>
+                      <div className="text-2xl font-bold text-white">24</div>
+                      <div className="text-[9px] text-green-400 mt-1">-12% from yesterday</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                      <div className="text-[9px] text-white/[0.3] uppercase tracking-wider mb-2">Avg Resolution</div>
+                      <div className="text-2xl font-bold text-white">2.4h</div>
+                      <div className="text-[9px] text-cyan-400 mt-1">AI assisted</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                      <div className="text-[9px] text-white/[0.3] uppercase tracking-wider mb-2">Satisfaction</div>
+                      <div className="text-2xl font-bold text-white">4.8★</div>
+                      <div className="text-[9px] text-white/[0.4] mt-1">92% rating</div>
+                    </div>
+                  </div>
+
+                  {/* Tickets List */}
+                  <div className="col-span-3 space-y-2">
+                    {/* Ticket Row Header */}
+                    <div className="flex items-center gap-2 px-3 py-2 text-[9px] text-white/[0.3] uppercase tracking-wider">
+                      <span className="w-12">ID</span>
+                      <span className="w-24">Subject</span>
+                      <span className="w-16">Status</span>
+                      <span className="w-16">Priority</span>
+                      <span className="w-20">AI Action</span>
+                      <span className="w-16">Assigned</span>
+                    </div>
+
+                    {/* AI-Triaged Ticket */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-500/[0.05] border border-green-500/20">
+                      <span className="w-12 text-green-400 text-xs font-mono">#1247</span>
+                      <span className="w-24 text-white text-xs truncate">VPN not connecting</span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 text-[8px] font-medium">Resolved</span></span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-[8px] font-medium">High</span></span>
+                      <span className="w-20"><span className="px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 text-[8px] font-medium flex items-center gap-1"><Bot size={10} /> Auto-fixed</span></span>
+                      <span className="w-16 text-white/[0.3] text-[10px]">AI Agent</span>
+                    </div>
+
+                    {/* Ticket in Progress */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-yellow-500/[0.05] border border-yellow-500/20">
+                      <span className="w-12 text-yellow-400 text-xs font-mono">#1248</span>
+                      <span className="w-24 text-white text-xs truncate">Password reset fail</span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 text-[8px] font-medium">Pending</span></span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 text-[8px] font-medium">Medium</span></span>
+                      <span className="w-20"><span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[8px] font-medium flex items-center gap-1"><Zap size={10} /> Analyzing</span></span>
+                      <span className="w-16 text-white/[0.3] text-[10px]">Reviewer</span>
+                    </div>
+
+                    {/* New Ticket */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+                      <span className="w-12 text-white/[0.4] text-xs font-mono">#1249</span>
+                      <span className="w-24 text-white text-xs truncate">Software install request</span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[8px] font-medium">New</span></span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 text-[8px] font-medium">Low</span></span>
+                      <span className="w-20"><span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 text-[8px] font-medium flex items-center gap-1"><Target size={10} /> Categorized</span></span>
+                      <span className="w-16 text-white/[0.3] text-[10px]">—</span>
+                    </div>
+
+                    {/* Eskalated Ticket */}
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-500/[0.05] border border-red-500/20">
+                      <span className="w-12 text-red-400 text-xs font-mono">#1250</span>
+                      <span className="w-24 text-white text-xs truncate">Server access denied</span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-[8px] font-medium">Escalated</span></span>
+                      <span className="w-16"><span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-[8px] font-medium">Critical</span></span>
+                      <span className="w-20"><span className="px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 text-[8px] font-medium flex items-center gap-1"><Users size={10} /> Human handoff</span></span>
+                      <span className="w-16 text-white text-[10px]">IT Admin</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Agent Status Bar */}
+                <div className="px-4 py-2 bg-blue-600/[0.1] border-t border-blue-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-[10px] text-white/50">AI Agents Active</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-cyan-500 rounded-full" />
+                      <span className="text-[10px] text-white/50">Processing 3 tickets</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-white/30 font-mono">
+                    MCP: connected
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
               <Link to="/auth/signup" className="w-full sm:w-auto">
                 <button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_12px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_16px_48px_rgba(37,99,235,0.4)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] font-medium text-sm flex items-center justify-center gap-2">
@@ -409,6 +525,90 @@ const Aboutpage = () => {
             <p className="text-white/[0.48] text-sm md:text-base max-w-2xl mx-auto">
               AI-powered workflow that learns and improves with every interaction.
             </p>
+          </motion.div>
+
+          {/* AI Workflow Visualization */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 p-6 bg-[#0a1428] border border-white/[0.06] rounded-2xl"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-sm font-medium text-white">AI Triage Pipeline in Action</h3>
+              <p className="text-[10px] text-white/[0.4] mt-1">See how a ticket flows through the system</p>
+            </div>
+            
+            <div className="space-y-3">
+              {/* Step 1: Submit */}
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">1</div>
+                <div className="flex-1 p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <TicketCheck size={16} className="text-blue-400" />
+                    <span className="text-white text-sm">Ticket Submitted</span>
+                  </div>
+                  <span className="text-[10px] text-white/[0.4]">via email, web, API</span>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <ChevronDown className="w-4 h-4 text-white/[0.15]" />
+              </div>
+
+              {/* Step 2: AI Analysis */}
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-cyan-600/20 rounded-lg flex items-center justify-center text-cyan-400 text-xs font-bold shrink-0">2</div>
+                <div className="flex-1 p-3 rounded-lg bg-cyan-500/[0.05] border border-cyan-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Bot size={16} className="text-cyan-400" />
+                    <span className="text-white text-sm">AI Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="px-2 py-1 rounded bg-cyan-500/20 text-cyan-300">Intent: VPN_issue</span>
+                    <span className="px-2 py-1 rounded bg-cyan-500/20 text-cyan-300">Confidence: 94%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <ChevronDown className="w-4 h-4 text-white/[0.15]" />
+              </div>
+
+              {/* Step 3: Auto-Route or Auto-Resolve */}
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-green-600/20 rounded-lg flex items-center justify-center text-green-400 text-xs font-bold shrink-0">3</div>
+                <div className="flex-1 p-3 rounded-lg bg-green-500/[0.05] border border-green-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Zap size={16} className="text-green-400" />
+                    <span className="text-white text-sm">Auto-Resolution</span>
+                  </div>
+                  <span className="text-[10px] text-green-400">AI applied known fix pattern</span>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center">
+                <ChevronDown className="w-4 h-4 text-white/[0.15]" />
+              </div>
+
+              {/* Step 4: Resolve */}
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">4</div>
+                <div className="flex-1 p-3 rounded-lg bg-purple-500/[0.05] border border-purple-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 size={16} className="text-purple-400" />
+                    <span className="text-white text-sm">Ticket Resolved</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <span className="px-2 py-1 rounded bg-purple-500/20 text-purple-300">Time: 12 seconds</span>
+                    <span className="px-2 py-1 rounded bg-purple-500/20 text-purple-300">SLA: ✓</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

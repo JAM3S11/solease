@@ -114,7 +114,7 @@ const Footer = () => {
     legal: [
       { name: "Privacy Policy", href: "/privacy-policy" },
       { name: "Terms of Service", href: "/terms-of-service" },
-      { name: "Cookie Policy", href: "#" },
+      { name: "Cookie Policy", href: "/cookie-policy" },
     ],
     social: [
       { name: "Facebook", icon: Facebook, href: "#" },
@@ -379,8 +379,41 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <div className="pt-6 border-t border-white/[0.06]">
-          {/* Copyright and Legal */}
-          <div className="flex flex-col items-center gap-3 mb-6">
+          {/* Desktop: All in one line */}
+          <div className="hidden lg:flex flex-wrap items-center justify-between gap-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-white/[0.3]">
+              &copy; {currentYear} SOLEASE. ALL RIGHTS RESERVED.
+            </p>
+            
+            <div className="flex items-center gap-6">
+              {navigation.legal.map((item) => (
+                <Link 
+                  key={item.name} 
+                  to={item.href} 
+                  className="text-[10px] font-bold uppercase tracking-widest text-white/[0.3] hover:text-blue-400 transition-colors"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-white/[0.2] uppercase tracking-widest">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                SYSTEM STATUS: OPERATIONAL
+              </div>
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-white/[0.2] hover:text-white hover:border-white/[0.2] transition-all"
+                aria-label="Scroll to top"
+              >
+                <ArrowUpRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile: Stacked layout */}
+          <div className="lg:hidden flex flex-col items-center gap-3">
             <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-white/[0.3] text-center">
               &copy; {currentYear} SOLEASE. ALL RIGHTS RESERVED.
             </p>
@@ -395,10 +428,6 @@ const Footer = () => {
                 </Link>
               ))}
             </div>
-          </div>
-
-          {/* System Status and Scroll to Top */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <div className="flex items-center gap-2 text-[10px] font-bold text-white/[0.2] uppercase tracking-widest">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
               <span className="hidden sm:inline">SYSTEM STATUS: OPERATIONAL</span>

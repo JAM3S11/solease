@@ -47,7 +47,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-green-600/20 rounded-xl">
@@ -73,7 +73,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-blue-600/20 rounded-xl">
@@ -102,7 +102,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-purple-600/20 rounded-xl">
@@ -130,7 +130,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-orange-600/20 rounded-xl">
@@ -156,7 +156,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.5 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-red-600/20 rounded-xl">
@@ -182,7 +182,7 @@ const TermsOfService = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.6 }}
-            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/6 shadow-sm hover:border-blue-500/30 transition-all"
+            className="bg-[#080e1e]/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-blue-500/20 shadow-sm hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start gap-3 mb-4">
               <div className="p-2.5 bg-white/10 rounded-xl">

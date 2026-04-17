@@ -13,9 +13,10 @@ const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => (
   <ol
     ref={ref}
     className={cn(
-      "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+      "flex flex-wrap items-center gap-1 break-words text-[11px] xs:text-xs sm:text-sm text-muted-foreground sm:gap-2.5 overflow-x-auto no-scrollbar",
       className
     )}
+    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     {...props} />
 ))
 BreadcrumbList.displayName = "BreadcrumbList"
@@ -23,7 +24,7 @@ BreadcrumbList.displayName = "BreadcrumbList"
 const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => (
   <li
     ref={ref}
-    className={cn("inline-flex items-center gap-1.5", className)}
+    className={cn("inline-flex items-center gap-1 flex-shrink-0", className)}
     {...props} />
 ))
 BreadcrumbItem.displayName = "BreadcrumbItem"
@@ -46,7 +47,7 @@ const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => (
     role="link"
     aria-disabled="true"
     aria-current="page"
-    className={cn("font-normal text-foreground", className)}
+    className={cn("font-normal text-foreground truncate max-w-[120px] xs:max-w-[150px] sm:max-w-none", className)}
     {...props} />
 ))
 BreadcrumbPage.displayName = "BreadcrumbPage"
@@ -59,7 +60,7 @@ const BreadcrumbSeparator = ({
   <li
     role="presentation"
     aria-hidden="true"
-    className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
+    className={cn("[&>svg]:w-3 h-3 flex-shrink-0", className)}
     {...props}>
     {children ?? <ChevronRight />}
   </li>
@@ -73,9 +74,9 @@ const BreadcrumbEllipsis = ({
   <span
     role="presentation"
     aria-hidden="true"
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
+    className={cn("flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center flex-shrink-0", className)}
     {...props}>
-    <MoreHorizontal className="h-4 w-4" />
+    <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
     <span className="sr-only">More</span>
   </span>
 )

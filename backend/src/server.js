@@ -29,8 +29,8 @@ if (process.env.NODE_ENV !== "production") {
 }
   
 
-app.use(express.json()); // middleware for :req.body
-app.use(express.urlencoded({ extended: true })) // 👈 parses form data
+app.use(express.json({ limit: "50mb" })); // middleware for :req.body - increased for image uploads
+app.use(express.urlencoded({ extended: true, limit: "50mb" })) // 👈 parses form data
 app.use(cookieParser()); // allows us to parse incoming cookies
 
 // Serve static files from uploads directory

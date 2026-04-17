@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import { Listbox } from '@headlessui/react';
 import html2pdf from 'html2pdf.js';
 import useTicketStore from "../../store/ticketStore";
@@ -12,11 +13,12 @@ import { useProfileStore } from "../../store/profileStore";
 import { NumberTicker } from "../ui/number-ticker";
 import { 
     Clock, CheckCircle, Check, TrendingUp, TrendingDown, Activity, MessageCircle, Star, 
-    AlertTriangle, Zap, BarChart3, 
+    AlertTriangle, Zap, 
     Search, ChevronDown, X, RefreshCw, Eye,
     ArrowRight, ArrowUpDown, Target, Flame, Timer, ThumbsUp, Phone, Gauge,
-    Tickets, FileDown, Ticket, Calendar, Send, User,
-    Settings, Clock4, Globe, Moon, Sun
+    Tickets, FileDown, Ticket, Calendar, Send, User, MapPin, Paperclip, FileText,
+    Settings, Clock4, Globe, Moon, Sun, Sparkles, Image as ImageIcon, Plus, HelpCircle, BookOpen,
+    BarChart3
 } from "lucide-react"; 
 import { Link } from "react-router";
 import NoReport from "../ui/NoReport";
@@ -489,16 +491,20 @@ const calculatePerTicketMetrics = (tickets) => {
 
         return {
             id: ticket._id,
+            ticketId: ticket._id,
             subject: ticket.subject,
+            description: ticket.description,
             category: ticket.issueType,
             urgency: ticket.urgency,
             status: ticket.status,
+            location: ticket.location,
             createdAt: ticket.createdAt,
             updatedAt: ticket.updatedAt,
             resolutionDays,
             responseTime,
             handledBy,
-            location: ticket.location,
+            attachments: ticket.attachments,
+            commentCount: ticket.comments?.length || 0,
         };
     });
 };
@@ -677,11 +683,41 @@ const ClientReportPage = () => {
         responseDelayMinutes: 0,
     });
     const [isSavingAvailability, setIsSavingAvailability] = useState(false);
+    const [aiStats, setAiStats] = useState(null);
+    const [aiStatsLoading, setAiStatsLoading] = useState(false);
+    const [aiStatsOverTime, setAiStatsOverTime] = useState(null);
 
     useEffect(() => {
         getAvailability();
         checkAvailabilityStatus();
     }, [getAvailability, checkAvailabilityStatus]);
+
+    useEffect(() => {
+        const fetchAiStats = async () => {
+            const userId = user?.id || user?._id;
+            if (!userId) return;
+            
+            setAiStatsLoading(true);
+            try {
+                const [statsResponse, overTimeResponse] = await Promise.all([
+                    fetch(`http://localhost:5001/sol/ai/stats?userId=${userId}`),
+                    fetch(`http://localhost:5001/sol/ai/stats/over-time?userId=${userId}`)
+                ]);
+                const statsData = await statsResponse.json();
+                const overTimeData = await overTimeResponse.json();
+                setAiStats(statsData);
+                setAiStatsOverTime(overTimeData);
+            } catch (error) {
+                console.error('Error fetching AI stats:', error);
+                setAiStats(null);
+                setAiStatsOverTime(null);
+            } finally {
+                setAiStatsLoading(false);
+            }
+        };
+        
+        fetchAiStats();
+    }, [user]);
 
     useEffect(() => {
         if (availability && Object.keys(availability).length > 0) {
@@ -865,13 +901,16 @@ const ClientReportPage = () => {
     };
 
     const availableColumns = [
-        { key: 'subject', label: 'Ticket', default: true },
+        { key: 'ticketId', label: 'ID', default: true },
+        { key: 'subject', label: 'Subject', default: true },
+        { key: 'description', label: 'Description', default: true },
         { key: 'category', label: 'Category', default: true },
         { key: 'urgency', label: 'Urgency', default: true },
+        { key: 'location', label: 'Location', default: true },
         { key: 'status', label: 'Status', default: true },
         { key: 'createdAt', label: 'Created', default: true },
+        { key: 'updatedAt', label: 'Updated', default: true },
         { key: 'resolutionDays', label: 'Time', default: true },
-        // { key: 'handledBy', label: 'Handler', default: true },
     ];
 
     const [visibleColumns, setVisibleColumns] = useState(
@@ -900,10 +939,10 @@ const ClientReportPage = () => {
 
     // User's tickets (unfiltered) - backend already filters by user for CLIENT role
     const userAllTickets = useMemo(() => {
-        const userId = user?._id;
+        const userId = user?.id || user?._id;
         if (!userId) return [];
         return safeTickets.filter(t => {
-            const ticketUserId = t.user?._id || t.user;
+            const ticketUserId = t.user?.id || t.user?._id || t.user;
             // Check both direct comparison and string comparison
             return ticketUserId === userId || 
                    ticketUserId === String(userId) || 
@@ -913,10 +952,10 @@ const ClientReportPage = () => {
 
     // Check if user has any tickets at all (for distinguishing "no records" vs "no tickets ever")
     const userHasAnyTickets = useMemo(() => {
-        const userId = user?._id;
+        const userId = user?.id || user?._id;
         if (!userId) return false;
         return safeTickets.some(t => {
-            const ticketUserId = t.user?._id || t.user;
+            const ticketUserId = t.user?.id || t.user?._id || t.user;
             return ticketUserId === userId || 
                    ticketUserId === String(userId) || 
                    String(ticketUserId) === String(userId);
@@ -1047,7 +1086,7 @@ const ClientReportPage = () => {
     return (
         <DashboardLayout>
             <div className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
-                {(clientTickets.length > 0 || hasNoRecordsInRange) && (
+                {(clientTickets.length > 0 || hasNoRecordsInRange || (aiStats && aiStats.totalSessions > 0) || aiStatsLoading) && (
                     <motion.div 
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1196,7 +1235,7 @@ const ClientReportPage = () => {
                             setSelectedDateRange(DATE_RANGES.find(r => r.value === value));
                         }}
                     />
-                ) : clientTickets.length === 0 ? (
+                ) : clientTickets.length === 0 && !(aiStats && aiStats.totalSessions > 0) && !aiStatsLoading ? (
                     <NoReport userName={user?.name?.split(' ')[0]} type="client" />
                 ) : (
                     <>
@@ -1224,79 +1263,221 @@ const ClientReportPage = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-4 sm:space-y-6"
                                 >
-                                    {/* Key Metrics Row */}
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-                                        <MetricCard 
-                                            title="Total Tickets" 
-                                            value={stats.total} 
-                                            icon={<Tickets size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-blue-500 to-blue-600"
-                                            trend={stats.trends.totalChange !== 0 ? `${stats.trends.totalChange > 0 ? '+' : ''}${stats.trends.totalChange}%` : null}
-                                            trendUp={stats.trends.totalChange >= 0}
-                                        />
-                                        <MetricCard 
-                                            title="Resolution Rate" 
-                                            value={`${stats.trends.resolutionRate}%`}
-                                            icon={<Target size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-emerald-500 to-emerald-600"
-                                            trend={stats.trends.resolvedChange !== 0 ? `${stats.trends.resolvedChange > 0 ? '+' : ''}${stats.trends.resolvedChange}%` : null}
-                                            trendUp={stats.trends.resolvedChange >= 0}
-                                        />
-                                        <MetricCard 
-                                            title="Avg Response Time" 
-                                            value={stats.avgResponse.value}
-                                            icon={<Timer size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-indigo-500 to-blue-600"
-                                            trend={stats.avgResponse.hours ? `${stats.avgResponse.hours}h avg` : null}
-                                        />
-                                        <MetricCard 
-                                            title="Active Tickets" 
-                                            value={stats.open + stats.inProgress} 
-                                            icon={<Clock size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-amber-500 to-orange-500"
-                                            trend={`${stats.open} Open · ${stats.inProgress} In Progress`}
-                                        />
-                                    </div>
+                                    {/* Key Metrics Row - Dashboard Style */}
+                                    {clientTickets.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="mb-6"
+                                        >
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                                Here's an overview of your support tickets
+                                            </p>
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                                {[
+                                                    { label: "Total Tickets", val: stats.total, icon: Tickets, color: "blue" },
+                                                    { label: "Pending Help", val: stats.open + stats.inProgress, icon: Clock, color: "orange" },
+                                                    { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                                                    { label: "Satisfaction", val: stats.sat.value, icon: Target, color: "indigo" },
+                                                ].map((stat, i) => (
+                                                    <motion.div
+                                                        key={stat.label}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: i * 0.1 }}
+                                                        whileHover={{ y: -2, scale: 1.01 }}
+                                                        className={`relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 bg-gradient-to-br ${stat.color === 'blue' ? 'from-blue-50/80 to-transparent dark:from-blue-900/20' : stat.color === 'orange' ? 'from-orange-50/80 to-transparent dark:from-orange-900/20' : stat.color === 'green' ? 'from-green-50/80 to-transparent dark:from-green-900/20' : 'from-indigo-50/80 to-transparent dark:from-indigo-900/20'}`}
+                                                    >
+                                                        <div className={`p-3 rounded-xl ${stat.color === 'blue' ? 'bg-blue-500 shadow-blue-500/30' : stat.color === 'orange' ? 'bg-orange-500 shadow-orange-500/30' : stat.color === 'green' ? 'bg-green-500 shadow-green-500/30' : 'bg-indigo-500 shadow-indigo-500/30'}`}>
+                                                            <stat.icon size={22} className="text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                {stat.val}
+                                                            </p>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
 
-                                    {/* Secondary Stats Row */}
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-                                        <MetricCard 
-                                            title="Resolved" 
-                                            value={stats.resolved} 
-                                            icon={<CheckCircle size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend={`${stats.trends.resolutionRate}% Resolved`}
-                                        />
-                                        <MetricCard 
-                                            title="First Response Rate" 
-                                            value={stats.firstResponseRate.value}
-                                            icon={<Zap size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Quick Response"
-                                        />
-                                        <MetricCard 
-                                            title="SLA Compliance" 
-                                            value={`${stats.slaCompliance.compliance}%`}
-                                            icon={<Gauge size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-cyan-500 to-sky-600"
-                                            badge={{ 
-                                                label: `${stats.slaCompliance.onTime}/${stats.slaCompliance.total}`, 
-                                                bg: 'bg-green-100 dark:bg-green-900/30', 
-                                                text: 'text-green-700 dark:text-green-400' 
-                                            }}
-                                        />
-                                        <MetricCard 
-                                            title="Critical/High" 
-                                            value={stats.critical} 
-                                            icon={<AlertTriangle size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-red-500 to-rose-600"
-                                            badge={stats.critical > 0 ? { 
-                                                label: '!', 
-                                                bg: 'bg-red-100 dark:bg-red-900/30', 
-                                                text: 'text-red-700 dark:text-red-400' 
-                                            } : null}
-                                        />
-                                    </div>
+                                    {/* AI Usage Stats Row - Only show if AI sessions exist */}
+                                    {(aiStats && aiStats.totalSessions > 0) && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mb-6"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Sparkles className="size-5 text-purple-500" />
+                                                <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">
+                                                    AI Assistant Report
+                                                </h2>
+                                            </div>
+                                            <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                                    <div className="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 p-5 rounded-2xl shadow-lg shadow-purple-500/20 text-white">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <Sparkles size={20} className="text-white/80" />
+                                                            <span className="text-xs font-medium text-purple-100">AI Assistant</span>
+                                                        </div>
+                                                        <div className="text-3xl font-bold">{aiStats.totalSessions}</div>
+                                                        <div className="text-sm text-purple-200">Chat Sessions</div>
+                                                    </div>
+                                                    <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                                                                <MessageCircle size={16} className="text-blue-600 dark:text-blue-400" />
+                                                            </div>
+                                                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Messages</span>
+                                                        </div>
+                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white">{aiStats.totalMessages}</div>
+                                                        <div className="text-xs text-gray-400">{aiStats.userMessages} from you</div>
+                                                    </div>
+                                                    <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                                                                <CheckCircle size={16} className="text-green-600 dark:text-green-400" />
+                                                            </div>
+                                                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">AI Responses</span>
+                                                        </div>
+                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white">{aiStats.assistantMessages}</div>
+                                                        <div className="text-xs text-gray-400">from AI Assistant</div>
+                                                    </div>
+                                                    <div className="relative overflow-hidden bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                                                                <ImageIcon size={16} className="text-purple-600 dark:text-purple-400" />
+                                                            </div>
+                                                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Images Analyzed</span>
+                                                        </div>
+                                                        <div className="text-3xl font-bold text-gray-900 dark:text-white">{aiStats.totalImages}</div>
+                                                        <div className="text-xs text-gray-400">by AI</div>
+                                                    </div>
+                                                </div>
+                                                {aiStats.firstActivity && (
+                                                    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                        <div className="flex items-center justify-between text-sm">
+                                                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                                                <Calendar size={14} />
+                                                                <span>First chat: {new Date(aiStats.firstActivity).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                                                <Activity size={14} />
+                                                                <span>Last activity: {new Date(aiStats.lastActivity).toLocaleDateString()}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="mt-6 p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                                <div className="flex items-center justify-between mb-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <Sparkles size={20} className="text-purple-500" />
+                                                        <h3 className="font-bold text-gray-800 dark:text-white">AI Usage Trends</h3>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Last 6 months</p>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                    <div>
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Chat Sessions Over Time</p>
+                                                        <div style={{ height: '150px' }}>
+                                                            {aiStatsOverTime && aiStatsOverTime.sessions && aiStatsOverTime.sessions.some(s => s > 0) ? (
+                                                                <LineChart
+                                                                    series={[{ 
+                                                                        data: aiStatsOverTime.sessions, 
+                                                                        color: isDark ? '#a78bfa' : '#8b5cf6',
+                                                                        area: true,
+                                                                        showMark: true,
+                                                                    }]}
+                                                                    xAxis={[{ 
+                                                                        scaleType: 'point', 
+                                                                        data: aiStatsOverTime.labels,
+                                                                        tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                    }]}
+                                                                    yAxis={[{ 
+                                                                        tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                    }]}
+                                                                    grid={{ horizontal: true, vertical: false }}
+                                                                    margin={{ top: 10, right: 10, bottom: 20, left: 30 }}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-full text-gray-400 text-sm">No session data</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Messages Distribution</p>
+                                                        <div style={{ height: '150px' }}>
+                                                            {aiStatsOverTime && aiStatsOverTime.messages && aiStatsOverTime.messages.some(m => m > 0) ? (
+                                                                <LineChart
+                                                                    series={[{ 
+                                                                        data: aiStatsOverTime.messages, 
+                                                                        color: isDark ? '#60a5fa' : '#3b82f6',
+                                                                        area: true,
+                                                                        showMark: true,
+                                                                    }]}
+                                                                    xAxis={[{ 
+                                                                        scaleType: 'point', 
+                                                                        data: aiStatsOverTime.labels,
+                                                                        tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                    }]}
+                                                                    yAxis={[{ 
+                                                                        tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                    }]}
+                                                                    grid={{ horizontal: true, vertical: false }}
+                                                                    margin={{ top: 10, right: 10, bottom: 20, left: 30 }}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-full text-gray-400 text-sm">No message data</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {aiStatsOverTime && aiStatsOverTime.images && aiStatsOverTime.images.some(i => i > 0) && (
+                                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Images Analyzed Over Time</p>
+                                                        <div style={{ height: '120px' }}>
+                                                            <BarChart
+                                                                series={[{ 
+                                                                    data: aiStatsOverTime.images, 
+                                                                    color: isDark ? '#34d399' : '#10b981',
+                                                                }]}
+                                                                xAxis={[{ 
+                                                                    scaleType: 'band', 
+                                                                    data: aiStatsOverTime.labels,
+                                                                    tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                }]}
+                                                                yAxis={[{ 
+                                                                    tickLabelStyle: { fontSize: 10, fill: isDark ? '#9ca3af' : '#6b7280' }
+                                                                }]}
+                                                                grid={{ horizontal: true, vertical: false }}
+                                                                margin={{ top: 10, right: 10, bottom: 20, left: 30 }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                                                        <Sparkles size={16} className="text-indigo-600 dark:text-indigo-400" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-indigo-900 dark:text-indigo-300">AI Assistant Usage Summary</h4>
+                                                        <p className="text-xs text-indigo-700 dark:text-indigo-400 mt-1">
+                                                            You've engaged in {aiStats.totalSessions} chat session{aiStats.totalSessions !== 1 ? 's' : ''} with the AI Assistant, exchanging {aiStats.totalMessages} message{aiStats.totalMessages !== 1 ? 's' : ''}. 
+                                                            The AI has analyzed {aiStats.totalImages} image{aiStats.totalImages !== 1 ? 's' : ''} to help troubleshoot your issues.
+                                                            {aiStats.firstActivity && ` Your first interaction was on ${new Date(aiStats.firstActivity).toLocaleDateString()}.`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
 
                                     {/* Charts Row */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1539,6 +1720,44 @@ const ClientReportPage = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-4"
                                 >
+                                    {/* Quick Stats Row - Dashboard Style */}
+                                    {clientTickets.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="mb-4"
+                                        >
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                                {[
+                                                    { label: "Total", val: stats.total, icon: Tickets, color: "blue" },
+                                                    { label: "Open", val: stats.open, icon: Clock, color: "orange" },
+                                                    { label: "Resolved", val: stats.resolved, icon: CheckCircle, color: "green" },
+                                                    { label: "In Progress", val: stats.inProgress, icon: Activity, color: "indigo" },
+                                                ].map((stat, i) => (
+                                                    <motion.div
+                                                        key={stat.label}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: i * 0.1 }}
+                                                        whileHover={{ y: -2, scale: 1.01 }}
+                                                        className={`relative overflow-hidden bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-3 bg-gradient-to-br ${stat.color === 'blue' ? 'from-blue-50/80 to-transparent dark:from-blue-900/20' : stat.color === 'orange' ? 'from-orange-50/80 to-transparent dark:from-orange-900/20' : stat.color === 'green' ? 'from-green-50/80 to-transparent dark:from-green-900/20' : 'from-indigo-50/80 to-transparent dark:from-indigo-900/20'}`}
+                                                    >
+                                                        <div className={`p-2.5 rounded-xl ${stat.color === 'blue' ? 'bg-blue-500 shadow-blue-500/30' : stat.color === 'orange' ? 'bg-orange-500 shadow-orange-500/30' : stat.color === 'green' ? 'bg-green-500 shadow-green-500/30' : 'bg-indigo-500 shadow-indigo-500/30'}`}>
+                                                            <stat.icon size={18} className="text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                                                            <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                                                {stat.val}
+                                                            </p>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+
                                     {/* Search and Filter */}
                                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                                         <div className="relative flex-1 min-w-0">
@@ -1776,6 +1995,9 @@ const ClientReportPage = () => {
                                                                 </div>
                                                             </th>
                                                         ))}
+                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Attachments</th>
+                                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Messages</th>
+                                                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -1793,9 +2015,21 @@ const ClientReportPage = () => {
                                                                 onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}
                                                             >
                                                                 {visibleCols.map(col => {
+                                                                    if (col.key === 'ticketId') {
+                                                                        return (
+                                                                            <td key={col.key} className="px-4 py-4">
+                                                                                <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1.5 rounded-md">
+                                                                                    #{String(ticket.ticketId).slice(-6).toUpperCase()}
+                                                                                </span>
+                                                                                {ticket.urgency === 'Critical' || ticket.urgency === 'CRITICAL' ? (
+                                                                                    <span className="ml-2 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Critical" />
+                                                                                ) : null}
+                                                                            </td>
+                                                                        );
+                                                                    }
                                                                     if (col.key === 'subject') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3">
+                                                                            <td key={col.key} className="px-4 py-4">
                                                                                 <div className="flex items-center gap-3">
                                                                                     <div className={`w-1 h-10 rounded-full ${getStatusColor(ticket.status)}`} />
                                                                                     <div>
@@ -1806,25 +2040,44 @@ const ClientReportPage = () => {
                                                                             </td>
                                                                         );
                                                                     }
+                                                                    if (col.key === 'description') {
+                                                                        return (
+                                                                            <td key={col.key} className="px-4 py-4 max-w-[200px]">
+                                                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                                    {ticket.description?.slice(0, 50)}...
+                                                                                </p>
+                                                                            </td>
+                                                                        );
+                                                                    }
                                                                     if (col.key === 'category') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3">
-                                                                                <span className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg">
-                                                                                    {ticket.category?.replace(' issue', '').replace(' Connectivity', '')}
+                                                                            <td key={col.key} className="px-4 py-4">
+                                                                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                                                    <FileText size={12} />
+                                                                                    {ticket.category?.replace(' issue', '').replace(' Connectivity', '') || 'General'}
+                                                                                </span>
+                                                                            </td>
+                                                                        );
+                                                                    }
+                                                                    if (col.key === 'location') {
+                                                                        return (
+                                                                            <td key={col.key} className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                                <span className="inline-flex items-center gap-1">
+                                                                                    <MapPin size={12} />
+                                                                                    {ticket.location || '-'}
                                                                                 </span>
                                                                             </td>
                                                                         );
                                                                     }
                                                                     if (col.key === 'urgency') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3">
-                                                                                <span className={`flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-full ${
-                                                                                    (ticket.urgency === 'Critical' || ticket.urgency === 'CRITICAL') ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                                                                                    (ticket.urgency === 'High' || ticket.urgency === 'HIGH') ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                                                    (ticket.urgency === 'Medium' || ticket.urgency === 'MEDIUM') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                                            <td key={col.key} className="px-4 py-4">
+                                                                                <span className={`inline-block px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                                                                                    (ticket.urgency === 'Critical' || ticket.urgency === 'CRITICAL') ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 shadow-sm' :
+                                                                                    (ticket.urgency === 'High' || ticket.urgency === 'HIGH') ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 shadow-sm' :
+                                                                                    (ticket.urgency === 'Medium' || ticket.urgency === 'MEDIUM') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300 shadow-sm' :
+                                                                                    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 shadow-sm'
                                                                                 }`}>
-                                                                                    <span className={`w-1.5 h-1.5 rounded-full ${getUrgencyColor(ticket.urgency)}`}></span>
                                                                                     {ticket.urgency}
                                                                                 </span>
                                                                             </td>
@@ -1832,48 +2085,107 @@ const ClientReportPage = () => {
                                                                     }
                                                                     if (col.key === 'status') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3">
-                                                                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${
-                                                                                    (ticket.status === 'Open' || ticket.status === 'OPEN') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                                                    (ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS') ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                                                                    (ticket.status === 'Resolved' || ticket.status === 'RESOLVED') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                                                                                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                                }`}>
-                                                                                    {ticket.status}
-                                                                                </span>
+                                                                            <td key={col.key} className="px-4 py-4">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <motion.span
+                                                                                        animate={ticket.status !== 'Resolved' && ticket.status !== 'RESOLVED' ? { scale: [1, 1.1, 1] } : {}}
+                                                                                        transition={{ duration: 2, repeat: Infinity }}
+                                                                                        className={`w-3 h-3 rounded-full ${
+                                                                                            ticket.status === 'Open' || ticket.status === 'OPEN'
+                                                                                                ? 'bg-blue-500 shadow-blue-500/50'
+                                                                                                : ticket.status === 'In Progress' || ticket.status === 'IN_PROGRESS'
+                                                                                                    ? 'bg-yellow-500 shadow-yellow-500/50'
+                                                                                                    : ticket.status === 'Resolved' || ticket.status === 'RESOLVED'
+                                                                                                        ? 'bg-green-500'
+                                                                                                        : 'bg-gray-400'
+                                                                                        }`}
+                                                                                    />
+                                                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{ticket.status}</span>
+                                                                                </div>
                                                                             </td>
                                                                         );
                                                                     }
                                                                     if (col.key === 'createdAt') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
-                                                                                {new Date(ticket.createdAt).toLocaleDateString()}
+                                                                            <td key={col.key} className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                                                <span className="inline-flex items-center gap-1">
+                                                                                    <Calendar size={12} />
+                                                                                    {new Date(ticket.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                                </span>
+                                                                            </td>
+                                                                        );
+                                                                    }
+                                                                    if (col.key === 'updatedAt') {
+                                                                        return (
+                                                                            <td key={col.key} className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                                                <span className="inline-flex items-center gap-1">
+                                                                                    <Calendar size={12} />
+                                                                                    {new Date(ticket.updatedAt || ticket.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                                </span>
                                                                             </td>
                                                                         );
                                                                     }
                                                                     if (col.key === 'resolutionDays') {
                                                                         return (
-                                                                            <td key={col.key} className="px-4 py-3">
+                                                                            <td key={col.key} className="px-4 py-4">
                                                                                 <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
                                                                                     {formatTimeDisplay(ticket.resolutionDays)}
                                                                                 </span>
                                                                             </td>
                                                                         );
                                                                     }
-                                                                    if (col.key === 'handledBy') {
-                                                                        return (
-                                                                            <td key={col.key} className="px-4 py-3">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                                                                                        {ticket.handledBy.charAt(0)}
-                                                                                    </div>
-                                                                                    <span className="text-xs text-gray-600 dark:text-gray-300">{ticket.handledBy}</span>
-                                                                                </div>
-                                                                            </td>
-                                                                        );
-                                                                    }
                                                                     return null;
                                                                 })}
+                                                                <td className="px-4 py-4 text-center">
+                                                                    {ticket.attachments && ticket.attachments.length > 0 ? (
+                                                                        <motion.div whileHover={{ scale: 1.05 }} className="flex flex-col items-center gap-1">
+                                                                            <a
+                                                                                href={`http://localhost:5001/uploads/${ticket.attachments[0].filename}`}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                                                                                title={ticket.attachments[0].originalName || ticket.attachments[0].filename}
+                                                                            >
+                                                                                <Paperclip size={14} />
+                                                                                <span className="text-xs font-medium">{ticket.attachments.length}</span>
+                                                                            </a>
+                                                                            {ticket.attachments.length > 1 && (
+                                                                                <span className="text-xs text-gray-400">
+                                                                                    +{ticket.attachments.length - 1}
+                                                                                </span>
+                                                                            )}
+                                                                        </motion.div>
+                                                                    ) : (
+                                                                        <span className="text-gray-400 dark:text-gray-600">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-4 text-center">
+                                                                    {ticket.commentCount > 0 ? (
+                                                                        <motion.div whileHover={{ scale: 1.1 }}>
+                                                                            <Link
+                                                                                to={`/client-dashboard/ticket/${ticket.id}/feedback`}
+                                                                                className="inline-flex items-center justify-center p-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-all duration-200 shadow-sm hover:shadow-md"
+                                                                                title="View feedback"
+                                                                            >
+                                                                                <Eye size={16} />
+                                                                            </Link>
+                                                                        </motion.div>
+                                                                    ) : (
+                                                                        <div className="inline-flex items-center justify-center p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-lg opacity-60">
+                                                                            <MessageCircle size={16} />
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-4 text-right">
+                                                                    <motion.div whileHover={{ x: 4 }}>
+                                                                        <Link
+                                                                            to={`/client-dashboard/ticket/${ticket.id}/feedback`}
+                                                                            className="p-2 inline-block text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                                                        >
+                                                                            <ArrowRight size={18} />
+                                                                        </Link>
+                                                                    </motion.div>
+                                                                </td>
                                                             </motion.tr>
                                                             );
                                                         })}
@@ -1979,295 +2291,280 @@ const ClientReportPage = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="space-y-4 sm:space-y-6"
                                 >
-                                    {/* Performance Metrics Row */}
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-                                        <MetricCard 
-                                            title="First Response Rate" 
-                                            value={stats.firstResponseRate.value}
-                                            icon={<Zap size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-green-500 to-emerald-600"
-                                            trend="Quick Reply %"
-                                        />
-                                        <MetricCard 
-                                            title="Avg Response Time" 
-                                            value={stats.avgResponse.value}
-                                            icon={<Timer size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-blue-500 to-indigo-600"
-                                            trend="Hours to Respond"
-                                        />
-                                        <MetricCard 
-                                            title="Avg Resolution Time" 
-                                            value={stats.avgRes.value}
-                                            icon={<CheckCircle size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-purple-500 to-violet-600"
-                                            trend="Days to Close"
-                                        />
-                                        <MetricCard 
-                                            title="Satisfaction Score" 
-                                            value={stats.sat.value}
-                                            icon={<Star size={18} className="text-white" />}
-                                            color="bg-gradient-to-br from-orange-500 to-amber-600"
-                                            trend="Avg Rating"
-                                        />
-                                    </div>
-
-                                    {/* Charts Row */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* Response Time Trend */}
-                                        {hasChartData(stats.avgResponseTimeOverTime.data) && (
-                                            <motion.div 
-                                                initial={{ y: 20 }} 
-                                                animate={{ y: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-                                                            <Timer size={18} className="text-blue-600 dark:text-blue-400" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="font-bold text-gray-800 dark:text-white">Response Time Trend</h3>
-                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Average hours to first response</p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Avg hours</span>
-                                                </div>
-                                                <div style={{ height: '200px' }}>
-                                                    <LineChart 
-                                                        series={[{ 
-                                                            data: stats.avgResponseTimeOverTime.data, 
-                                                            color: isDark ? '#3b82f6' : '#2563eb', 
-                                                            area: true, 
-                                                            showMark: true,
-                                                            curve: 'monotoneX'
-                                                        }]}
-                                                        xAxis={[{ 
-                                                            scaleType: 'point', 
-                                                            data: stats.avgResponseTimeOverTime.months,
-                                                            tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
-                                                        }]}
-                                                        height={200}
-                                                        margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
-                                                        sx={{ 
-                                                            '.MuiAreaElement-root': { fillOpacity: 0.2 },
-                                                            '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                            '.MuiChartsAxis-tick': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                        }}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        {/* Resolution Rate Trend */}
-                                        {hasChartData(stats.resolutionRateOverTime.data) && (
-                                            <motion.div 
-                                                initial={{ y: 20 }} 
-                                                animate={{ y: 0 }}
-                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-                                                            <CheckCircle size={18} className="text-green-600 dark:text-green-400" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="font-bold text-gray-800 dark:text-white">Resolution Rate</h3>
-                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400">Percentage of tickets resolved</p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">% resolved</span>
-                                                </div>
-                                                <div style={{ height: '200px' }}>
-                                                    <LineChart 
-                                                        series={[{ 
-                                                            data: stats.resolutionRateOverTime.data, 
-                                                            color: isDark ? '#22c55e' : '#16a34a', 
-                                                            area: true, 
-                                                            showMark: true,
-                                                            curve: 'monotoneX'
-                                                        }]}
-                                                        xAxis={[{ 
-                                                            scaleType: 'point', 
-                                                            data: stats.resolutionRateOverTime.months,
-                                                            tickLabelStyle: { fill: isDark ? '#9ca3af' : '#6b7280', fontSize: 10 }
-                                                        }]}
-                                                        height={200}
-                                                        margin={{ top: 10, bottom: 25, left: 35, right: 10 }}
-                                                        sx={{ 
-                                                            '.MuiAreaElement-root': { fillOpacity: 0.2 },
-                                                            '.MuiChartsAxis-line': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                            '.MuiChartsAxis-tick': { stroke: isDark ? '#374151' : '#e5e7eb' },
-                                                        }}
-                                                    />
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </div>
-
-                                    {/* Category Breakdown */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* Open Tickets by Category */}
-                                        {stats.categories.some(c => c.count > 0) && (
-                                            <motion.div 
-                                                whileHover={{ y: -4 }}
-                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
-                                                        <BarChart3 size={18} className="text-purple-600 dark:text-purple-400" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Category</h3>
-                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Distribution of issue types</p>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    {stats.categories.filter(c => c.count > 0).map((cat, idx) => {
-                                                        const maxCount = Math.max(...stats.categories.map(c => c.count));
-                                                        const percentage = maxCount > 0 ? (cat.count / maxCount) * 100 : 0;
-                                                        const colors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-red-500', 'bg-purple-500'];
-                                                        return (
-                                                            <div key={cat.type} className="space-y-1">
-                                                                <div className="flex justify-between items-center">
-                                                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{cat.displayName}</span>
-                                                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{cat.count}</span>
-                                                                </div>
-                                                                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                                    <motion.div 
-                                                                        initial={{ width: 0 }}
-                                                                        animate={{ width: `${percentage}%` }}
-                                                                        transition={{ delay: idx * 0.1, duration: 0.5 }}
-                                                                        className={`h-full ${colors[idx % colors.length]} rounded-full`}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        {/* Tickets by Status */}
-                                        {stats.byStatus.length > 0 && (
-                                            <motion.div 
-                                                whileHover={{ y: -4 }}
-                                                className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
-                                            >
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
-                                                        <Activity size={18} className="text-indigo-600 dark:text-indigo-400" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-800 dark:text-white">Tickets by Status</h3>
-                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400">Current ticket status breakdown</p>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    {stats.byStatus.map((item, idx) => {
-                                                        const total = stats.byStatus.reduce((sum, s) => sum + s.count, 0);
-                                                        const percentage = total > 0 ? (item.count / total) * 100 : 0;
-                                                        const statusColors = {
-                                                            'Open': 'bg-blue-500',
-                                                            'In Progress': 'bg-yellow-500',
-                                                            'Resolved': 'bg-purple-500',
-                                                            'Closed': 'bg-green-500'
-                                                        };
-                                                        return (
-                                                            <div key={item.status} className="space-y-1">
-                                                                <div className="flex justify-between items-center">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${statusColors[item.status]}`} />
-                                                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.status}</span>
-                                                                    </div>
-                                                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{item.count} ({percentage.toFixed(0)}%)</span>
-                                                                </div>
-                                                                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                                    <motion.div 
-                                                                        initial={{ width: 0 }}
-                                                                        animate={{ width: `${percentage}%` }}
-                                                                        transition={{ delay: idx * 0.1, duration: 0.5 }}
-                                                                        className={`h-full ${statusColors[item.status]} rounded-full`}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </div>
-
-                                    {/* Performance Summary */}
+                                    {/* Main Performance Summary Card */}
                                     <motion.div 
                                         whileHover={{ y: -2 }}
-                                        className="bg-gradient-to-br from-blue-600 to-indigo-700 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg text-white"
+                                        className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-xl text-white"
                                     >
-                                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                                            <Gauge size={18} className="text-white/80" />
-                                            <h3 className="font-bold text-sm sm:text-base">Performance Summary</h3>
+                                        <div className="flex items-center justify-between mb-4 sm:mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <Gauge size={24} className="text-white/80" />
+                                                <div>
+                                                    <h3 className="font-bold text-lg sm:text-xl">Performance Summary</h3>
+                                                    <p className="text-xs text-blue-200">All activity metrics for your support tickets</p>
+                                                </div>
+                                            </div>
+                                            <div className="hidden sm:block px-3 py-1.5 bg-white/20 rounded-lg">
+                                                <p className="text-xs font-medium text-blue-100">{clientTickets.length} Total Tickets</p>
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-2xl sm:text-3xl font-bold">{stats.healthScore}</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Health Score</p>
+                                        
+                                        {/* Primary Metrics Grid */}
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                                            <div className="text-center p-3 sm:p-4 bg-white/10 rounded-xl">
+                                                <p className="text-2xl sm:text-4xl font-bold">{stats.healthScore}</p>
+                                                <p className="text-xs sm:text-sm text-blue-200 mt-1">Health Score</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-2xl sm:text-3xl font-bold">{stats.slaCompliance.compliance}%</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">SLA Compliance</p>
+                                            <div className="text-center p-3 sm:p-4 bg-white/10 rounded-xl">
+                                                <p className="text-2xl sm:text-4xl font-bold">{stats.slaCompliance.compliance}%</p>
+                                                <p className="text-xs sm:text-sm text-blue-200 mt-1">SLA Compliance</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Engagement</p>
+                                            <div className="text-center p-3 sm:p-4 bg-white/10 rounded-xl">
+                                                <p className="text-2xl sm:text-4xl font-bold">{stats.feedbackDetailed.engagementRate}%</p>
+                                                <p className="text-xs sm:text-sm text-blue-200 mt-1">Engagement</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-2xl sm:text-3xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
-                                                <p className="text-[10px] sm:text-xs text-blue-200 mt-0.5 sm:mt-1">Msgs per Ticket</p>
+                                            <div className="text-center p-3 sm:p-4 bg-white/10 rounded-xl">
+                                                <p className="text-2xl sm:text-4xl font-bold">{stats.feedbackDetailed.avgMessagesPerTicket}</p>
+                                                <p className="text-xs sm:text-sm text-blue-200 mt-1">Msgs/Ticket</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Secondary Metrics Row */}
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <Zap size={16} className="text-green-400" />
+                                                    <span className="text-xs text-blue-100">First Response</span>
+                                                </div>
+                                                <span className="text-lg font-bold">{stats.firstResponseRate.value}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <Timer size={16} className="text-blue-400" />
+                                                    <span className="text-xs text-blue-100">Avg Response</span>
+                                                </div>
+                                                <span className="text-lg font-bold">{stats.avgResponse.value}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <CheckCircle size={16} className="text-purple-400" />
+                                                    <span className="text-xs text-blue-100">Avg Resolution</span>
+                                                </div>
+                                                <span className="text-lg font-bold">{stats.avgRes.value}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <Star size={16} className="text-amber-400" />
+                                                    <span className="text-xs text-blue-100">Satisfaction</span>
+                                                </div>
+                                                <span className="text-lg font-bold">{stats.sat.value}</span>
                                             </div>
                                         </div>
                                     </motion.div>
 
-                                    {/* Availability Analytics */}
+                                    {/* Activity Summary Row */}
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                                                    <Tickets size={18} className="text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Tickets</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">Resolved</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.resolved}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">In Progress</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.inProgress}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                                                    <MessageCircle size={18} className="text-green-600 dark:text-green-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.feedback.totalFeedbackCount}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Messages</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">With Feedback</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.feedback.ticketsWithFeedback}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">This Week</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.feedback.recentFeedback}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                                                    <Activity size={18} className="text-purple-600 dark:text-purple-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeDiscussions}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Active Discussions</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">Critical</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.critical}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">Auto Resolved</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.autoResolved}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                                                    <TrendingUp size={18} className="text-orange-600 dark:text-orange-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.trends.resolutionRate}%</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Resolution Rate</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">Change</span>
+                                                    <span className={`font-medium ${stats.trends.resolvedChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {stats.trends.resolvedChange >= 0 ? '+' : ''}{stats.trends.resolvedChange}%
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-500">SLA Violations</span>
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">{stats.resolutionPerf.slaViolations}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Ticket Status & Urgency Breakdown */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                                        {/* Status Distribution */}
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Activity size={18} className="text-indigo-600 dark:text-indigo-400" />
+                                                <h3 className="font-bold text-gray-800 dark:text-white">Status Distribution</h3>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {stats.byStatus.map((item) => {
+                                                    const total = stats.byStatus.reduce((sum, s) => sum + s.count, 0);
+                                                    const percentage = total > 0 ? (item.count / total) * 100 : 0;
+                                                    const statusColors = {
+                                                        'Open': 'bg-blue-500',
+                                                        'In Progress': 'bg-yellow-500',
+                                                        'Resolved': 'bg-purple-500',
+                                                        'Closed': 'bg-green-500'
+                                                    };
+                                                    return (
+                                                        <div key={item.status} className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`w-2 h-2 rounded-full ${statusColors[item.status]}`} />
+                                                                <span className="text-sm text-gray-600 dark:text-gray-400">{item.status}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-24 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                                    <motion.div 
+                                                                        initial={{ width: 0 }}
+                                                                        animate={{ width: `${percentage}%` }}
+                                                                        className={`h-full ${statusColors[item.status]} rounded-full`}
+                                                                    />
+                                                                </div>
+                                                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 w-12 text-right">{item.count}</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </motion.div>
+
+                                        {/* Urgency Breakdown */}
+                                        <motion.div 
+                                            whileHover={{ y: -2 }}
+                                            className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <AlertTriangle size={18} className="text-red-600 dark:text-red-400" />
+                                                <h3 className="font-bold text-gray-800 dark:text-white">Urgency Breakdown</h3>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {[
+                                                    { label: 'Critical', value: (stats.byUrgency.find(u => u.urgency === 'Critical')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'CRITICAL')?.count || 0), color: 'bg-red-500' },
+                                                    { label: 'High', value: (stats.byUrgency.find(u => u.urgency === 'High')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'HIGH')?.count || 0), color: 'bg-orange-500' },
+                                                    { label: 'Medium', value: (stats.byUrgency.find(u => u.urgency === 'Medium')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'MEDIUM')?.count || 0), color: 'bg-yellow-500' },
+                                                    { label: 'Low', value: (stats.byUrgency.find(u => u.urgency === 'Low')?.count || 0) + (stats.byUrgency.find(u => u.urgency === 'LOW')?.count || 0), color: 'bg-green-500' },
+                                                ].map(item => (
+                                                    <div key={item.label} className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                                                            <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
+                                                        </div>
+                                                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{item.value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Resolution Performance */}
                                     <motion.div 
                                         whileHover={{ y: -2 }}
-                                        className="bg-gradient-to-br from-purple-600 to-violet-700 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg text-white"
+                                        className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 sm:p-5 rounded-xl shadow-lg text-white"
                                     >
-                                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                                            <Clock4 size={18} className="text-white/80" />
-                                            <h3 className="font-bold text-sm sm:text-base">Availability Settings</h3>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <CheckCircle size={20} className="text-white/80" />
+                                            <h3 className="font-bold text-sm sm:text-base">Resolution Performance</h3>
                                         </div>
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4">
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-lg sm:text-2xl font-bold">
-                                                    {availability?.workingHoursStart || '09:00'}
-                                                </p>
-                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Start Time</p>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                                            <div className="text-center p-3 bg-white/10 rounded-lg">
+                                                <p className="text-xl sm:text-2xl font-bold">{stats.resolutionPerf.fastest}</p>
+                                                <p className="text-[10px] sm:text-xs text-emerald-200 mt-1">Fastest</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-lg sm:text-2xl font-bold">
-                                                    {availability?.workingHoursEnd || '17:00'}
-                                                </p>
-                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">End Time</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-lg">
+                                                <p className="text-xl sm:text-2xl font-bold">{stats.resolutionPerf.longest}</p>
+                                                <p className="text-[10px] sm:text-xs text-emerald-200 mt-1">Longest</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-lg sm:text-2xl font-bold">
-                                                    {availability?.workingDays?.length || 5}
-                                                </p>
-                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Working Days</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-lg">
+                                                <p className="text-xl sm:text-2xl font-bold">{stats.resolutionPerf.avg}</p>
+                                                <p className="text-[10px] sm:text-xs text-emerald-200 mt-1">Average</p>
                                             </div>
-                                            <div className="text-center p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl">
-                                                <p className="text-lg sm:text-2xl font-bold">
-                                                    {availability?.responseDelayMinutes || 0}m
-                                                </p>
-                                                <p className="text-[10px] sm:text-xs text-purple-200 mt-0.5 sm:mt-1">Delay</p>
+                                            <div className="text-center p-3 bg-white/10 rounded-lg">
+                                                <p className="text-xl sm:text-2xl font-bold">{stats.resolutionPerf.slaViolations}</p>
+                                                <p className="text-[10px] sm:text-xs text-emerald-200 mt-1">SLA Violations</p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => setIsAvailabilityModalOpen(true)}
-                                            className="w-full py-2 px-4 bg-white/20 hover:bg-white/30 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Settings size={16} />
-                                            Configure Availability
-                                        </button>
                                     </motion.div>
                                 </motion.div>
                             )}
@@ -2497,35 +2794,73 @@ const ClientReportPage = () => {
                             transition={{ delay: 0.5 }}
                             className="mt-6 sm:mt-8"
                         >
-                            <div className="p-4 sm:p-5">
-                                <h3 className="text-xs sm:text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 sm:mb-4 text-center">
-                                    Quick Actions
-                                </h3>
-                                <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-                                    <Link 
-                                        to="/client-dashboard/new-ticket"
-                                        className="group relative flex flex-col items-center text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+                            <div className="flex items-center gap-2 mb-4">
+                                <Zap className="size-5 text-amber-500" />
+                                <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wider">
+                                    Quick actions available
+                                </h2>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { 
+                                        label: "Submit Ticket", 
+                                        description: "Create a new support request",
+                                        icon: Plus, 
+                                        to: "/client-dashboard/new-ticket", 
+                                        color: "blue" 
+                                    },
+                                    { 
+                                        label: "My Tickets", 
+                                        description: "View all your tickets",
+                                        icon: Tickets, 
+                                        to: "/client-dashboard/all-tickets", 
+                                        color: "indigo" 
+                                    },
+                                    { 
+                                        label: "FAQ", 
+                                        description: "Get quick answers",
+                                        icon: HelpCircle, 
+                                        to: "/client-dashboard/faq", 
+                                        color: "emerald" 
+                                    },
+                                    { 
+                                        label: "Help Center", 
+                                        description: "Browse articles",
+                                        icon: BookOpen, 
+                                        to: "/help-support", 
+                                        color: "violet" 
+                                    },
+                                ].map((link, i) => (
+                                    <motion.div
+                                        key={link.label}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.08 }}
+                                        whileHover={{ y: -4, scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="group"
                                     >
-                                        <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity"></span>
-                                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-lg backdrop-blur-sm mb-1.5 sm:mb-2">
-                                            <Tickets size={14} className="sm:hidden" />
-                                            <Tickets size={16} className="hidden sm:block" />
-                                        </span>
-                                        <span className="relative text-xs sm:text-sm">New Ticket</span>
-                                        <span className="relative text-[8px] sm:text-[10px] opacity-70 mt-0.5 sm:mt-1 hidden xs:block">Submit a request</span>
-                                    </Link>
-                                    <Link 
-                                        to="/client-dashboard/all-tickets"
-                                        className="group relative flex flex-col items-center text-center bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 w-full sm:w-auto"
-                                    >
-                                        <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors mb-1.5 sm:mb-2">
-                                            <Eye size={14} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors sm:hidden" />
-                                            <Eye size={16} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors hidden sm:block" />
-                                        </span>
-                                        <span className="relative text-xs sm:text-sm">View Tickets</span>
-                                        <span className="relative text-[8px] sm:text-[10px] text-gray-400 mt-0.5 sm:mt-1 hidden xs:block">Browse history</span>
-                                    </Link>
-                                </div>
+                                        <Link
+                                            to={link.to}
+                                            className="flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 h-full relative overflow-hidden"
+                                        >
+                                            <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'emerald' ? 'bg-emerald-500' : 'bg-violet-500'}`} />
+                                            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30' : 'bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30'}`}>
+                                                <link.icon size={22} className="text-white" />
+                                            </div>
+                                            <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                {link.label}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                {link.description}
+                                            </p>
+                                            <div className="mt-auto pt-3 flex items-center text-xs font-medium text-blue-600 dark:text-blue-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                                                <span>Learn more</span>
+                                                <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                        </Link>
+                                    </motion.div>
+                                ))}
                             </div>
                         </motion.div>
                     </>

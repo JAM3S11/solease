@@ -7,6 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  BreadcrumbEllipsis,
 } from "./breadcrumb";
 import { useAuthenticationStore } from "../../store/authStore";
 import toast from "react-hot-toast";
@@ -19,6 +20,17 @@ export function DynamicBreadcrumb() {
   const navigate = useNavigate();
 
   const [items, setItems] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -144,16 +156,35 @@ export function DynamicBreadcrumb() {
 
   // const b = generateBreadcrumbItems();
 
+  // Mobile: show first item, ellipsis, and last item
+  // Desktop: show all items
+  const getVisibleItems = () => {
+    if (!isMobile || items.length <= 2) return items;
+    
+    const first = items[0];
+    const last = items[items.length - 1];
+    
+    return [
+      first,
+      { id: 'ellipsis', label: '...', href: '#', isEllipsis: true },
+      last
+    ];
+  };
+
+  const visibleItems = getVisibleItems();
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {items.map((item, index) => (
-          <React.Fragment key={item.href}>
+        {visibleItems.map((item, index) => (
+          <React.Fragment key={item.id || item.href}>
             <BreadcrumbItem>
               {item.isLogout ? (
                 <BreadcrumbLink onClick={handleLogout} className="hover:text-pretty transition-colors cursor-pointer" >
                   {item.label}
                 </BreadcrumbLink>
+              ) : item.isEllipsis ? (
+                <BreadcrumbEllipsis />
               ) : (item.isLast && !item.forceLink) ? (
                 <BreadcrumbPage className="font-medium">
                   {item.label}
@@ -169,7 +200,7 @@ export function DynamicBreadcrumb() {
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
-            {index < items.length - 1 && (
+            {index < visibleItems.length - 1 && (
               <BreadcrumbSeparator />
             )}
           </React.Fragment>

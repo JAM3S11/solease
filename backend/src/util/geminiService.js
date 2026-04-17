@@ -4,6 +4,10 @@ dotenv.config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_API_KEY;
 
+if (!GEMINI_API_KEY) {
+  console.error("GEMINI_API_KEY is not set in environment variables!");
+}
+
 const DEFAULT_AUTO_REPLY = `Thank you for reaching out! We've received your feedback and our team is actively reviewing your ticket. We'll get back to you with an update shortly. If you have any urgent concerns, please don't hesitate to add another comment.`;
 
 const ISSUE_RESPONSES = {
@@ -198,8 +202,13 @@ Generate a helpful, professional response that respects the user's availability 
   }
 }
 
-export async function generateChatResponse({ message, ticketContext, userRole, userName, isFirstMessage = false }) {
+export async function generateChatResponse({ message, ticketContext, userRole, userName, isFirstMessage = false, images = [] }) {
   try {
+    console.log("generateChatResponse called");
+    console.log("Message:", message?.substring(0, 100));
+    console.log("Images count:", images?.length || 0);
+    console.log("First image mimeType:", images?.[0]?.mimeType);
+    
     let ticketInfo = "";
     if (ticketContext) {
       ticketInfo = `
@@ -222,6 +231,46 @@ Format your response exactly like this:
 Your actual response here...
 ` : "";
 
+    const imageInstructions = images && images.length > 0 ? `
+IMAGES UPLOADED: The user has uploaded ${images.length} image(s) and wants you to analyze them.
+
+CRITICAL - OCR AND ANALYSIS REQUIREMENTS:
+==========================================
+You MUST do the following for EACH uploaded image:
+
+1. **OPTICAL CHARACTER RECOGNITION (OCR):**
+   - Extract ALL text visible in the image
+   - Read any labels, buttons, menus, error messages
+   - Identify any written or printed text
+   - Note: Even partial text may be important
+
+2. **VISUAL CONTENT ANALYSIS:**
+   - Describe what you see in the image (UI, diagram, photo, document)
+   - Identify any logos, icons, or visual elements
+   - Note colors, layout, and visual patterns
+
+3. **CONTEXT UNDERSTANDING:**
+   - If it's a screenshot: What application/website is shown?
+   - If it's a diagram: What does it represent?
+   - If it's a document: What type (invoice, form, receipt)?
+   - If it's a photo: What's the subject matter?
+
+4. **PROBLEM IDENTIFICATION (if applicable):**
+   - What issue might the user be experiencing?
+   - What error messages or warnings do you see?
+   - What action might the user need to take?
+
+5. **ACTIONABLE RESPONSE:**
+   - Summarize what you found in the image(s)
+   - Provide specific solutions or next steps based on the image content
+   - If you can't determine something, state what you need to know
+
+Image handling:
+- Examine each image carefully and thoroughly
+- Cross-reference information across multiple images if applicable
+- Provide detailed, helpful analysis
+` : "";
+
     const prompt = `You are SolEase AI Assistant - an intelligent AI support assistant with deep knowledge in IT, software, hardware, networking, cybersecurity, and general problem-solving.
 
 About SOLEASE (if relevant):
@@ -235,6 +284,8 @@ User Information:
 - Name: ${userName}
 - Role: ${userRole}
 ${ticketInfo}
+
+${imageInstructions}
 
 IMPORTANT - Your Core Capabilities:
 You are a GENERAL PURPOSE AI assistant that can help with ANY problem or question. You are not limited to just SOLEASE platform questions. You can help with:
@@ -272,6 +323,33 @@ User's Question/Problem: ${message}
 
 Provide the most helpful response you can:`;
 
+    // Build parts array for Gemini - text + images
+    const parts = [{ text: prompt }];
+    
+    // Add images if provided
+    if (images && images.length > 0) {
+      console.log("=== BUILDING GEMINI REQUEST ===");
+      console.log("Images to send to Gemini:", images.length);
+      
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        console.log(`Image ${i + 1}:`);
+        console.log(`  - mimeType: ${img.mimeType}`);
+        console.log(`  - base64 length: ${img.base64?.length || 0}`);
+        console.log(`  - first 50 chars: ${img.base64?.substring(0, 50)}`);
+        
+        parts.push({
+          inlineData: {
+            mimeType: img.mimeType || "image/jpeg",
+            data: img.base64
+          }
+        });
+      }
+    }
+
+    console.log("Sending request to Gemini API...");
+    console.log("Total parts in request:", parts.length);
+
     const response = await fetch(GEMINI_URL, {
       method: "POST",
       headers: {
@@ -280,21 +358,20 @@ Provide the most helpful response you can:`;
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
+            parts: parts
           }
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
         }
       })
     });
 
+    console.log("Gemini response status:", response.status);
+    
     const data = await response.json();
+    console.log("Gemini response keys:", Object.keys(data));
     
     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       let responseText = data.candidates[0].content.parts[0].text;

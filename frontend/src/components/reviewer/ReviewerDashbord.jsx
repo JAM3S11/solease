@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Tickets, Clock, CheckCircle, MessageCircle, Search, Eye, ArrowRight, Zap, ArrowUp, ArrowDown, BookOpen, HelpCircle, User, List, Grid, Table, MapPin, Calendar, FileText, Paperclip, TrendingUp } from 'lucide-react'
+import { Plus, Tickets, Clock, CheckCircle, MessageCircle, Search, Eye, ArrowRight, Zap, ArrowUp, ArrowDown, BookOpen, HelpCircle, User, List, Grid, Table, MapPin, Calendar, FileText, Paperclip, TrendingUp, Bot, History } from 'lucide-react'
 import DashboardLayout from '../ui/DashboardLayout'
 import { useAuthenticationStore } from '../../store/authStore'
 import { Link } from 'react-router-dom'
@@ -50,6 +50,8 @@ const ReviewerDashbord = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [viewMode, setViewMode] = useState('table')
+  const [aiSessions, setAiSessions] = useState([])
+  const [aiLoading, setAiLoading] = useState(true)
 
   const userName = user?.name || user?.username || 'Reviewer'
   const safeTickets = Array.isArray(tickets) ? tickets : []
@@ -58,6 +60,24 @@ const ReviewerDashbord = () => {
   useEffect(() => {
     fetchTickets()
   }, [fetchTickets])
+
+  useEffect(() => {
+    const fetchAISessions = async () => {
+      const userId = user?.id || user?._id
+      if (!userId) return
+      try {
+        const response = await fetch(`http://localhost:5001/sol/ai/sessions?userId=${userId}`)
+        const data = await response.json()
+        setAiSessions(Array.isArray(data) ? data.slice(0, 3) : [])
+      } catch (error) {
+        console.error("Error fetching AI sessions:", error)
+        setAiSessions([])
+      } finally {
+        setAiLoading(false)
+      }
+    }
+    fetchAISessions()
+  }, [user])
 
   const assignedTickets = safeTickets
 
@@ -183,7 +203,7 @@ const ReviewerDashbord = () => {
               {[
                 { label: "Assigned Tickets", description: "View all assigned", icon: Tickets, to: "/reviewer-dashboard/assigned-ticket", color: "blue" },
                 { label: "Create Ticket", description: "Create new ticket", icon: Plus, to: "/reviewer-dashboard/new-ticket", color: "indigo" },
-                { label: "Reports", description: "View analytics", icon: TrendingUp, to: "/reviewer-dashboard/report", color: "purple" },
+                { label: "AI Assistant", description: "Get AI help", icon: Bot, to: "/reviewer-dashboard/ai-chat", color: "orange" },
                 { label: "Knowledge Base", description: "Browse articles", icon: BookOpen, to: "/help-support", color: "emerald" },
               ].map((link, i) => (
                 <motion.div
@@ -868,6 +888,77 @@ const ReviewerDashbord = () => {
                 })()}
               </div>
             </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+              >
+                <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <Bot size={20} className="text-purple-600 dark:text-purple-400" />
+                    AI Assistant Chats
+                  </h2>
+                  <Link
+                    to="/reviewer-dashboard/ai-chat-history"
+                    className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                  >
+                    View All
+                  </Link>
+                </div>
+                {aiSessions.length > 0 ? (
+                  <div className="p-5 space-y-3">
+                    {aiSessions.map((session) => (
+<Link
+                      key={session._id || session.id}
+                      to={`/reviewer-dashboard/ai-chat/${session._id || session.id}`}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+                    >
+                        <div className="p-2 rounded-lg bg-purple-500/20">
+                          <Bot size={16} className="text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                            {session.title 
+                              ? session.title.slice(0, 50) + (session.title.length > 50 ? "..." : "")
+                              : session.messages && session.messages.length > 0
+                                ? session.messages[0].content?.slice(0, 50) + (session.messages[0].content?.length > 50 ? "..." : "")
+                                : "New Chat"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {(session.messages?.length || session.messageCount || 0)} messages
+                            {session.updatedAt || session.createdAt || session.created_at
+                              ? ` · ${new Date(session.updatedAt || session.createdAt || session.created_at).toLocaleDateString()}`
+                              : ""}
+                          </p>
+                        </div>
+                        <ArrowRight size={16} className="text-purple-400" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                      <Bot size={32} className="text-purple-400 dark:text-purple-500" />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      No conversation history yet
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                      Start chatting with our AI assistant to get instant help with ticket reviews.
+                    </p>
+                    <Link
+                      to="/reviewer-dashboard/ai-chat"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors"
+                    >
+                      <Bot size={16} />
+                      Try AI Assistant
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
           </motion.div>
         )}
       </div>

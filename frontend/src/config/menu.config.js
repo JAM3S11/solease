@@ -30,7 +30,10 @@ export const MENU_CONFIG = {
             {
                 name: "AI Assistant",
                 icon: Bot,
-                path: "/admin-dashboard/ai-chat",
+                submenu: [
+                    { name: "New Chat", path: "/admin-dashboard/ai-chat" },
+                    { name: "History", path: "/admin-dashboard/ai-chat-history" },
+                ],
             },
             { name: "Reports", icon: NotepadText, path: "/admin-dashboard/admin-reports" },
         ],
@@ -50,7 +53,10 @@ export const MENU_CONFIG = {
             {
                 name: "AI Assistant",
                 icon: Bot,
-                path: "/reviewer-dashboard/ai-chat",
+                submenu: [
+                    { name: "New Chat", path: "/reviewer-dashboard/ai-chat" },
+                    { name: "History", path: "/reviewer-dashboard/ai-chat-history" },
+                ],
             },
             { name: "Reports", icon: NotepadText, path: "/reviewer-dashboard/report" },
         ],
@@ -70,7 +76,10 @@ export const MENU_CONFIG = {
             {
                 name: "AI Assistant",
                 icon: Bot,
-                path: "/client-dashboard/ai-chat",
+                submenu: [
+                    { name: "New Chat", path: "/client-dashboard/ai-chat" },
+                    { name: "History", path: "/client-dashboard/ai-chat-history" },
+                ],
             },
             { name: "Report", icon: NotepadText, path: "/client-dashboard/report" },
         ],

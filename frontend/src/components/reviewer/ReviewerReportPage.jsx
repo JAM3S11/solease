@@ -4,13 +4,15 @@ import DashboardLayout from '../ui/DashboardLayout'
 import { LineChart, PieChart, BarChart } from '@mui/x-charts';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react';
 import useTicketStore from "../../store/ticketStore";
+import { useAuthenticationStore } from "../../store/authStore";
 import { 
     Ticket, Clock, CheckCircle, TrendingUp, Activity, User, Star, Calendar, 
     RefreshCw, ChevronDown, Target, AlertTriangle, FileText, Users, 
     Clock3, Download, Printer, Filter, BarChart3, MessageSquare, ThumbsUp,
-    ArrowUpRight, ArrowDownRight, Zap, FileDown, CalendarDays
+    ArrowUpRight, ArrowDownRight, Zap, FileDown, CalendarDays, Bot
 } from "lucide-react";
 import NoRecordsFound from "../ui/NoRecordsFound";
+import { Link } from "react-router-dom";
 
 const DATE_RANGES = [
     { value: '7', label: 'Last 7 Days' },
@@ -164,7 +166,11 @@ const DetailedMetric = ({ label, value, icon, color, trend, trendUp }) => {
 }
 
 const ReviewerReportPage = () => {
+    const { user } = useAuthenticationStore();
     const { tickets, fetchTickets, loading } = useTicketStore();
+    const [aiStats, setAiStats] = useState(null);
+    const [aiStatsLoading, setAiStatsLoading] = useState(false);
+    const [aiStatsOverTime, setAiStatsOverTime] = useState(null);
     const [dateRange, setDateRange] = useState('30');
     const [selectedDateRange, setSelectedDateRange] = useState(DATE_RANGES[1]);
     const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
@@ -185,6 +191,33 @@ const ReviewerReportPage = () => {
         
         return () => clearInterval(interval);
     }, [fetchTickets]);
+
+    useEffect(() => {
+        const fetchAiStats = async () => {
+            const userId = user?.id || user?._id;
+            if (!userId) return;
+            
+            setAiStatsLoading(true);
+            try {
+                const [statsResponse, overTimeResponse] = await Promise.all([
+                    fetch(`http://localhost:5001/sol/ai/stats?userId=${userId}`),
+                    fetch(`http://localhost:5001/sol/ai/stats/over-time?userId=${userId}`)
+                ]);
+                const statsData = await statsResponse.json();
+                const overTimeData = await overTimeResponse.json();
+                setAiStats(statsData);
+                setAiStatsOverTime(overTimeData);
+            } catch (error) {
+                console.error('Error fetching AI stats:', error);
+                setAiStats(null);
+                setAiStatsOverTime(null);
+            } finally {
+                setAiStatsLoading(false);
+            }
+        };
+        
+        fetchAiStats();
+    }, [user]);
 
     const handleSyncData = async () => {
         setIsSyncing(true);
@@ -216,11 +249,13 @@ const ReviewerReportPage = () => {
         }
 
         if (selectedStatus !== 'All Status') {
-            filtered = filtered.filter(t => t.status === selectedStatus);
+            const normalizeStatus = (s) => s?.replace('_', ' ').toLowerCase();
+            filtered = filtered.filter(t => normalizeStatus(t.status) === normalizeStatus(selectedStatus));
         }
 
         if (selectedUrgency !== 'All Urgency') {
-            filtered = filtered.filter(t => t.urgency === selectedUrgency);
+            const normalizeUrgency = (s) => s?.toLowerCase();
+            filtered = filtered.filter(t => normalizeUrgency(t.urgency) === normalizeUrgency(selectedUrgency));
         }
 
         return filtered;
@@ -240,23 +275,30 @@ const ReviewerReportPage = () => {
     }, [tickets, dateRange]);
 
     const stats = useMemo(() => {
-        const resolved = reviewerTickets.filter(t => SUCCESS_STATUSES.includes(t.status)).length;
-        const total = reviewerTickets.length;
-        const open = reviewerTickets.filter(t => t.status === 'Open').length;
-        const inProgress = reviewerTickets.filter(t => t.status === 'In Progress').length;
-        const closed = reviewerTickets.filter(t => t.status === 'Closed').length;
+        const hasActiveFilters = selectedStatus !== 'All Status' || selectedUrgency !== 'All Urgency';
+        const ticketsForStats = hasActiveFilters ? filteredTickets : reviewerTickets;
+        
+        const normalizeStatus = (s) => s?.replace('_', ' ').toLowerCase();
+        const normalizeUrgency = (s) => s?.toLowerCase();
+        
+        const resolved = ticketsForStats.filter(t => normalizeStatus(t.status) === 'resolved').length;
+        const total = ticketsForStats.length;
+        const open = ticketsForStats.filter(t => normalizeStatus(t.status) === 'open').length;
+        const inProgress = ticketsForStats.filter(t => normalizeStatus(t.status) === 'in progress').length;
+        const closed = ticketsForStats.filter(t => normalizeStatus(t.status) === 'closed').length;
 
         const urgencyBreakdown = {
-            critical: reviewerTickets.filter(t => t.urgency === 'Critical').length,
-            high: reviewerTickets.filter(t => t.urgency === 'High').length,
-            medium: reviewerTickets.filter(t => t.urgency === 'Medium').length,
-            low: reviewerTickets.filter(t => t.urgency === 'Low').length,
+            critical: ticketsForStats.filter(t => normalizeUrgency(t.urgency) === 'critical').length,
+            high: ticketsForStats.filter(t => normalizeUrgency(t.urgency) === 'high').length,
+            medium: ticketsForStats.filter(t => normalizeUrgency(t.urgency) === 'medium').length,
+            low: ticketsForStats.filter(t => normalizeUrgency(t.urgency) === 'low').length,
         };
 
         const userSummaryMap = {};
-        reviewerTickets.forEach(t => {
+        ticketsForStats.forEach(t => {
             const userName = t.user?.name || t.user?.username || "Unknown User";
             const userId = t.user?._id || "unknown";
+            const normStatus = normalizeStatus(t.status);
 
             if (!userSummaryMap[userId]) {
                 userSummaryMap[userId] = {
@@ -269,9 +311,9 @@ const ReviewerReportPage = () => {
                 };
             }
             userSummaryMap[userId].total++;
-            if (SUCCESS_STATUSES.includes(t.status)) userSummaryMap[userId].resolved++;
-            if (t.status === 'Open') userSummaryMap[userId].open++;
-            if (t.status === 'In Progress') userSummaryMap[userId].inProgress++;
+            if (normStatus === 'resolved') userSummaryMap[userId].resolved++;
+            if (normStatus === 'open') userSummaryMap[userId].open++;
+            if (normStatus === 'in progress') userSummaryMap[userId].inProgress++;
 
             const currentUpdate = new Date(t.updatedAt || t.createdAt);
             const storedUpdate = new Date(userSummaryMap[userId].lastActivity);
@@ -283,10 +325,10 @@ const ReviewerReportPage = () => {
         const userSummary = Object.values(userSummaryMap).sort((a, b) => b.total - a.total);
 
         const pieData = [
-            { id: 0, value: reviewerTickets.filter(t => t.status === 'Resolved').length, label: 'Resolved', color: '#10b981' },
-            { id: 1, value: reviewerTickets.filter(t => t.status === 'In Progress').length, label: 'In Progress', color: '#f59e0b' },
-            { id: 2, value: reviewerTickets.filter(t => t.status === 'Open').length, label: 'Open', color: '#3b82f6' },
-            { id: 3, value: reviewerTickets.filter(t => t.status === 'Closed').length, label: 'Closed', color: '#6b7280' },
+            { id: 0, value: ticketsForStats.filter(t => normalizeStatus(t.status) === 'resolved').length, label: 'Resolved', color: '#10b981' },
+            { id: 1, value: ticketsForStats.filter(t => normalizeStatus(t.status) === 'in progress').length, label: 'In Progress', color: '#f59e0b' },
+            { id: 2, value: ticketsForStats.filter(t => normalizeStatus(t.status) === 'open').length, label: 'Open', color: '#3b82f6' },
+            { id: 3, value: ticketsForStats.filter(t => normalizeStatus(t.status) === 'closed').length, label: 'Closed', color: '#6b7280' },
         ].filter(d => d.value > 0);
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -295,19 +337,19 @@ const ReviewerReportPage = () => {
         for (let i = 5; i >= 0; i--) {
             const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
             const monthLabel = months[d.getMonth()];
-            const created = reviewerTickets.filter(t => {
+            const created = ticketsForStats.filter(t => {
                 const created = new Date(t.createdAt);
                 return created.getMonth() === d.getMonth() && created.getFullYear() === d.getFullYear();
             }).length;
-            const resolvedCount = reviewerTickets.filter(t => {
+            const resolvedCount = ticketsForStats.filter(t => {
                 const updated = new Date(t.updatedAt || t.createdAt);
-                return updated.getMonth() === d.getMonth() && updated.getFullYear() === d.getFullYear() && SUCCESS_STATUSES.includes(t.status);
+                return updated.getMonth() === d.getMonth() && updated.getFullYear() === d.getFullYear() && normalizeStatus(t.status) === 'resolved';
             }).length;
             resolutionTrend.push({ month: monthLabel, created, resolved: resolvedCount });
         }
 
         const avgResolutionTime = total > 0 ? `${(Math.random() * 3 + 1).toFixed(1)} hrs` : '0 hrs';
-        const feedbackCount = reviewerTickets.filter(t => t.feedbackSubmitted).length;
+        const feedbackCount = ticketsForStats.filter(t => t.feedbackSubmitted).length;
         const satisfactionRate = feedbackCount > 0 ? Math.floor(Math.random() * 20 + 80) : 0;
 
         return {
@@ -325,7 +367,7 @@ const ReviewerReportPage = () => {
             feedbackCount,
             satisfactionRate,
         };
-    }, [reviewerTickets]);
+    }, [filteredTickets, reviewerTickets, selectedStatus, selectedUrgency]);
 
     if (loading) return (
         <DashboardLayout>
@@ -431,6 +473,7 @@ const ReviewerReportPage = () => {
                     {[
                         { id: 'overview', label: 'Overview', icon: BarChart3 },
                         { id: 'performance', label: 'My Performance', icon: Target },
+                        { id: 'aiAssistant', label: 'AI Assistant', icon: Bot },
                         { id: 'clients', label: 'Client Analysis', icon: Users },
                     ].map(tab => (
                         <button
@@ -826,6 +869,116 @@ const ReviewerReportPage = () => {
                                     </div>
                                 </div>
                             </motion.div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'aiAssistant' && (
+                        <motion.div 
+                            key="aiAssistant"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-8"
+                        >
+                            {aiStatsLoading ? (
+                                <div className="flex items-center justify-center py-20">
+                                    <div className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : aiStats && aiStats.totalSessions > 0 ? (
+                                <>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <MetricCard 
+                                            title="Total Sessions" 
+                                            value={aiStats.totalSessions} 
+                                            icon={<Bot size={18} />} 
+                                            color="bg-gradient-to-br from-violet-500 to-violet-600"
+                                        />
+                                        <MetricCard 
+                                            title="Total Messages" 
+                                            value={aiStats.totalMessages} 
+                                            icon={<MessageSquare size={18} />} 
+                                            color="bg-gradient-to-br from-blue-500 to-blue-600"
+                                        />
+                                        <MetricCard 
+                                            title="Your Messages" 
+                                            value={aiStats.userMessages} 
+                                            icon={<User size={18} />} 
+                                            color="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                                        />
+                                        <MetricCard 
+                                            title="AI Responses" 
+                                            value={aiStats.assistantMessages} 
+                                            icon={<Bot size={18} />} 
+                                            color="bg-gradient-to-br from-amber-500 to-orange-500"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                        <motion.div whileHover={{ y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 md:p-6">
+                                            <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                                                <Activity size={16} className="text-violet-500" />
+                                                Sessions Over Time
+                                            </h3>
+                                            {aiStatsOverTime && aiStatsOverTime.sessions && aiStatsOverTime.sessions.some(s => s > 0) ? (
+                                                <BarChart
+                                                    dataset={aiStatsOverTime.sessions.map((val, idx) => ({ 
+                                                        sessions: val, 
+                                                        label: aiStatsOverTime.labels?.[idx] || `M${idx + 1}` 
+                                                    }))}
+                                                    xAxis={[{ dataKey: 'label', scaleType: 'band' }]}
+                                                    series={[{ dataKey: 'sessions', color: '#8b5cf6', label: 'Sessions' }]}
+                                                    height={200}
+                                                    grid={{ vertical: true }}
+                                                />
+                                            ) : (
+                                                <div className="text-center py-8 text-gray-500">No session data</div>
+                                            )}
+                                        </motion.div>
+
+                                        <motion.div whileHover={{ y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 md:p-6">
+                                            <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                                                <MessageSquare size={16} className="text-blue-500" />
+                                                Messages Over Time
+                                            </h3>
+                                            {aiStatsOverTime && aiStatsOverTime.messages && aiStatsOverTime.messages.some(m => m > 0) ? (
+                                                <LineChart
+                                                    dataset={aiStatsOverTime.messages.map((val, idx) => ({ 
+                                                        messages: val, 
+                                                        label: aiStatsOverTime.labels?.[idx] || `M${idx + 1}` 
+                                                    }))}
+                                                    xAxis={[{ dataKey: 'label', scaleType: 'band' }]}
+                                                    series={[{ dataKey: 'messages', color: '#3b82f6', label: 'Messages' }]}
+                                                    height={200}
+                                                    grid={{ vertical: true }}
+                                                />
+                                            ) : (
+                                                <div className="text-center py-8 text-gray-500">No message data</div>
+                                            )}
+                                        </motion.div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-r from-violet-600 to-blue-600 rounded-2xl p-4 md:p-6 text-white">
+                                        <h3 className="text-lg font-semibold mb-2">AI Assistant Summary</h3>
+                                        <p className="text-violet-100 text-sm">
+                                            You&apos;ve engaged in {aiStats.totalSessions} chat session{aiStats.totalSessions !== 1 ? 's' : ''} with the AI Assistant, exchanging {aiStats.totalMessages} message{aiStats.totalMessages !== 1 ? 's' : ''}. 
+                                            {aiStats.firstActivity && ` Your first interaction was on ${new Date(aiStats.firstActivity).toLocaleDateString()}.`}
+                                        </p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-20">
+                                    <Bot size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No AI Assistant Activity</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Start using the AI Assistant to see your stats here.</p>
+                                    <Link
+                                        to="/reviewer-dashboard/ai-chat"
+                                        className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl font-medium transition-colors text-sm"
+                                    >
+                                        <Bot size={16} />
+                                        Start Chat
+                                    </Link>
+                                </div>
+                            )}
                         </motion.div>
                     )}
 

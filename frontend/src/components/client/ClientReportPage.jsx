@@ -2820,7 +2820,7 @@ const ClientReportPage = () => {
                                         label: "FAQ", 
                                         description: "Get quick answers",
                                         icon: HelpCircle, 
-                                        to: "/client-dashboard/faq", 
+                                        to: "/help-support", 
                                         color: "emerald" 
                                     },
                                     { 

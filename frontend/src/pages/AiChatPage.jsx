@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, 
@@ -66,8 +66,10 @@ async function compressImage(file) {
   });
 }
 
-const AiChatContent = () => {
+const AiChatContent = ({ defaultRole }) => {
   const navigate = useNavigate();
+  const params = useParams();
+  const sessionIdFromUrl = params.sessionId;
   const { user } = useAuthenticationStore();
   const { tickets, fetchTickets } = useTicketStore();
   
@@ -113,6 +115,13 @@ const AiChatContent = () => {
       fetchSessions();
     }
   }, [fetchTickets, user]);
+
+  // Load session from URL if sessionId is provided
+  useEffect(() => {
+    if (sessionIdFromUrl && sessions.length > 0) {
+      loadSession(sessionIdFromUrl);
+    }
+  }, [sessionIdFromUrl, sessions]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

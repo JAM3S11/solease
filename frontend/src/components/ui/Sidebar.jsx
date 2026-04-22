@@ -156,7 +156,8 @@ export function AppSidebar({ userRole }) {
     <Sidebar
       variant="default"
       collapsible="icon"
-      className="sticky top-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 group/sidebar"
+      style={{ "--sidebar-width": "20rem" }}
+      className="sticky top-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 group/sidebar data-[state=expanded]:w-[20rem]"
     >
       {/* Header: Logo + Company name + Tier + Dropdown */}
       <SidebarHeader className={cn(

@@ -71,6 +71,7 @@ import TicketManagementPage from "./pages/TicketManagementPage";
 import WorkflowToolsPage from "./pages/WorkflowToolsPage";
 import IntegrationsPage from "./pages/IntegrationsPage";
 import AiChatPage from "./pages/AiChatPage";
+import AiChatHistoryPage from "./pages/AiChatHistoryPage";
 
 // USER ACTIVITY TRACKING
 import { useUserActivity } from "./hooks/use-user-activity";
@@ -382,7 +383,21 @@ const App = () => {
         <Route path="/admin-dashboard/ai-chat"
           element={
             <ProtectedRoute allowedRoles={["Manager"]}>
-              <AiChatPage />
+              <AiChatPage defaultRole="admin" />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/admin-dashboard/ai-chat/:sessionId"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AiChatPage defaultRole="admin" />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/admin-dashboard/ai-chat-history"
+          element={
+            <ProtectedRoute allowedRoles={["Manager"]}>
+              <AiChatHistoryPage />
             </ProtectedRoute>
           }
         />
@@ -448,63 +463,85 @@ const App = () => {
               <AllNotificationsPage />
             </ProtectedRoute>
           } />
-        <Route path="/reviewer-dashboard/ai-chat"
+<Route path="/reviewer-dashboard/ai-chat"
           element={
             <ProtectedRoute allowedRoles={["Reviewer"]}>
-              <AiChatPage />
+              <AiChatPage defaultRole="reviewer" />
             </ProtectedRoute>
-          } />
+          }
+        />
+        <Route path="/reviewer-dashboard/ai-chat/:sessionId"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <AiChatPage defaultRole="reviewer" />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/reviewer-dashboard/ai-chat-history"
+          element={
+            <ProtectedRoute allowedRoles={["Reviewer"]}>
+              <AiChatHistoryPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* CLIENT ROUTES */}
-        <Route path="/client-dashboard/all-tickets"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientAllTicketPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/new-ticket"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientNewTicketPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/profile"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientProfilePage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/report"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <ClientReportPage />
-            </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/ticket/:id/feedback"
-          element={
-            <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager"]}>
-              <FeedbackComponent />
-            </ProtectedRoute>
-          } />
+        {/* CLIENT ROLES */}
         <Route path="/client-dashboard"
           element={
             <ProtectedRoute allowedRoles={["Client"]}>
               <ClientDashboard />
             </ProtectedRoute>
-          } />
-        <Route path="/client-dashboard/notifications"
-          element={
-            <ProtectedRoute allowedRoles={["Client"]}>
-              <AllNotificationsPage />
-            </ProtectedRoute>
-          } />
+          }
+        />
         <Route path="/client-dashboard/ai-chat"
           element={
             <ProtectedRoute allowedRoles={["Client"]}>
-              <AiChatPage />
+              <AiChatPage defaultRole="client" />
             </ProtectedRoute>
-          } />
-
+          }
+        />
+        <Route path="/client-dashboard/ai-chat/:sessionId"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <AiChatPage defaultRole="client" />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/client-dashboard/ai-chat-history"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <AiChatHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/client-dashboard/new-ticket"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientNewTicketPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/client-dashboard/all-tickets"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientAllTicketPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/client-dashboard/ticket/:id"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <FeedbackComponent />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/client-dashboard/ticket/:id/feedback"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <FeedbackComponent />
+            </ProtectedRoute>
+          }
+        />
         {/* Help & Support - Available to all authenticated users */}
         <Route path="/help-support"
           element={
@@ -518,6 +555,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Client", "Reviewer", "Manager", "Admin"]}>
               <KnowledgeBasePage />
+            </ProtectedRoute>
+          } />
+
+        {/* Client Report Page */}
+        <Route path="/client-dashboard/report"
+          element={
+            <ProtectedRoute allowedRoles={["Client"]}>
+              <ClientReportPage />
             </ProtectedRoute>
           } />
 

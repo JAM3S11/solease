@@ -26,6 +26,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
+  Bot,
+  History,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import DashboardLayout from "../ui/DashboardLayout";
@@ -83,6 +85,8 @@ import {
 
 const ClientDashboard = () => {
   const { user } = useAuthenticationStore();
+  const [aiSessions, setAiSessions] = useState([]);
+  const [aiLoading, setAiLoading] = useState(true);
   // Real-time profile photo from authStore for instant updates
   const profilePhoto = user?.profilePhoto;
   const { tickets, fetchTickets, loading, error, deleteTicket } = useTicketStore();
@@ -108,6 +112,26 @@ const ClientDashboard = () => {
   useEffect(() => {
     fetchTickets("Client");
   }, [fetchTickets]);
+
+  useEffect(() => {
+    const fetchAISessions = async () => {
+      const userId = user?.id || user?._id;
+      if (!userId) return;
+      try {
+        const response = await fetch(`http://localhost:5001/sol/ai/sessions?userId=${userId}`);
+        const data = await response.json();
+        setAiSessions(Array.isArray(data) ? data.slice(0, 3) : []);
+      } catch (error) {
+        console.error("Error fetching AI sessions:", error);
+        setAiSessions([]);
+      } finally {
+        setAiLoading(false);
+      }
+    };
+    if (user?._id || user?.id) {
+      fetchAISessions();
+    }
+  }, [user?._id, user?.id]);
 
   // Reset to page 1 when search, sort, or view mode changes
   useEffect(() => {
@@ -288,11 +312,11 @@ const ClientDashboard = () => {
                   color: "indigo" 
                 },
                 { 
-                  label: "FAQ", 
-                  description: "Get quick answers",
-                  icon: HelpCircle, 
-                  to: "/client-dashboard/faq", 
-                  color: "emerald" 
+                  label: "AI Assistant", 
+                  description: "Get AI help",
+                  icon: Bot, 
+                  to: "/client-dashboard/ai-chat", 
+                  color: "orange" 
                 },
                 { 
                   label: "Help Center", 
@@ -315,8 +339,8 @@ const ClientDashboard = () => {
                     to={link.to}
                     className="flex flex-col p-5 rounded-2xl bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-xl hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 h-full relative overflow-hidden"
                   >
-                    <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'emerald' ? 'bg-emerald-500' : 'bg-violet-500'}`} />
-                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'emerald' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30' : 'bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30'}`}>
+                    <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 opacity-10 transition-transform duration-300 group-hover:scale-150 ${link.color === 'blue' ? 'bg-blue-500' : link.color === 'indigo' ? 'bg-indigo-500' : link.color === 'violet' ? 'bg-violet-500' : 'bg-orange-500'}`} />
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 shadow-lg ${link.color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/30' : link.color === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30' : link.color === 'violet' ? 'bg-gradient-to-br from-violet-500 to-violet-600 shadow-violet-500/30' : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-500/30'}`}>
                       <link.icon size={22} className="text-white" />
                     </div>
                     <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -1181,6 +1205,77 @@ const ClientDashboard = () => {
                 })()}
               </div>
             </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden"
+              >
+                <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <Bot size={20} className="text-purple-600 dark:text-purple-400" />
+                    AI Assistant Chats
+                  </h2>
+                  <Link
+                    to="/client-dashboard/ai-chat-history"
+                    className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                  >
+                    View All
+                  </Link>
+                </div>
+                {aiSessions.length > 0 ? (
+                  <div className="p-5 space-y-3">
+                    {aiSessions.map((session) => (
+<Link
+                      key={session._id || session.id}
+                      to={`/client-dashboard/ai-chat/${session._id || session.id}`}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+                    >
+                        <div className="p-2 rounded-lg bg-purple-500/20">
+                          <Bot size={16} className="text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                            {session.title 
+                              ? session.title.slice(0, 50) + (session.title.length > 50 ? "..." : "")
+                              : session.messages && session.messages.length > 0
+                                ? session.messages[0].content?.slice(0, 50) + (session.messages[0].content?.length > 50 ? "..." : "")
+                                : "New Chat"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {(session.messages?.length || session.messageCount || 0)} messages
+                            {session.updatedAt || session.createdAt || session.created_at
+                              ? ` · ${new Date(session.updatedAt || session.createdAt || session.created_at).toLocaleDateString()}`
+                              : ""}
+                          </p>
+                        </div>
+                        <ArrowRight size={16} className="text-purple-400" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                      <Bot size={32} className="text-purple-400 dark:text-purple-500" />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      No conversation history yet
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                      Start chatting with our AI assistant to get instant help with your support tickets.
+                    </p>
+                    <Link
+                      to="/client-dashboard/ai-chat"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors"
+                    >
+                      <Bot size={16} />
+                      Try AI Assistant
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
           </motion.div>
         )}
       </div>

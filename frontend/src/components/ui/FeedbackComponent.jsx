@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  AlertCircle, CheckCircle2, ChevronDown, Clipboard, Clock3,
+  AlertCircle, CheckCircle2, ChevronDown, ChevronRight, Clipboard, Clock3,
   Download, Eye, EyeOff, File, FileImage, FileText, Grid2x2, MapPin,
   Menu, MessageCircle, Paperclip, Pencil, PlusCircle, Search,
   Send, Share2, Sparkles, Trash2, Upload, Zap, UserPlus, X, Pin,
   CornerUpLeft, Star, ArrowLeft, Check, Lock, ThumbsUp, ThumbsDown,
-  Smile, Meh, Frown, Heart, Clock, Calendar, FileCheck,
+  Smile, Meh, Frown, Heart, Clock, Calendar, FileCheck, Filter, Activity,
 } from "lucide-react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import toast from "react-hot-toast";
@@ -42,11 +42,114 @@ const AUDIT_TYPES = ["all", "created", "assigned", "status_change", "comment", "
 
 const RATING_STARS = [
   { value: 1, label: "Very Dissatisfied", icon: Frown, color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/30" },
-  { value: 2, label: "Dissatisfied", icon: Meh, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/30" },
-  { value: 3, label: "Neutral", icon: Smile, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/30" },
-  { value: 4, label: "Satisfied", icon: ThumbsUp, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/30" },
-  { value: 5, label: "Very Satisfied", icon: Heart, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
+  { value: 2, label: "Dissatisfied", icon: Frown, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/30" },
+  { value: 3, label: "Neutral", icon: Meh, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/30" },
+  { value: 4, label: "Satisfied", icon: Smile, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/30" },
+  { value: 5, label: "Very Satisfied", icon: Smile, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
 ];
+
+const AUDIT_TYPE_CONFIG = {
+  created: { label: "Created", color: "emerald", bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-600", dot: "bg-emerald-500" },
+  assigned: { label: "Assigned", color: "blue", bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-600", dot: "bg-blue-500" },
+  status_change: { label: "Status", color: "amber", bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-600", dot: "bg-amber-500" },
+  comment: { label: "Comment", color: "primary", bg: "bg-primary/10", border: "border-primary/30", text: "text-primary", dot: "bg-primary" },
+  reply: { label: "Reply", color: "violet", bg: "bg-violet-500/10", border: "border-violet-500/30", text: "text-violet-600", dot: "bg-violet-500" },
+  files: { label: "Files", color: "orange", bg: "bg-orange-500/10", border: "border-orange-500/30", text: "text-orange-600", dot: "bg-orange-500" },
+  internal_note: { label: "Internal", color: "rose", bg: "bg-rose-500/10", border: "border-rose-500/30", text: "text-rose-600", dot: "bg-rose-500" },
+};
+
+const AUDIT_TYPE_STATS = [
+  { type: "created", label: "Created" },
+  { type: "status_change", label: "Status Changes" },
+  { type: "comment", label: "Comments" },
+  { type: "files", label: "Files" },
+];
+
+const AuditEventCard = ({ log, isLast }) => {
+  const [expanded, setExpanded] = useState(false);
+  const config = AUDIT_TYPE_CONFIG[log.type] || AUDIT_TYPE_CONFIG.comment;
+  const Icon = getAuditIcon(log.type);
+
+  return (
+    <div className="relative flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className={`w-10 h-10 rounded-xl ${config.bg} border ${config.border} flex items-center justify-center shrink-0 z-10`}>
+          {Icon}
+        </div>
+        {!isLast && (
+          <div className={`w-0.5 flex-1 min-h-[60px] ${config.dot} opacity-30`} />
+        )}
+      </div>
+      <div className={`flex-1 min-w-0 mb-4 ${expanded ? "bg-card rounded-xl border border-border p-4" : "bg-card rounded-xl border border-border p-4"}`}>
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${config.bg} ${config.text} border ${config.border}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+              {config.label}
+            </span>
+            <p className="text-sm font-semibold text-foreground">{log.title}</p>
+          </div>
+          <span className="text-[10px] text-muted-foreground shrink-0">{formatShortTime(log.timestamp)}</span>
+        </div>
+        <p className={`text-sm text-muted-foreground leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>{log.description}</p>
+        {log.description && log.description.length > 80 && (
+          <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-primary hover:underline mt-1">
+            {expanded ? "Show less" : "Show more"}
+          </button>
+        )}
+        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
+          {log.user && (
+            <div className="flex items-center gap-2">
+              <Avatar user={log.user} size="xs" />
+              <div>
+                <p className="text-xs font-medium text-foreground">{log.user.name || log.user.username}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{log.user.role}</p>
+              </div>
+            </div>
+          )}
+          <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Clock size={10} />
+            {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StarRating = ({ rating, setRating, ratingHover, setRatingHover }) => {
+  return (
+    <div className="flex justify-center gap-2 mb-4">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const isActive = rating >= star;
+        const isHovered = ratingHover >= star;
+        return (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setRatingHover(star)}
+            onMouseLeave={() => setRatingHover(0)}
+            className={`transition-all duration-200 ${isActive || isHovered ? "scale-110" : "scale-100"}`}
+          >
+            <Star
+              size={32}
+              className={`transition-colors ${
+                isActive || isHovered
+                  ? star <= 2
+                    ? "text-red-500 fill-red-500"
+                    : star === 3
+                    ? "text-amber-500 fill-amber-500"
+                    : "text-emerald-500 fill-emerald-500"
+                  : "text-gray-300 dark:text-gray-600"
+              }`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 const SURVEY_QUESTIONS = [
   { id: "resolution_speed", label: "How satisfied are you with the resolution time?", type: "rating" },
@@ -406,6 +509,9 @@ const FeedbackComponent = () => {
   const [ratingHover, setRatingHover] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [ratingLoading, setRatingLoading] = useState(false);
+  const [ratingName, setRatingName] = useState("");
+  const [ratingDesignation, setRatingDesignation] = useState("");
+  const [ratingComment, setRatingComment] = useState("");
 
   // ── Resolution Survey ───────────────────────────────────────────────────────
   const [surveyModal, setSurveyModal] = useState(false);
@@ -469,6 +575,18 @@ const FeedbackComponent = () => {
   useEffect(() => {
     getAIUsage().then(setAiUsageData).catch(() => {});
   }, [getAIUsage]);
+
+  // Initialize rating name and designation from user
+  useEffect(() => {
+    if (ratingModal && user) {
+      const fullName = user.name || user.username || "";
+      const nameParts = fullName.split(" ").filter(part => part.length > 0);
+      const firstTwoWords = nameParts.slice(0, 2).join(" ");
+      setRatingName(firstTwoWords);
+      setRatingDesignation(user.role || "");
+      setRatingComment("");
+    }
+  }, [ratingModal, user]);
 
   // ── Scroll to bottom ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -727,10 +845,17 @@ const FeedbackComponent = () => {
     if (!rating || rating < 1 || rating > 5) return;
     setRatingLoading(true);
     try {
-      await api.post(`/tickets/${id}/rating`, { rating, timestamp: new Date().toISOString() });
+      await api.post(`/tickets/${id}/rating`, { 
+        rating, 
+        timestamp: new Date().toISOString(),
+        name: ratingName,
+        designation: ratingDesignation,
+        comment: ratingComment
+      });
       toast.success("Thank you for your feedback!");
       setRatingSubmitted(true);
       setRatingModal(false);
+      setRatingComment("");
       fetchTickets();
     } catch (e) { toast.error(e.response?.data?.message || "Failed to submit rating"); }
     finally { setRatingLoading(false); }
@@ -1707,7 +1832,7 @@ const FeedbackComponent = () => {
               </div>
             ) : (
               <>
-                <div className="flex justify-center gap-2 mb-6">
+                <div className="flex justify-center gap-2 mb-4">
                   {RATING_STARS.map((star) => {
                     const Icon = star.icon;
                     const isActive = rating >= star.value;
@@ -1721,11 +1846,48 @@ const FeedbackComponent = () => {
                   })}
                 </div>
                 {rating > 0 && (
-                  <p className="text-center text-sm font-medium text-foreground mb-5">{RATING_STARS[rating - 1].label}</p>
+                  <p className="text-center text-sm font-medium text-foreground mb-4">{RATING_STARS[rating - 1].label}</p>
                 )}
+                
+                {/* Name Field */}
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Your Name</label>
+                  <input
+                    type="text"
+                    value={ratingName}
+                    onChange={(e) => setRatingName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="w-full px-3 py-2 rounded-xl border border-border bg-secondary/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                {/* Designation Field */}
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Designation</label>
+                  <input
+                    type="text"
+                    value={ratingDesignation}
+                    onChange={(e) => setRatingDesignation(e.target.value)}
+                    placeholder="e.g. Manager, Employee, Client"
+                    className="w-full px-3 py-2 rounded-xl border border-border bg-secondary/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                {/* Comment Field */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Additional Comments (optional)</label>
+                  <textarea
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    placeholder="Share your experience or feedback..."
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-xl border border-border bg-secondary/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  />
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <button onClick={() => setRatingModal(false)} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors">Cancel</button>
-                  <button onClick={handleSubmitRating} disabled={!rating || ratingLoading} className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium transition-colors disabled:opacity-50">
+                  <button onClick={handleSubmitRating} disabled={!rating || !ratingName.trim() || ratingLoading} className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium transition-colors disabled:opacity-50">
                     {ratingLoading ? "Submitting..." : "Submit Rating"}
                   </button>
                 </div>

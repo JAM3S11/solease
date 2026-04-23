@@ -1,8 +1,8 @@
 # SOLEASE - IT Service Management Platform
 
-![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-04-13%20220839.png) <!-- Placeholder image -->
+![SolEase Showcase](https://ik.imagekit.io/jimdanliveurl/Screenshot%202026-04-23%20224022.png) <!-- Placeholder image -->
 
-**SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with Google Gemini AI-powered workflow automation fully integrated for enhanced ticket processing efficiency, intelligent categorization, and AI-assisted resolution workflows.
+**SolEase** is a production-ready, comprehensive IT service management platform designed for organizations of all types and sizes. Whether you're a private enterprise, public institution, educational facility, healthcare organization, or non-profit requiring structured support operations, SolEase provides a robust and scalable platform to streamline your support workflows. The platform features role-based dashboards, complete ticket lifecycle management, AI-powered workflow automation with Google Gemini, interactive AI chat interface, in-app notifications, personal notes, plan tier subscriptions, and a modern responsive interface. **Note**: The system currently supports Client, Reviewer, and Manager roles, with Google Gemini AI-powered workflow automation fully integrated for enhanced ticket processing efficiency, intelligent categorization, AI chat assistance, and resolution workflows.
 
 ---
 
@@ -36,6 +36,9 @@
 -   **Production-Ready**: Fully functional and ready for deployment with complete user management, authentication, ticket lifecycle management, and analytics.
 -   **Role-Based Dashboards**: Tailored interfaces for Clients, Reviewers and Managers with role-specific features and permissions.
 -   **AI-Ready Architecture**: Full AI-powered workflow automation with Google Gemini AI integration including intelligent ticket categorization, automated response suggestions, AI-assisted resolution workflows, and comprehensive audit trails.
+-   **Interactive AI Chat**: All user roles have access to an interactive AI chat interface powered by Gemini AI for instant support, ticket assistance, and contextual help.
+-   **Plan Tier System**: Subscription-based access with Basic, Pro, and Enterprise tiers offering configurable features and usage limits.
+-   **In-App Notifications**: Real-time notification center with ticket updates, assignments, status changes, and system alerts.
 
 ### Ticket Management
 -   **Full Ticket Lifecycle**: Complete ticket management from creation to resolution, including status tracking (Open, In Progress, Resolved, Closed), priority assignment (Low, Medium, High, Critical), and detailed history logging.
@@ -44,12 +47,20 @@
 -   **Comment & Reply System**: Threaded communication with role-based visibility, AI-generated response tracking, and comprehensive audit trails.
 -   **File Attachments**: Support for file uploads with secure storage and download functionality.
 -   **Feedback System**: Client feedback collection for resolved tickets with satisfaction tracking.
+-   **Chat-Enabled Tickets**: Real-time chat support for select tickets with chat history tracking.
+-   **Visibility Controls**: Role-based visibility settings for ticket access management.
+-   **Location Tracking**: Track ticket creation location for analytics and routing.
 
 ### Security & Authentication
 -   **Secure Authentication**: JWT-based authentication with HTTP-only cookies for enhanced security and automatic session management.
 -   **Email Verification**: Robust email verification system with 6-digit codes to prevent unauthorized account creation.
 -   **Password Security**: Strong password requirements with bcrypt hashing and secure password reset workflows.
 -   **Session Management**: Automatic session restoration and secure logout functionality.
+-   **Remember Me**: Extended session persistence with secure "remember me" token functionality.
+-   **Password Strength Enforcement**: Automatic detection and enforcement of weak passwords with update deadlines.
+-   **MFA Setup**: Multi-factor authentication setup for enhanced account security (TOTP-based).
+-   **Account Security Page**: Dedicated settings page for managing password changes and sensitive account actions.
+-   **Secure Logout**: Complete session cleanup on logout across all devices.
 
 ### User Management
 -   **Comprehensive User Management**: Managers can manage user roles, statuses, and permissions with granular control.
@@ -57,17 +68,29 @@
 -   **User Status Tracking**: Monitor user account statuses (Pending, Approved, Rejected) with audit trails.
 -   **Profile Management**: Users can update their profile information, change passwords, and manage email preferences.
 -   **Role-Based Access Control**: Secure access control with Client, Reviewer, and Manager roles, each with specific permissions and dashboard views.
+-   **Plan Tiers**: Subscription-based access levels (Basic, Pro, Enterprise) with configurable feature access and usage limits.
+-   **Profile Photos**: Upload and manage profile pictures for personalized user identification.
+-   **Working Hours**: Configure business hours, working days, and preferred contact times for support availability.
+-   **Timezone Support**: Set user timezone for localized timing and scheduling.
+-   **Online Status**: Real-time presence tracking showing users currently active on the platform.
+-   **Remember Me**: Extended session persistence with secure token management for enhanced convenience.
+-   **Auto-Response Settings**: Configurable automatic response delays and enable/disable toggles for personalized communication preferences.
+-   **AI Usage Tracking**: Monitor AI feature usage with reset quotas per plan tier.
 
 ### Analytics & Reporting
 -   **Real-time Analytics**: Comprehensive performance metrics with interactive charts and dashboards for all user roles.
 -   **Data Export**: Export ticket data to CSV format for external analysis and reporting.
+-   **PDF Export**: Export reports and ticket data to PDF format for documentation.
 -   **Performance Metrics**: Track key performance indicators including resolution rates, ticket volumes, response times, and user satisfaction scores.
 -   **Activity Monitoring**: Real-time monitoring of user activities, ticket assignments, and system performance.
+-   **Online Status Tracking**: Real-time presence indicators showing which users are currently active on the platform.
 -   **Visual Analytics**: Beautiful charts and graphs using Recharts and MUI X-Charts for data visualization.
 
 ### Communication
 -   **Email Notifications**: Automated emails for critical events including signup confirmations, email verification, password resets, and ticket updates.
 -   **Notification Preferences**: Configurable notification settings to match user preferences and organizational policies.
+-   **In-App Notifications**: Real-time notification center with ticket updates, assignments, status changes, and system alerts.
+-   **Notification Read Tracking**: Mark notifications as read with timestamp tracking.
 
 ### AI Workflow Automation
 -   **Intelligent Ticket Processing**: Google Gemini AI automatically analyzes incoming tickets upon creation, detecting issue type, assessing urgency, and suggesting appropriate categorization.
@@ -78,6 +101,9 @@
 -   **Sentiment Analysis**: Real-time client sentiment detection on replies, alerting reviewers to frustration or escalating urgency indicators.
 -   **Workflow Automation**: Automated triggers for ticket status changes, priority adjustments, and assignment notifications based on AI-processed content.
 -   **Knowledge Base Building**: AI automatically extracts solutions from resolved tickets to build an expanding knowledge base for future ticket assistance.
+-   **AI Chat Interface**: Interactive chat interface for all user roles to ask questions, get ticket assistance, and receive contextual help from Gemini AI.
+-   **Chat History**: Persistent chat history with session management to revisit previous conversations.
+-   **Multi-Modal Input**: Support for text and image inputs in chat conversations.
 
 ### Additional Features
 -   **Modern Responsive Design**: Fully responsive interface built with React 19 and Tailwind CSS that works seamlessly across desktop, tablet, and mobile devices.
@@ -87,13 +113,24 @@
 -   **Legal Pages**: Complete Terms of Service and Privacy Policy pages for compliance.
 -   **Contact System**: Integrated contact form for general inquiries and support requests.
 -   **Comprehensive Audit Logging**: Complete logging of all system activities, AI actions, and user interactions for compliance and troubleshooting.
+-   **Personal Notes**: Private note-taking system for tickets with shareable notes between roles.
+-   **Notification Center**: In-app notification system with read/unread tracking and notification history.
+-   **Getting Started Guides**: Built-in help documentation and onboarding guides for new users.
+-   **Account Security Settings**: Dedicated page for managing account security, password changes, and sensitive actions.
+-   **Billing & Payments**: Subscription management and plan tier configuration.
+-   **Workflow Tools**: Integrated workflow automation tools and configuration pages.
+-   **Integrations Page**: Central hub for managing third-party integrations and API connections.
+-   **Testimonials**: Customer testimonials showcase page.
+-   **Toast Notifications**: Modern toast notifications using Sonner for better user feedback.
+-   **MFA Setup**: Multi-factor authentication setup for enhanced account security.
+-   **PDF Export**: Export ticket data and reports to PDF format.
 
 ---
 
 ## 🛠️ Technology Stack
 
--   **Frontend**: React 19, Vite, TailwindCSS, DaisyUI, Zustand, React Router 7, Framer Motion, MUI X Charts, Radix UI, Axios, Recharts.
--   **Backend**: Node.js, Express 5, PostgreSQL, Prisma, JWT, Nodemailer, bcryptjs, Mailtrap, Multer, Redis (for AI processing), Gemini AI (for workflow automation), Rate limiting with Upstash.
+-   **Frontend**: React 19, Vite, TailwindCSS, DaisyUI, Zustand, React Router 7, Framer Motion, MUI X Charts, Radix UI, Axios, Recharts, MUI Material, Motion, Sonner, html2pdf.js, Lucide React, next-themes, Tailwind Merge, VAUL.
+-   **Backend**: Node.js, Express 5, PostgreSQL, Prisma, JWT, Nodemailer, bcryptjs, Mailtrap, Multer, Redis (for AI processing), Gemini AI (for workflow automation), Rate limiting with Upstash, Express Rate Limit, Cookie Parser, CORS, pg.
 
 ---
 
@@ -103,6 +140,35 @@ SOLEASE follows a modern full-stack architecture designed for scalability, maint
 
 ### System Architecture
 
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend API   │    │   Database      │
+│   (React SPA)   │◄──►│   (Node.js)     │◄──►│   (PostgreSQL)   │
+│                 │    │                 │    │                 │
+│ • React 19      │    │ • Express 5     │    │ • Users         │
+│ • Vite          │    │ • JWT Auth      │    │ • Tickets       │
+│ • TailwindCSS   │    │ • Nodemailer    │    │ • Comments     │
+│ • Zustand       │    │ • bcrypt        │    │ • Replies      │
+│ • Radix UI      │    │ • Multer        │    │ • Notifications│
+│ • Recharts     │    │ • Prisma        │    │ • PersonalNotes │
+│ • MUI X Charts │    │ • Rate Limit    │    │ • ChatSessions │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User Roles    │    │   Email Service │    │   Analytics     │
+│ • Manager       │    │   (Gmail SMTP)  │    │   (Charts)      │
+│ • Reviewer      │    │   • Mailtrap    │    │   • Recharts    │
+│ • Client       │    │                 │    │   • MUI X      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│   AI Service    │    │   Redis Cache   │
+│  (Gemini AI)    │    │  (AI Processing)│
+│ • Chat         │    │  (Rate Limits) │
+│ • Categorize   │    │               │
+└─────────────────┘    └─────────────────┘
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend API   │    │   Database      │
@@ -137,6 +203,8 @@ SOLEASE follows a modern full-stack architecture designed for scalability, maint
 - **Email Service**: Automated notifications for user actions and ticket updates
 - **State Management**: Client-side state handled via Zustand stores
 - **AI Engine**: Google Gemini AI integration for intelligent workflow automation, ticket categorization, response suggestions, and resolution assistance
+- **File Storage**: Multer-based file upload handling for attachments and profile photos
+- **Rate Limiting**: Upstash Redis-based rate limiting for API protection
 
 ### Data Flow
 
@@ -277,13 +345,13 @@ It is strongly recommended to change the password and email for this account imm
 The backend follows a standard MVC-like pattern:
 
 -   `src/server.js`: Main application entry point.
--   `src/config/`: Database connection and Prisma configuration.
+-   `src/config/`: Database connection, Prisma configuration, and seed data.
 -   `src/prisma/`: Prisma schema and migrations for PostgreSQL database models.
 -   `src/models/`: (Legacy - replaced by Prisma) Mongoose schemas removed in favor of Prisma ORM.
--   `src/controllers/`: Business logic for handling requests.
+-   `src/controllers/`: Business logic for handling requests (auth, ticket, profile, admin, notification, personal note, contact, user, AI).
 -   `src/routes/`: API endpoint definitions.
--   `src/middleware/`: Authentication and authorization guards.
--   `src/services/`: AI service layer for Gemini AI integration.
+-   `src/middleware/`: Authentication, authorization, upload, rate limiting, and password status guards.
+-   `src/util/`: Utility functions (Gemini AI service, token generation, password strength, rate limiter).
 -   `src/mailtrap/`: Email templates and sending logic.
 
 ### Frontend
@@ -291,11 +359,14 @@ The backend follows a standard MVC-like pattern:
 The frontend is structured by feature and role:
 
 -   `src/main.jsx`: Application entry point.
--   `src/App.jsx`: Main router and layout management.
--   `src/store/`: Zustand stores for global state management (`authStore`, `ticketStore`, etc.).
--   `src/components/`: Contains subdirectories for each role (`admin`, `client`, etc.), shared UI (`ui`), and authentication forms.
--   `src/pages/`: Components for the public-facing landing pages.
+-   `src/App.jsx`: Main router and layout management with all route definitions.
+-   `src/store/`: Zustand stores for global state management (`authStore`, `ticketStore`, `notificationStore`, `personalNoteStore`, `profileStore`, `adminStore`).
+-   `src/components/`: Contains subdirectories for each role (`admin`, `client`, `reviewer`), shared UI components, and authentication forms.
+-   `src/pages/`: Components for the public-facing landing pages and dedicated feature pages (AI Chat, Getting Started, Account Security, Billing, Workflow Tools, Integrations, Ticket Management).
 -   `src/lib/`: Shared utilities, including the configured Axios instance.
+-   `src/hooks/`: Custom React hooks for user activity tracking and sensitive actions.
+-   `src/common/`: Shared Header and Footer components.
+-   `src/document/`: Document generation components (PDF export).
 
 ---
 
@@ -648,6 +719,209 @@ Delete a user account (Manager only).
 ```json
 {
   "message": "User deleted successfully"
+}
+```
+
+#### PUT /sol/admin/users/:username/plan-tier
+Update user's plan tier (Manager only).
+
+**Request Body:**
+```json
+{
+  "planTier": "pro"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "User plan tier updated successfully",
+  "user": {
+    "username": "johndoe",
+    "planTier": "pro"
+  }
+}
+```
+
+#### GET /sol/admin/active-users
+Get all currently active/online users (Manager only).
+
+**Response (200):**
+```json
+{
+  "users": [
+    {
+      "id": "507f1f77bcf86cd799439012",
+      "username": "johndoe",
+      "isOnline": true,
+      "onlineAt": "2024-01-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### POST /sol/admin/activity
+Update user activity status (mark as online/active).
+
+**Request Body:**
+```json
+{
+  "userId": "507f1f77bcf86cd799439012"
+}
+```
+
+### Personal Notes Endpoints
+
+#### POST /sol/notes/
+Create a new personal note for a ticket.
+
+**Request Body:**
+```json
+{
+  "ticketId": "507f1f77bcf86cd799439011",
+  "content": "Follow up on this issue tomorrow"
+}
+```
+
+**Response (201):**
+```json
+{
+  "message": "Note created successfully",
+  "note": {
+    "id": "507f1f77bcf86cd799439013",
+    "content": "Follow up on this issue tomorrow",
+    "createdAt": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+#### GET /sol/notes/
+Get all personal notes for the authenticated user.
+
+**Query Parameters:**
+- `ticketId`: Filter by ticket ID (optional)
+
+**Response (200):**
+```json
+{
+  "notes": [
+    {
+      "id": "507f1f77bcf86cd799439013",
+      "ticketId": "507f1f77bcf86cd799439011",
+      "content": "Follow up on this issue tomorrow",
+      "sharedWith": ["reviewer1"],
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+#### PUT /sol/notes/:id/share
+Share a personal note with specific users.
+
+**Request Body:**
+```json
+{
+  "sharedWith": ["reviewer1", "manager1"]
+}
+```
+
+### Notification Endpoints
+
+#### GET /sol/notifications/
+Get all notifications for the authenticated user.
+
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10)
+
+**Response (200):**
+```json
+{
+  "notifications": [
+    {
+      "id": "507f1f77bcf86cd799439014",
+      "type": "TICKET_ASSIGNED",
+      "title": "New Ticket Assigned",
+      "message": "Ticket #123 has been assigned to you",
+      "read": false,
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 10, "total": 25, "pages": 3 }
+}
+```
+
+#### GET /sol/notifications/unread-count
+Get count of unread notifications.
+
+**Response (200):**
+```json
+{
+  "unreadCount": 5
+}
+```
+
+#### PUT /sol/notifications/:id/read
+Mark a notification as read.
+
+#### PUT /sol/notifications/read-all
+Mark all notifications as read.
+
+### AI Chat Endpoints
+
+#### POST /sol/ai/chat
+Send a message to the AI chat interface.
+
+**Request Body:**
+```json
+{
+  "message": "How do I reset my password?",
+  "userRole": "client",
+  "userName": "johndoe",
+  "userId": "507f1f77bcf86cd799439012"
+}
+```
+
+**Response (200):**
+```json
+{
+  "response": "To reset your password, click on 'Forgot Password' on the login page...",
+  "sessionId": "507f1f77bcf86cd799439015"
+}
+```
+
+#### GET /sol/ai/sessions
+Get all chat sessions for the user.
+
+**Response (200):**
+```json
+{
+  "sessions": [
+    {
+      "id": "507f1f77bcf86cd799439015",
+      "title": "Password Help",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+#### GET /sol/ai/session/:sessionId
+Get chat history for a specific session.
+
+**Response (200):**
+```json
+{
+  "session": {
+    "id": "507f1f77bcf86cd799439015",
+    "title": "Password Help",
+    "messages": [
+      { "role": "USER", "content": "How do I reset my password?" },
+      { "role": "ASSISTANT", "content": "To reset your password..." }
+    ]
+  }
 }
 ```
 
@@ -1224,7 +1498,28 @@ The MIT License allows for free use, modification, and distribution of the softw
 
 ## 📝 Changelog
 
-### [v1.3.0] - 2026-04-03 (Upcoming)
+### [v1.4.0] - 2026-04-23 (Current)
+- **AI Chat Interface**: Interactive AI chat for all user roles powered by Gemini AI with multi-modal input support
+- **Chat History**: Persistent chat sessions with session management and history tracking
+- **Plan Tier System**: Subscription-based access with Basic, Pro, and Enterprise tiers
+- **Profile Photos**: Upload and manage profile pictures
+- **Working Hours**: Configure business hours, working days, and preferred contact times
+- **Timezone Support**: Set user timezone for localized scheduling
+- **Online Status**: Real-time presence tracking showing active users
+- **Personal Notes**: Private note-taking system for tickets with sharing capabilities
+- **In-App Notifications**: Full notification center with read/unread tracking
+- **MFA Setup**: Multi-factor authentication setup (TOTP-based)
+- **Auto-Response Settings**: Configurable automatic response delays
+- **Remember Me**: Extended session persistence
+- **Password Strength Enforcement**: Automatic detection and enforcement of weak passwords
+- **PDF Export**: Export reports and ticket data to PDF format
+- **Getting Started Guides**: Built-in help documentation and onboarding
+- **Account Security Page**: Dedicated settings for password changes and sensitive actions
+- **Billing & Payments**: Subscription management and plan tier configuration
+- **Workflow Tools**: Integrated workflow automation tools
+- **Integrations Page**: Third-party integrations hub
+
+### [v1.3.0] - 2026-04-13
 - Database migration from MongoDB to PostgreSQL for enhanced data integrity and performance
 - Full Gemini AI integration for intelligent workflow automation in ticket resolution
 - AI-powered ticket categorization with confidence scoring and auto-detection improvements

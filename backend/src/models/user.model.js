@@ -80,6 +80,27 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    googleId: {
+        type: String,
+        default: null,
+        unique: true,
+        sparse: true
+    },
+    githubId: {
+        type: String,
+        default: null,
+        unique: true,
+        sparse: true
+    },
+    oauthProvider: {
+        type: String,
+        enum: ['google', 'github', null],
+        default: null
+    },
+    emailVerifiedAt: {
+        type: Date,
+        default: null
+    },
 }, {
     timestamps: true
 });

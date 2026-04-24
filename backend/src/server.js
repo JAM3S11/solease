@@ -15,6 +15,7 @@ import notificationRoutes from "./routes/notification.routes.js";
 import personalNoteRoutes from "./routes/personalNote.routes.js";
 import subscriptionRoutes from "./routes/subscription.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+import oauthRoutes from "./routes/oauth.routes.js";
 
 dotenv.config();
 
@@ -55,6 +56,8 @@ app.use("/sol/personal-notes", personalNoteRoutes);
 app.use("/sol/subscribe", subscriptionRoutes);
 
 app.use("/sol/ai", aiRoutes);
+
+app.use("/api/auth", oauthRoutes);
 
 connectDB().then(async () => {
     await createDefaultManager();

@@ -12,10 +12,12 @@
   "type": "module",
   "license": "ISC",
   "dependencies": {
+    "@octokit/rest": "^22.0.1",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.4",
+    "axios": "^1.15.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

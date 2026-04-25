@@ -261,7 +261,7 @@ export const WELCOME_EMAIL_TEMPLATE = `
 </html>
 `;
 
-// ─── 2. VERIFICATION EMAIL ────────────────────────────────────────────────────
+// ─── 2. VERIFICATION EMAIL (6-digit code) ─────────────────────────────────
 
 export const VERIFICATION_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
@@ -314,6 +314,82 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
                         <td style="vertical-align:top;padding-right:12px;">${INFO_SVG}</td>
                         <td style="font-size:13px;color:${COLORS.infoText};line-height:1.5;">
                           Security Note: If you did not attempt to sign up or log in to SolEase, please ignore this email. Your account security is our priority.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <tr><td>${emailFooter()}</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+
+// ─── 2A. OAUTH VERIFICATION EMAIL (link-based) ───────────────────────────────
+
+export const OAUTH_VERIFICATION_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Verify Your Account — SolEase</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.bgDeep};font-family:${FONT_STACK};">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${COLORS.bgDeep};padding:40px 0;">
+    <tr>
+      <td>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background-color:${COLORS.bg};border-radius:12px;overflow:hidden;border:1px solid ${COLORS.borderMid};">
+          <tr><td>${emailHeader()}</td></tr>
+
+          <tr><td>${emailHero({
+            eyebrow: 'Account Verification',
+            title: `Verify your<br><span style="color:${COLORS.accent}">SolEase Account</span>`,
+            subtitle: 'Click the button below to verify your email address and complete your registration.'
+          })}</td></tr>
+
+          <tr>
+            <td style="background-color:${COLORS.bg};padding:40px;">
+
+              <!-- Verify Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:32px;">
+                <tr>
+                  <td style="text-align:center;padding:20px 0;">
+                    ${emailButton('Verify Email', '{verificationLink}')}
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.bgCard};border:1px solid ${COLORS.borderMid};border-radius:12px;margin-bottom:32px;">
+                <tr>
+                  <td style="padding:24px;text-align:center;">
+                    <p style="font-size:13px;color:${COLORS.textSubtle};margin:0 0 12px 0;">This verification link will expire in 24 hours.</p>
+                    <p style="font-size:12px;color:${COLORS.textDim};margin:0;">If the button doesn't work, copy and paste this link into your browser:</p>
+                    <p style="font-size:11px;color:${COLORS.accent};word-break:break-all;margin:12px 0 0 0;">{verificationLink}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background-color:${COLORS.infoBg};border:1px solid ${COLORS.infoBorder};border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:top;padding-right:12px;">${INFO_SVG}</td>
+                        <td style="font-size:13px;color:${COLORS.infoText};line-height:1.5;">
+                          Security Note: If you did not attempt to sign up for SolEase, please ignore this email. Your account security is our priority.
                         </td>
                       </tr>
                     </table>

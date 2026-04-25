@@ -2,19 +2,25 @@ import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 
 export const verifyToken = async (req, res, next) => {
-	const token = req.cookies.token;
+	console.log("verifyToken - headers:", req.headers.authorization?.substring(0, 30) + "...");
+	console.log("verifyToken - cookies:", req.cookies);
+	
+	const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
 	const rememberMeToken = req.cookies.rememberMe;
 	
-	// Try JWT token first
+	console.log("verifyToken - token:", token?.substring(0, 30) + "...");
+	
+	// Try JWT token first (from cookie or Authorization header)
 	if (token) {
 		try {
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+			console.log("verifyToken - decoded:", decoded);
 			if (decoded) {
 				req.userId = decoded.userId;
 				return next();
 			}
 		} catch (error) {
-			// Token invalid, try rememberMe cookie
+			console.log("Token verification failed:", error.message);
 		}
 	}
 	

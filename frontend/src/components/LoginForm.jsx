@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Check, AlertCircle, Mail, ArrowRight, Lock } from "lucide-react";
 import { useAuthenticationStore } from "../store/authStore";
+import api from "../lib/axios.js";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -75,20 +76,39 @@ const LoginForm = () => {
   useEffect(() => {
     const oauthToken = searchParams.get("token");
     const provider = searchParams.get("provider");
+    const newUser = searchParams.get("new_user");
     const error = searchParams.get("error");
 
     if (error) {
-      toast.error("OAuth login failed. Please try again.", { position });
+      toast.error("OAuth login failed: " + error, { position });
       return;
     }
 
     if (oauthToken) {
+      console.log("OAuth token received, storing and logging in via:", provider);
       localStorage.setItem("token", oauthToken);
-      toast.success("Logged in via " + provider, { position });
-      // Trigger auth check
-      window.location.reload();
+      toast.success(newUser ? "Account created with " + provider + "!" : "Logged in via " + provider, { position });
+      
+      // Use auth store's checkAuth to verify and get user info
+      const { checkAuth } = useAuthenticationStore.getState();
+      checkAuth().then(user => {
+        if (user) {
+          const role = user.role?.toLowerCase();
+          switch (role) {
+            case "client": navigate("/client-dashboard", { replace: true }); break;
+            case "reviewer": navigate("/reviewer-dashboard", { replace: true }); break;
+            case "manager": navigate("/admin-dashboard", { replace: true }); break;
+            default: navigate("/", { replace: true });
+          }
+        } else {
+          navigate("/", { replace: true });
+        }
+      }).catch(() => {
+        // Even if check fails, we have valid token - go to home
+        navigate("/", { replace: true });
+      });
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   // Validation rules
   const VALIDATION_RULES = {
@@ -254,7 +274,8 @@ const LoginForm = () => {
 
   const handleOAuthLogin = (provider) => {
     setOauthLoading(true);
-    window.location.href = `http://localhost:5001/api/auth/${provider}`;
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+    window.location.href = `${apiUrl}/api/auth/${provider}`;
   };
 
   const passwordStrength = getPasswordStrength(formData.password);

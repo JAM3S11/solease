@@ -11,6 +11,11 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Get token from localStorage for OAuth tokens
+    const oauthToken = localStorage.getItem("token");
+    if (oauthToken) {
+      config.headers.Authorization = `Bearer ${oauthToken}`;
+    }
     console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },

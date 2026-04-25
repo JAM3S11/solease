@@ -1,17 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import prisma from "../config/db.js";
 import fs from "fs";
 import path from "path";
-
-const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 export const getProfile = async (req, res) => {
   try {
     const userId = req.userId;
+    console.log("getProfile called for userId:", userId);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -31,6 +25,7 @@ export const getProfile = async (req, res) => {
     });
 
     if (!user) {
+      console.log("User not found for userId:", userId);
       return res.status(404).json({ success: false, message: "User not found" });
     }
 

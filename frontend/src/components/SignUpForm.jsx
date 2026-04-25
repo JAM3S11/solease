@@ -187,7 +187,8 @@ const SignUpForm = () => {
 
   const handleOAuthSignup = (provider) => {
     setOauthLoading(true);
-    window.location.href = `http://localhost:5001/api/auth/${provider}`;
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+    window.location.href = `${apiUrl}/api/auth/${provider}`;
   };
 
   const handleSubmit = async (e) => {
